@@ -454,7 +454,7 @@ export default function App() {
     <div style={{display:'flex',height:'100dvh',background:'#111318',color:'#eef0f7',fontFamily:'DM Sans,sans-serif'}}>
 
       {/* ── DESKTOP SIDEBAR ── */}
-      <div style={{width:220,background:'#181c24',borderRight:'1px solid #2a3045',display:'flex',flexDirection:'column',flexShrink:0,position:'sticky',top:0,height:'100dvh'}}>
+      <div style={{width:220,background:'#181c24',borderRight:'1px solid #2a3045',display:'flex',flexDirection:'column',flexShrink:0,position:'sticky',top:0,height:'100dvh'}} className="desktop-sidebar}}>
         <div style={{padding:'24px 20px 20px',borderBottom:'1px solid #2a3045'}}>
           <div style={{fontFamily:'Bebas Neue',fontSize:28,letterSpacing:1,color:'#c8ff47'}}>COACH<span style={{color:'#eef0f7'}}>PRO</span></div>
           <div style={{fontSize:12,color:'#8891ad',marginTop:4}}>{dateStr}</div>
