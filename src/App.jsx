@@ -9,7 +9,6 @@ const DAYS_FULL = ['Неділя','Понеділок','Вівторок','Се�
 
 function todayStr() { return new Date().toISOString().slice(0,10) }
 
-// ── SCHEDULE TAB ──
 function ScheduleTab({ clients, sessions, setSessions }) {
   const today = new Date()
   const [selDay, setSelDay] = useState(today.getDay())
@@ -44,7 +43,6 @@ function ScheduleTab({ clients, sessions, setSessions }) {
 
   return (
     <div>
-      {/* Week strip */}
       <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:6,marginBottom:16}}>
         {Array.from({length:7},(_,i)=>{
           const d = getDate(i)
@@ -66,9 +64,7 @@ function ScheduleTab({ clients, sessions, setSessions }) {
           <span style={{fontFamily:'Bebas Neue',fontSize:18}}>{DAYS_FULL[selDay]}, {selDate.getDate()} {MONTHS_UK[selDate.getMonth()]}</span>
           <small style={{color:'#8891ad',fontSize:12}}>{daySessions.length} сесій</small>
         </div>
-
         {daySessions.length===0 && <div style={{color:'#5a6482',textAlign:'center',padding:'20px 0',fontSize:14}}>Немає сесій</div>}
-
         {daySessions.map(s=>{
           const c = clients.find(x=>x.id===s.client_id)
           return (
@@ -85,8 +81,7 @@ function ScheduleTab({ clients, sessions, setSessions }) {
             </div>
           )
         })}
-
-        <div onClick={()=>{setFClient(clients[0]?.id||'');setShowModal(true)}} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 14px',borderRadius:12,border:'1px dashed #2a3045',cursor:'pointer',color:'#5a6482',fontSize:13,marginTop:4,transition:'all .18s'}}>＋ Додати сесію</div>
+        <div onClick={()=>{setFClient(clients[0]?.id||'');setShowModal(true)}} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 14px',borderRadius:12,border:'1px dashed #2a3045',cursor:'pointer',color:'#5a6482',fontSize:13,marginTop:4}}>＋ Додати сесію</div>
       </div>
 
       {showModal && (
@@ -118,7 +113,6 @@ function ScheduleTab({ clients, sessions, setSessions }) {
   )
 }
 
-// ── CLIENTS TAB ──
 function ClientsTab({ clients, setClients, sessions }) {
   const [search, setSearch] = useState('')
   const [openId, setOpenId] = useState(null)
@@ -161,8 +155,7 @@ function ClientsTab({ clients, setClients, sessions }) {
       clip_total:Number(nc.clip), clip_used:0
     }).select().single()
     if (!error) setClients([...clients,data])
-    setSaving(false)
-    setShowAdd(false)
+    setSaving(false); setShowAdd(false)
     setNc({name:'',last:'',goal:'',w:'',h:'',clip:10})
   }
 
@@ -177,15 +170,13 @@ function ClientsTab({ clients, setClients, sessions }) {
 
       <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(340px,1fr))',gap:12}}>
         {filtered.length===0 && <div style={{color:'#5a6482',textAlign:'center',padding:'40px 0',gridColumn:'1/-1'}}>Клієнтів ще немає</div>}
-
         {filtered.map(c=>{
           const isOpen = openId===c.id
           const progress = c.clip_total?Math.round((c.clip_used/c.clip_total)*100):0
           const activeTab = getTab(c.id)
           const cSessions = sessions.filter(s=>s.client_id===c.id)
-
           return (
-            <div key={c.id} style={{background:'#181c24',border:`1px solid ${isOpen?'#c8ff47':'#2a3045'}`,borderRadius:14,overflow:'hidden',transition:'border-color .18s',alignSelf:'start'}}>
+            <div key={c.id} style={{background:'#181c24',border:`1px solid ${isOpen?'#c8ff47':'#2a3045'}`,borderRadius:14,overflow:'hidden',alignSelf:'start'}}>
               <div onClick={()=>setOpenId(isOpen?null:c.id)} style={{display:'flex',alignItems:'center',gap:12,padding:14,cursor:'pointer'}}>
                 <div style={{width:46,height:46,borderRadius:'50%',background:c.color,display:'flex',alignItems:'center',justifyContent:'center',fontFamily:'Bebas Neue',fontSize:18,color:'#111',flexShrink:0}}>{c.ava}</div>
                 <div style={{flex:1}}>
@@ -197,22 +188,19 @@ function ClientsTab({ clients, setClients, sessions }) {
                   <span style={{color:'#5a6482',fontSize:14,transform:isOpen?'rotate(180deg)':'none',transition:'transform .2s'}}>▾</span>
                 </div>
               </div>
-
               <div style={{display:'flex',alignItems:'center',gap:8,padding:'0 14px 14px'}}>
                 <div style={{flex:1,height:4,background:'#252c3d',borderRadius:2}}>
-                  <div style={{height:'100%',borderRadius:2,width:`${progress}%`,background:c.color,transition:'width .5s'}}/>
+                  <div style={{height:'100%',borderRadius:2,width:`${progress}%`,background:c.color}}/>
                 </div>
                 <span style={{fontSize:12,fontWeight:600,color:c.color,minWidth:30,textAlign:'right'}}>{progress}%</span>
               </div>
-
               {isOpen && (
                 <div style={{borderTop:'1px solid #2a3045',padding:14}}>
                   <div style={{display:'flex',gap:6,marginBottom:14,flexWrap:'wrap'}}>
                     {DTABS.map(t=>(
-                      <button key={t.id} onClick={()=>setTab(c.id,t.id)} style={{padding:'6px 14px',borderRadius:20,fontSize:12,fontWeight:600,cursor:'pointer',border:`1px solid ${activeTab===t.id?'#c8ff47':'#2a3045'}`,background:activeTab===t.id?'#c8ff47':'none',color:activeTab===t.id?'#111':'#8891ad',transition:'all .18s'}}>{t.label}</button>
+                      <button key={t.id} onClick={()=>setTab(c.id,t.id)} style={{padding:'6px 14px',borderRadius:20,fontSize:12,fontWeight:600,cursor:'pointer',border:`1px solid ${activeTab===t.id?'#c8ff47':'#2a3045'}`,background:activeTab===t.id?'#c8ff47':'none',color:activeTab===t.id?'#111':'#8891ad'}}>{t.label}</button>
                     ))}
                   </div>
-
                   {activeTab==='profile' && (
                     <div>
                       <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:8,marginBottom:12}}>
@@ -239,11 +227,9 @@ function ClientsTab({ clients, setClients, sessions }) {
                       <textarea defaultValue={c.note} onBlur={e=>updateNote(c.id,e.target.value)} style={{width:'100%',background:'#1e2330',border:'1px solid #2a3045',borderRadius:10,padding:'10px 12px',color:'#eef0f7',fontFamily:'DM Sans',fontSize:13,resize:'none',outline:'none',minHeight:80,lineHeight:1.5}}/>
                     </div>
                   )}
-
                   {activeTab==='records' && (
                     <div style={{color:'#5a6482',textAlign:'center',padding:'20px 0',fontSize:14}}>Рекорди — буде додано незабаром</div>
                   )}
-
                   {activeTab==='clip' && (
                     <div style={{background:'#1e2330',borderRadius:12,padding:14}}>
                       <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12}}>
@@ -261,7 +247,6 @@ function ClientsTab({ clients, setClients, sessions }) {
                       </div>
                     </div>
                   )}
-
                   {activeTab==='history' && (
                     <div>
                       {cSessions.filter(s=>s.done).sort((a,b)=>b.date.localeCompare(a.date)).map(s=>(
@@ -301,15 +286,15 @@ function ClientsTab({ clients, setClients, sessions }) {
             <input value={nc.goal} onChange={e=>setNc({...nc,goal:e.target.value})} placeholder="Схуднення…" style={{width:'100%',background:'#1e2330',border:'1px solid #2a3045',borderRadius:10,padding:'10px 14px',color:'#eef0f7',fontFamily:'DM Sans',fontSize:14,outline:'none',marginBottom:12}}/>
             <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:8,marginBottom:16}}>
               <div>
-                <label style={{fontSize:11,color:'#8891ad',textTransform:'uppercase',letterSpacing:.5,display:'block',marginBottom:6}}>Вага (кг)</label>
+                <label style={{fontSize:11,color:'#8891ad',textTransform:'uppercase',letterSpacing:.5,display:'block',marginBottom:6}}>Вага</label>
                 <input type="number" value={nc.w} onChange={e=>setNc({...nc,w:e.target.value})} placeholder="70" style={{width:'100%',background:'#1e2330',border:'1px solid #2a3045',borderRadius:10,padding:'10px 14px',color:'#eef0f7',fontFamily:'DM Sans',fontSize:14,outline:'none'}}/>
               </div>
               <div>
-                <label style={{fontSize:11,color:'#8891ad',textTransform:'uppercase',letterSpacing:.5,display:'block',marginBottom:6}}>Зріст (см)</label>
+                <label style={{fontSize:11,color:'#8891ad',textTransform:'uppercase',letterSpacing:.5,display:'block',marginBottom:6}}>Зріст</label>
                 <input type="number" value={nc.h} onChange={e=>setNc({...nc,h:e.target.value})} placeholder="170" style={{width:'100%',background:'#1e2330',border:'1px solid #2a3045',borderRadius:10,padding:'10px 14px',color:'#eef0f7',fontFamily:'DM Sans',fontSize:14,outline:'none'}}/>
               </div>
               <div>
-                <label style={{fontSize:11,color:'#8891ad',textTransform:'uppercase',letterSpacing:.5,display:'block',marginBottom:6}}>Кліп-карта</label>
+                <label style={{fontSize:11,color:'#8891ad',textTransform:'uppercase',letterSpacing:.5,display:'block',marginBottom:6}}>Кліп</label>
                 <select value={nc.clip} onChange={e=>setNc({...nc,clip:e.target.value})} style={{width:'100%',background:'#1e2330',border:'1px solid #2a3045',borderRadius:10,padding:'10px 8px',color:'#eef0f7',fontFamily:'DM Sans',fontSize:14,outline:'none'}}>
                   <option value={8}>8</option>
                   <option value={10}>10</option>
@@ -329,7 +314,6 @@ function ClientsTab({ clients, setClients, sessions }) {
   )
 }
 
-// ── STATS TAB ──
 function StatsTab({ sessions, clients, finance }) {
   const today = todayStr()
   const now = new Date()
@@ -337,7 +321,7 @@ function StatsTab({ sessions, clients, finance }) {
   const monthStart = new Date(now.getFullYear(),now.getMonth(),1)
 
   const todayCount = sessions.filter(s=>s.date===today).length
-  const weekCount  = sessions.filter(s=>new Date(s.date)>=weekStart).length
+  const weekCount = sessions.filter(s=>new Date(s.date)>=weekStart).length
   const monthCount = sessions.filter(s=>new Date(s.date)>=monthStart).length
 
   const days = Array.from({length:7},(_,i)=>{
@@ -347,33 +331,25 @@ function StatsTab({ sessions, clients, finance }) {
   const counts = days.map(d=>sessions.filter(s=>s.date===d.ds).length)
   const max = Math.max(...counts,1)
   const income = finance.filter(f=>f.type==='in').reduce((a,f)=>a+Number(f.amount),0)
-  const expenses = finance.filter(f=>f.type==='out').reduce((a,f)=>a+Math.abs(Number(f.amount)),0)
 
   return (
     <div>
-      {/* Top 3 stats */}
       <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:12,marginBottom:16}}>
-        {[
-          ['Сьогодні',todayCount,'#c8ff47'],
-          ['Тиждень',weekCount,'#47d4ff'],
-          ['Місяць',monthCount,'#3de87a'],
-        ].map(([l,v,cl])=>(
+        {[['Сьогодні',todayCount,'#c8ff47'],['Тиждень',weekCount,'#47d4ff'],['Місяць',monthCount,'#3de87a']].map(([l,v,cl])=>(
           <div key={l} style={{background:'#181c24',border:'1px solid #2a3045',borderRadius:14,padding:16,textAlign:'center'}}>
             <div style={{fontFamily:'Bebas Neue',fontSize:42,color:cl,lineHeight:1}}>{v}</div>
             <div style={{fontSize:12,color:'#8891ad',marginTop:6}}>{l}</div>
           </div>
         ))}
       </div>
-
       <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(300px,1fr))',gap:16}}>
-        {/* Bar chart */}
         <div style={{background:'#181c24',border:'1px solid #2a3045',borderRadius:14,padding:16}}>
           <div style={{fontFamily:'Bebas Neue',fontSize:18,marginBottom:14}}>Активність — 7 днів</div>
           <div style={{display:'flex',alignItems:'flex-end',gap:8,height:120,marginBottom:8}}>
             {counts.map((c,i)=>(
               <div key={i} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'flex-end',height:'100%',gap:4}}>
                 <span style={{fontSize:10,color:c>0?'#c8ff47':'#5a6482',fontWeight:600}}>{c>0?c:''}</span>
-                <div style={{width:'100%',borderRadius:'4px 4px 0 0',minHeight:4,height:`${Math.max(4,(c/max)*90)}px`,background:days[i].ds===today?'#c8ff47':'#252c3d',border:`1px solid ${days[i].ds===today?'#c8ff47':'#2a3045'}`,transition:'height .3s'}}/>
+                <div style={{width:'100%',borderRadius:'4px 4px 0 0',minHeight:4,height:`${Math.max(4,(c/max)*90)}px`,background:days[i].ds===today?'#c8ff47':'#252c3d',border:`1px solid ${days[i].ds===today?'#c8ff47':'#2a3045'}`}}/>
               </div>
             ))}
           </div>
@@ -386,8 +362,6 @@ function StatsTab({ sessions, clients, finance }) {
             ))}
           </div>
         </div>
-
-        {/* Finance */}
         <div style={{background:'#181c24',border:'1px solid #2a3045',borderRadius:14,padding:16}}>
           <div style={{fontFamily:'Bebas Neue',fontSize:18,marginBottom:14}}>Фінанси</div>
           <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:14}}>
@@ -416,7 +390,6 @@ function StatsTab({ sessions, clients, finance }) {
   )
 }
 
-// ── APP ──
 export default function App() {
   const [tab, setTab] = useState('schedule')
   const [clients, setClients] = useState([])
@@ -453,15 +426,15 @@ export default function App() {
   return (
     <div style={{display:'flex',height:'100dvh',background:'#111318',color:'#eef0f7',fontFamily:'DM Sans,sans-serif'}}>
 
-      {/* ── DESKTOP SIDEBAR ── */}
-      <div style={{width:220,background:'#181c24',borderRight:'1px solid #2a3045',display:'flex',flexDirection:'column',flexShrink:0,position:'sticky',top:0,height:'100dvh'}} className="desktop-sidebar}}>
+      {/* DESKTOP SIDEBAR */}
+      <div className="desktop-sidebar" style={{width:220,background:'#181c24',borderRight:'1px solid #2a3045',display:'flex',flexDirection:'column',flexShrink:0,position:'sticky',top:0,height:'100dvh'}}>
         <div style={{padding:'24px 20px 20px',borderBottom:'1px solid #2a3045'}}>
           <div style={{fontFamily:'Bebas Neue',fontSize:28,letterSpacing:1,color:'#c8ff47'}}>COACH<span style={{color:'#eef0f7'}}>PRO</span></div>
           <div style={{fontSize:12,color:'#8891ad',marginTop:4}}>{dateStr}</div>
         </div>
         <nav style={{flex:1,padding:'12px 0'}}>
           {TABS.map(([id,icon,label])=>(
-            <button key={id} onClick={()=>setTab(id)} style={{display:'flex',alignItems:'center',gap:12,width:'100%',padding:'12px 20px',cursor:'pointer',border:'none',background:'none',color:tab===id?'#c8ff47':'#5a6482',fontFamily:'DM Sans',fontSize:14,fontWeight:500,textAlign:'left',borderLeft:tab===id?'3px solid #c8ff47':'3px solid transparent',background:tab===id?'rgba(200,255,71,.06)':'none',transition:'all .18s'}}>
+            <button key={id} onClick={()=>setTab(id)} style={{display:'flex',alignItems:'center',gap:12,width:'100%',padding:'12px 20px',cursor:'pointer',border:'none',fontFamily:'DM Sans',fontSize:14,fontWeight:500,textAlign:'left',borderLeft:tab===id?'3px solid #c8ff47':'3px solid transparent',background:tab===id?'rgba(200,255,71,.06)':'none',color:tab===id?'#c8ff47':'#5a6482',transition:'all .18s'}}>
               <span style={{fontSize:18}}>{icon}</span>{label}
             </button>
           ))}
@@ -477,23 +450,16 @@ export default function App() {
         </div>
       </div>
 
-      {/* ── MAIN CONTENT ── */}
+      {/* MAIN */}
       <div style={{flex:1,display:'flex',flexDirection:'column',overflow:'hidden'}}>
-        {/* Mobile header */}
-        <div style={{display:'none',alignItems:'center',justifyContent:'space-between',padding:'14px 16px',background:'#181c24',borderBottom:'1px solid #2a3045',flexShrink:0,className:'mobile-header'}}>
-          <div style={{fontFamily:'Bebas Neue',fontSize:22,color:'#c8ff47'}}>COACH<span style={{color:'#eef0f7'}}>PRO</span></div>
-          <div style={{fontSize:12,color:'#8891ad'}}>{now.getDate()} {MONTHS_UK[now.getMonth()]}</div>
-        </div>
-
-        {/* Content */}
         <div style={{flex:1,overflowY:'auto',padding:24}}>
           {tab==='schedule'&&<ScheduleTab clients={clients} sessions={sessions} setSessions={setSessions}/>}
           {tab==='clients'&&<ClientsTab clients={clients} setClients={setClients} sessions={sessions}/>}
           {tab==='stats'&&<StatsTab sessions={sessions} clients={clients} finance={finance}/>}
         </div>
 
-        {/* Mobile bottom tabs */}
-        <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',background:'#181c24',borderTop:'1px solid #2a3045',flexShrink:0}} className="mobile-tabs">
+        {/* MOBILE BOTTOM TABS */}
+        <div className="mobile-tabs" style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',background:'#181c24',borderTop:'1px solid #2a3045',flexShrink:0}}>
           {TABS.map(([id,icon,label])=>(
             <button key={id} onClick={()=>setTab(id)} style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'10px 4px 12px',cursor:'pointer',border:'none',background:'none',color:tab===id?'#c8ff47':'#5a6482',fontFamily:'DM Sans',fontSize:11,fontWeight:500,gap:4,borderTop:tab===id?'2px solid #c8ff47':'2px solid transparent'}}>
               <span style={{fontSize:20}}>{icon}</span>{label}
