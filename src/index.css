@@ -1,10 +1,13 @@
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap');
+
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html, body, #root { height: 100%; background: #111318; }
-@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+@media (max-width: 767px) {
+  .desktop-sidebar { display: none !important; }
+  .mobile-tabs { display: grid !important; }
+}
+
 @media (min-width: 768px) {
   .mobile-tabs { display: none !important; }
-  .mobile-header { display: flex !important; }
-}
-@media (max-width: 767px) {
-  .mobile-header { display: flex !important; }
 }
