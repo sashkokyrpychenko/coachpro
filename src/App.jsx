@@ -105,13 +105,7 @@ function SwipeSessionCard({ s, clients, onEdit, onToggle }) {
           <div style={{fontSize:12,color:'#8891ad',marginTop:2}}>{s.type}</div>
         </div>
         <div style={{textAlign:'right', display:'flex', flexDirection:'column', alignItems:'flex-end', gap:6}}>
-          <div style={{display:'flex', alignItems:'center', gap:6}}>
-            <div style={{fontFamily:'Bebas Neue',fontSize:22,color:'#c8ff47'}}>{s.time}</div>
-            <button
-              onClick={e => { e.stopPropagation(); onEdit(s) }}
-              style={{background:'none',border:'1px solid #3B82F650',borderRadius:8,color:'#3B82F6',fontSize:14,padding:'3px 7px',cursor:'pointer',lineHeight:1}}
-            >✏️</button>
-          </div>
+          <div style={{fontFamily:'Bebas Neue',fontSize:22,color:'#c8ff47'}}>{s.time}</div>
           <span style={{fontSize:11,padding:'2px 10px',borderRadius:20,fontWeight:600,background:s.done?'rgba(61,232,122,.12)':'rgba(200,255,71,.12)',color:s.done?'#3de87a':'#c8ff47'}}>{s.done?'✓ Виконано':'Заплановано'}</span>
         </div>
       </div>
