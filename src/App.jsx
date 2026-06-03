@@ -276,6 +276,19 @@ function EditSessionModal({ session, clients, onClose, onSave, onDelete }) {
   const [time, setTime] = useState(session.time)
   const [type, setType] = useState(session.type)
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const scrollRef = useRef(null)
+  const selectedRef = useRef(null)
+
+  useEffect(() => {
+    if (selectedRef.current && scrollRef.current) {
+      const container = scrollRef.current
+      const el = selectedRef.current
+      const elLeft = el.offsetLeft
+      const elWidth = el.offsetWidth
+      const containerWidth = container.offsetWidth
+      container.scrollLeft = elLeft - containerWidth / 2 + elWidth / 2
+    }
+  }, [])
 
   const inp = {width:'100%',background:'#1e2330',border:'1px solid #2a3045',borderRadius:10,padding:'10px 14px',color:'#eef0f7',fontFamily:'DM Sans',fontSize:14,outline:'none',boxSizing:'border-box'}
   const lbl = {fontSize:11,color:'#8891ad',textTransform:'uppercase',letterSpacing:.5,display:'block',marginBottom:6}
@@ -290,10 +303,11 @@ function EditSessionModal({ session, clients, onClose, onSave, onDelete }) {
 
         {/* Client */}
         <label style={lbl}>Клієнт</label>
-        <div style={{display:'flex',gap:6,marginBottom:14,overflowX:'auto',paddingBottom:4}}>
+        <div ref={scrollRef} style={{display:'flex',gap:6,marginBottom:14,overflowX:'auto',paddingBottom:4}}>
           {clients.map(c => (
             <div
               key={c.id}
+              ref={c.id === clientId ? selectedRef : null}
               onClick={() => setClientId(c.id)}
               style={{
                 flexShrink:0, padding:'8px 12px', borderRadius:10,
