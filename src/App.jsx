@@ -722,7 +722,7 @@ function ScheduleTab({ clients, sessions, setSessions }) {
 }
 
 // ─── Clients Tab (unchanged) ──────────────────────────────────────────────────
-function ClientsTab({ clients, setClients, sessions, setSessions, records, setRecords }) {
+function ClientsTab({ clients, setClients, sessions, setSessions, records, setRecords, pricePlans }) {
   const [search, setSearch] = useState('')
   const [openId, setOpenId] = useState(null)
   const [tabMap, setTabMap] = useState({})
@@ -1061,8 +1061,35 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
                       <button onClick={()=>setShowAddRecord(c.id)} style={{width:'100%',marginTop:8,padding:'10px',borderRadius:10,border:'1px dashed #2a4a7f',background:'none',color:'#6B7280',fontFamily:'DM Sans',fontSize:13,cursor:'pointer'}}>＋ Додати рекорд</button>
                     </div>
                   )}
-                  {activeTab==='clip' && (
+                  {activeTab==='clip' && (() => {
+                    const activePlan = pricePlans.find(p => p.id === c.active_plan_id)
+                    return (
                     <div style={{background:'#1a2744',borderRadius:12,padding:14}}>
+                      {/* Plan selector */}
+                      {pricePlans.length > 0 && (
+                        <div style={{marginBottom:12}}>
+                          <div style={{fontSize:11,color:'#9CA3AF',textTransform:'uppercase',letterSpacing:.5,marginBottom:8}}>Пакет</div>
+                          <div style={{display:'flex',flexDirection:'column',gap:6}}>
+                            {pricePlans.map(p=>(
+                              <div key={p.id}
+                                onClick={async()=>{
+                                  await supabase.from('clients').update({active_plan_id:p.id, clip_total:p.sessions, clip_used:0}).eq('id',c.id)
+                                  setClients(clients.map(x=>x.id===c.id?{...x,active_plan_id:p.id,clip_total:p.sessions,clip_used:0}:x))
+                                }}
+                                style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'9px 12px',borderRadius:10,cursor:'pointer',
+                                  border:`1.5px solid ${c.active_plan_id===p.id?'#C4ED00':'#2a4a7f'}`,
+                                  background:c.active_plan_id===p.id?'rgba(196,237,0,.08)':'#162032'}}>
+                                <div>
+                                  <div style={{fontSize:13,fontWeight:600,color:'#F3F4F6'}}>{p.name}</div>
+                                  <div style={{fontSize:11,color:'#9CA3AF'}}>{p.sessions} тренувань</div>
+                                </div>
+                                <div style={{fontFamily:'Bebas Neue',fontSize:18,color:'#C4ED00'}}>{Number(p.price).toLocaleString('uk')} ₴</div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
                       <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12}}>
                         <span style={{fontFamily:'Bebas Neue',fontSize:16}}>Кліп-карта</span>
                         <span style={{fontSize:11,padding:'3px 9px',borderRadius:20,fontWeight:600,background:c.clip_used>=c.clip_total?'rgba(255,79,79,.12)':'rgba(61,232,122,.12)',color:c.clip_used>=c.clip_total?'#ff4f4f':'#3de87a'}}>{c.clip_used>=c.clip_total?'Вичерпано':`Залишилось: ${c.clip_total-c.clip_used}`}</span>
@@ -1077,7 +1104,8 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
                         <button onClick={()=>renewClip(c.id)} style={{flex:1,padding:'9px',borderRadius:10,border:'none',background:'#C4ED00',color:'#111',fontFamily:'DM Sans',fontSize:12,fontWeight:600,cursor:'pointer'}}>Поновити</button>
                       </div>
                     </div>
-                  )}
+                    )
+                  })()}
                   {activeTab==='history' && (
                     <div>
                       {cSessions.filter(s=>s.done).sort((a,b)=>b.date.localeCompare(a.date)).map(s=>(
@@ -1295,30 +1323,49 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
     </div>
   )
 }
-function StatsTab({ sessions, clients, finance }) {
+function StatsTab({ sessions, clients, finance, pricePlans, setPricePlans }) {
   const today = todayStr()
   const now = new Date()
-
-  // Use string comparison — safe, no UTC issues
   const weekStartDate = new Date(now)
   weekStartDate.setDate(now.getDate() - getMondayFirst(now))
   const weekStartStr = dateToStr(weekStartDate)
-
   const monthStartStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-01`
-
   const todayCount = sessions.filter(s => s.date === today).length
   const weekCount  = sessions.filter(s => s.date >= weekStartStr && s.date <= today).length
   const monthCount = sessions.filter(s => s.date >= monthStartStr && s.date <= today).length
-  const days = Array.from({length:7},(_,i)=>{
-    const d = new Date(now); d.setDate(now.getDate()-6+i)
-    return {ds:dateToStr(d),lbl:d.getDate(),day:DAYS_SHORT[getMondayFirst(d)]}
-  })
+  const days = Array.from({length:7},(_,i)=>{ const d=new Date(now); d.setDate(now.getDate()-6+i); return {ds:dateToStr(d),lbl:d.getDate(),day:DAYS_SHORT[getMondayFirst(d)]} })
   const counts = days.map(d=>sessions.filter(s=>s.date===d.ds).length)
   const max = Math.max(...counts,1)
   const income = finance.filter(f=>f.type==='in').reduce((a,f)=>a+Number(f.amount),0)
 
+  const [showAddPlan, setShowAddPlan] = useState(false)
+  const [editPlan, setEditPlan] = useState(null)
+  const [np, setNp] = useState({name:'',sessions:1,price:''})
+
+  const savePlan = async () => {
+    if (!np.name || !np.price) return
+    if (editPlan) {
+      const {data,error} = await supabase.from('price_plans').update({name:np.name,sessions:Number(np.sessions),price:Number(np.price)}).eq('id',editPlan.id).select().single()
+      if (!error) setPricePlans(prev => prev.map(p => p.id===editPlan.id ? data : p).sort((a,b)=>a.name.localeCompare(b.name,'uk')))
+      setEditPlan(null)
+    } else {
+      const {data,error} = await supabase.from('price_plans').insert({name:np.name,sessions:Number(np.sessions),price:Number(np.price)}).select().single()
+      if (!error) setPricePlans(prev => [...prev,data].sort((a,b)=>a.name.localeCompare(b.name,'uk')))
+    }
+    setShowAddPlan(false); setNp({name:'',sessions:1,price:''})
+  }
+
+  const deletePlan = async (id) => {
+    await supabase.from('price_plans').delete().eq('id',id)
+    setPricePlans(prev => prev.filter(p => p.id!==id))
+  }
+
+  const inp = {width:'100%',background:'#1a2744',border:'1px solid #2a4a7f',borderRadius:10,padding:'10px 14px',color:'#F3F4F6',fontFamily:'DM Sans',fontSize:14,outline:'none',boxSizing:'border-box'}
+  const lbl = {fontSize:11,color:'#9CA3AF',textTransform:'uppercase',letterSpacing:.5,display:'block',marginBottom:6}
+
   return (
     <div>
+      {/* Stats cards */}
       <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:12,marginBottom:16}}>
         {[['Сьогодні',todayCount,'#C4ED00'],['Тиждень',weekCount,'#47d4ff'],['Місяць',monthCount,'#3de87a']].map(([l,v,cl])=>(
           <div key={l} style={{background:'#162032',border:'1px solid #2a4a7f',borderRadius:14,padding:16,textAlign:'center'}}>
@@ -1327,7 +1374,9 @@ function StatsTab({ sessions, clients, finance }) {
           </div>
         ))}
       </div>
+
       <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(300px,1fr))',gap:16}}>
+        {/* Activity chart */}
         <div style={{background:'#162032',border:'1px solid #2a4a7f',borderRadius:14,padding:16}}>
           <div style={{fontFamily:'Bebas Neue',fontSize:18,marginBottom:14}}>Активність — 7 днів</div>
           <div style={{display:'flex',alignItems:'flex-end',gap:8,height:120,marginBottom:8}}>
@@ -1347,6 +1396,8 @@ function StatsTab({ sessions, clients, finance }) {
             ))}
           </div>
         </div>
+
+        {/* Finance */}
         <div style={{background:'#162032',border:'1px solid #2a4a7f',borderRadius:14,padding:16}}>
           <div style={{fontFamily:'Bebas Neue',fontSize:18,marginBottom:14}}>Фінанси</div>
           <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:14}}>
@@ -1370,7 +1421,61 @@ function StatsTab({ sessions, clients, finance }) {
           ))}
           {finance.length===0&&<div style={{color:'#6B7280',textAlign:'center',padding:'20px 0'}}>Фінансів ще немає</div>}
         </div>
+
+        {/* Price plans */}
+        <div style={{background:'#162032',border:'1px solid #2a4a7f',borderRadius:14,padding:16}}>
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:14}}>
+            <div style={{fontFamily:'Bebas Neue',fontSize:18}}>Прайс-листи</div>
+            <button onClick={()=>{setEditPlan(null);setNp({name:'',sessions:1,price:''});setShowAddPlan(true)}}
+              style={{background:'#C4ED00',color:'#111',border:'none',borderRadius:8,padding:'6px 14px',fontSize:12,fontWeight:700,cursor:'pointer'}}>
+              + Додати
+            </button>
+          </div>
+          {pricePlans.length===0 && <div style={{color:'#6B7280',textAlign:'center',padding:'20px 0',fontSize:13}}>Прайс-листів ще немає</div>}
+          {pricePlans.map(p=>(
+            <div key={p.id} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 12px',background:'#1a2744',borderRadius:10,marginBottom:6}}>
+              <div style={{flex:1}}>
+                <div style={{fontSize:13,fontWeight:600,color:'#F3F4F6'}}>{p.name}</div>
+                <div style={{fontSize:11,color:'#9CA3AF',marginTop:2}}>{p.sessions} {p.sessions===1?'тренування':'тренувань'}</div>
+              </div>
+              <div style={{fontFamily:'Bebas Neue',fontSize:20,color:'#C4ED00'}}>{Number(p.price).toLocaleString('uk')} ₴</div>
+              <button onClick={()=>{setEditPlan(p);setNp({name:p.name,sessions:p.sessions,price:p.price});setShowAddPlan(true)}}
+                style={{background:'none',border:'1px solid #2a4a7f',borderRadius:7,color:'#9CA3AF',fontSize:12,padding:'4px 8px',cursor:'pointer'}}>✏️</button>
+              <button onClick={()=>deletePlan(p.id)}
+                style={{background:'none',border:'none',color:'#6B7280',fontSize:14,cursor:'pointer'}}>✕</button>
+            </div>
+          ))}
+        </div>
       </div>
+
+      {/* Add/Edit plan modal */}
+      {showAddPlan && (
+        <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.75)',display:'flex',alignItems:'flex-end',justifyContent:'center',zIndex:200}} onClick={()=>setShowAddPlan(false)}>
+          <div style={{background:'#162032',border:'1px solid #2a4a7f',borderRadius:'20px 20px 0 0',width:'100%',maxWidth:480,padding:'20px 20px 36px'}} onClick={e=>e.stopPropagation()}>
+            <div style={{width:40,height:4,background:'#2a4a7f',borderRadius:2,margin:'0 auto 18px'}}/>
+            <div style={{fontFamily:'Bebas Neue',fontSize:22,marginBottom:16}}>{editPlan?'Редагувати план':'Новий план'}</div>
+            <label style={lbl}>Назва</label>
+            <input value={np.name} onChange={e=>setNp({...np,name:e.target.value})}
+              placeholder="Спліт 2026 · 12 тренувань…" style={{...inp,marginBottom:12}}/>
+            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:20}}>
+              <div>
+                <label style={lbl}>Тренувань</label>
+                <input type="number" value={np.sessions} onChange={e=>setNp({...np,sessions:e.target.value})}
+                  placeholder="12" style={inp}/>
+              </div>
+              <div>
+                <label style={lbl}>Ціна (₴)</label>
+                <input type="number" value={np.price} onChange={e=>setNp({...np,price:e.target.value})}
+                  placeholder="10800" style={inp}/>
+              </div>
+            </div>
+            <button onClick={savePlan}
+              style={{width:'100%',padding:12,borderRadius:12,border:'none',background:'#C4ED00',color:'#111',fontSize:14,fontWeight:700,cursor:'pointer'}}>
+              {editPlan?'Зберегти зміни':'Додати план'}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
@@ -1382,20 +1487,23 @@ export default function App() {
   const [sessions, setSessions] = useState([])
   const [finance, setFinance] = useState([])
   const [records, setRecords] = useState([])
+  const [pricePlans, setPricePlans] = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const load = async () => {
-      const [c,s,f,r] = await Promise.all([
+      const [c,s,f,r,pp] = await Promise.all([
         supabase.from('clients').select('*').order('created_at'),
         supabase.from('sessions').select('*').order('created_at'),
         supabase.from('finance').select('*').order('created_at'),
         supabase.from('records').select('*').order('created_at'),
+        supabase.from('price_plans').select('*').order('name'),
       ])
       if (c.data) setClients(c.data.sort((a,b) => a.name.localeCompare(b.name, 'uk')))
       if (s.data) setSessions(s.data)
       if (f.data) setFinance(f.data)
       if (r.data) setRecords(r.data)
+      if (pp.data) setPricePlans(pp.data)
       setLoading(false)
     }
     load()
@@ -1440,8 +1548,8 @@ export default function App() {
       <div style={{flex:1,display:'flex',flexDirection:'column',overflow:'hidden'}}>
         <div style={{flex:1,overflowY:'auto',padding:24}}>
           {tab==='schedule'&&<ScheduleTab clients={clients} sessions={sessions} setSessions={setSessions}/>}
-          {tab==='clients'&&<ClientsTab clients={clients} setClients={setClients} sessions={sessions} setSessions={setSessions} records={records} setRecords={setRecords}/>}
-          {tab==='stats'&&<StatsTab sessions={sessions} clients={clients} finance={finance}/>}
+          {tab==='clients'&&<ClientsTab clients={clients} setClients={setClients} sessions={sessions} setSessions={setSessions} records={records} setRecords={setRecords} pricePlans={pricePlans}/>}
+          {tab==='stats'&&<StatsTab sessions={sessions} clients={clients} finance={finance} pricePlans={pricePlans} setPricePlans={setPricePlans}/>}
         </div>
         <div className="mobile-tabs" style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',background:'#162032',borderTop:'1px solid #2a4a7f',flexShrink:0}}>
           {TABS.map(([id,icon,label])=>(
