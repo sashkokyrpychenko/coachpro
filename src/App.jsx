@@ -808,7 +808,7 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
       clip_total:Number(nc.clip), clip_used:0,
       schedule_days:[], schedule_times:{}
     }).select().single()
-    if (!error) setClients([...clients,data])
+    if (!error) setClients(prev => [...prev, data].sort((a,b) => a.name.localeCompare(b.name, 'uk')))
     setSaving(false); setShowAdd(false)
     setNc({name:'',last:'',goal:'',w:'',h:'',clip:10})
   }
@@ -1129,7 +1129,7 @@ export default function App() {
         supabase.from('finance').select('*').order('created_at'),
         supabase.from('records').select('*').order('created_at'),
       ])
-      if (c.data) setClients(c.data)
+      if (c.data) setClients(c.data.sort((a,b) => a.name.localeCompare(b.name, 'uk')))
       if (s.data) setSessions(s.data)
       if (f.data) setFinance(f.data)
       if (r.data) setRecords(r.data)
