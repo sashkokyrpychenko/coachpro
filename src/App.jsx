@@ -104,8 +104,14 @@ function SwipeSessionCard({ s, clients, onEdit, onToggle }) {
           <div style={{fontSize:14,fontWeight:600}}>{c?.name||'Гість'}</div>
           <div style={{fontSize:12,color:'#8891ad',marginTop:2}}>{s.type}</div>
         </div>
-        <div style={{textAlign:'right'}}>
-          <div style={{fontFamily:'Bebas Neue',fontSize:22,color:'#c8ff47'}}>{s.time}</div>
+        <div style={{textAlign:'right', display:'flex', flexDirection:'column', alignItems:'flex-end', gap:6}}>
+          <div style={{display:'flex', alignItems:'center', gap:6}}>
+            <div style={{fontFamily:'Bebas Neue',fontSize:22,color:'#c8ff47'}}>{s.time}</div>
+            <button
+              onClick={e => { e.stopPropagation(); onEdit(s) }}
+              style={{background:'none',border:'1px solid #3B82F650',borderRadius:8,color:'#3B82F6',fontSize:14,padding:'3px 7px',cursor:'pointer',lineHeight:1}}
+            >✏️</button>
+          </div>
           <span style={{fontSize:11,padding:'2px 10px',borderRadius:20,fontWeight:600,background:s.done?'rgba(61,232,122,.12)':'rgba(200,255,71,.12)',color:s.done?'#3de87a':'#c8ff47'}}>{s.done?'✓ Виконано':'Заплановано'}</span>
         </div>
       </div>
@@ -113,40 +119,63 @@ function SwipeSessionCard({ s, clients, onEdit, onToggle }) {
   )
 }
 
-// ─── Split card (same time, multiple clients) ─────────────────────────────────
+// ─── Split card (whole card swipes → pick modal) ──────────────────────────────
 function SplitCard({ sessions, clients, onEdit, onToggle }) {
+  const [offset, setOffset] = useState(0)
+  const startX = useRef(null)
+  const dragging = useRef(false)
+
+  const onStart = x => { startX.current = x; dragging.current = false }
+  const onMove  = x => {
+    if (startX.current === null) return
+    const dx = x - startX.current
+    if (Math.abs(dx) > 5) dragging.current = true
+    if (dx < 0) setOffset(Math.max(dx, -80)); else setOffset(0)
+  }
+  const onEnd = () => {
+    if (offset < -35) { setOffset(-72); setTimeout(() => { setOffset(0); onEdit(sessions) }, 200) }
+    else setOffset(0)
+    startX.current = null
+  }
+
   return (
-    <div style={{background:'#1e2330', borderRadius:12, marginBottom:8, border:'1px solid #2a3045', overflow:'hidden'}}>
-      <div style={{background:'#252c3d', padding:'6px 14px', display:'flex', alignItems:'center', gap:8, borderBottom:'1px solid #2a3045'}}>
-        <span style={{color:'#c8ff47', fontFamily:'Bebas Neue', fontSize:16}}>{sessions[0].time}</span>
-        <span style={{background:'rgba(200,255,71,.15)', color:'#c8ff47', fontSize:10, fontWeight:700, borderRadius:6, padding:'2px 8px', letterSpacing:.5}}>СПЛІТ</span>
+    <div style={{position:'relative', overflow:'hidden', borderRadius:12, marginBottom:8}}>
+      {/* bg */}
+      <div style={{position:'absolute',right:0,top:0,bottom:0,width:80,background:'#3B82F6',display:'flex',alignItems:'center',justifyContent:'center',flexDirection:'column',gap:2,borderRadius:12}}>
+        <span style={{fontSize:18}}>✏️</span>
+        <span style={{color:'#fff',fontSize:10,fontWeight:600}}>Редагувати</span>
       </div>
-      {sessions.map((s, i) => {
-        const c = clients.find(x => x.id === s.client_id)
-        return (
-          <div
-            key={s.id}
-            style={{display:'flex', alignItems:'center', gap:12, padding:'11px 14px', borderBottom: i < sessions.length-1 ? '1px solid #2a3045' : 'none', cursor:'pointer'}}
-          >
-            <div style={{width:36,height:36,borderRadius:'50%',background:c?.color||'#888',display:'flex',alignItems:'center',justifyContent:'center',fontFamily:'Bebas Neue',fontSize:14,color:'#111',flexShrink:0}}>{c?.ava||'?'}</div>
-            <div style={{flex:1}}>
-              <div style={{fontSize:13,fontWeight:600}}>{c?.name||'Гість'}</div>
-              <div style={{fontSize:11,color:'#8891ad',marginTop:1}}>{s.type}</div>
-            </div>
-            <div style={{display:'flex', alignItems:'center', gap:8}}>
+      {/* card */}
+      <div
+        onTouchStart={e => onStart(e.touches[0].clientX)}
+        onTouchMove={e  => onMove(e.touches[0].clientX)}
+        onTouchEnd={onEnd}
+        onMouseDown={e  => onStart(e.clientX)}
+        onMouseMove={e  => { if (startX.current !== null) onMove(e.clientX) }}
+        onMouseUp={onEnd} onMouseLeave={onEnd}
+        style={{transform:`translateX(${offset}px)`, transition: offset===0 ? 'transform 0.25s ease' : 'none', background:'#1e2330', borderRadius:12, border:'1px solid #2a3045', overflow:'hidden', position:'relative', zIndex:1, userSelect:'none'}}
+      >
+        <div style={{background:'#252c3d', padding:'6px 14px', display:'flex', alignItems:'center', gap:8, borderBottom:'1px solid #2a3045'}}>
+          <span style={{color:'#c8ff47', fontFamily:'Bebas Neue', fontSize:16}}>{sessions[0].time}</span>
+          <span style={{background:'rgba(200,255,71,.15)', color:'#c8ff47', fontSize:10, fontWeight:700, borderRadius:6, padding:'2px 8px', letterSpacing:.5}}>СПЛІТ</span>
+        </div>
+        {sessions.map((s, i) => {
+          const c = clients.find(x => x.id === s.client_id)
+          return (
+            <div key={s.id}
+              onClick={() => { if (!dragging.current) onToggle(s.id, s.done) }}
+              style={{display:'flex', alignItems:'center', gap:12, padding:'11px 14px', borderBottom: i < sessions.length-1 ? '1px solid #2a3045' : 'none', cursor:'pointer'}}
+            >
+              <div style={{width:36,height:36,borderRadius:'50%',background:c?.color||'#888',display:'flex',alignItems:'center',justifyContent:'center',fontFamily:'Bebas Neue',fontSize:14,color:'#111',flexShrink:0}}>{c?.ava||'?'}</div>
+              <div style={{flex:1}}>
+                <div style={{fontSize:13,fontWeight:600}}>{c?.name||'Гість'}</div>
+                <div style={{fontSize:11,color:'#8891ad',marginTop:1}}>{s.type}</div>
+              </div>
               <span style={{fontSize:11,padding:'2px 8px',borderRadius:20,fontWeight:600,background:s.done?'rgba(61,232,122,.12)':'rgba(200,255,71,.12)',color:s.done?'#3de87a':'#c8ff47'}}>{s.done?'✓ Виконано':'Заплановано'}</span>
-              <button
-                onClick={() => onToggle(s.id, s.done)}
-                style={{background:'none',border:'1px solid #2a3045',borderRadius:8,color:'#8891ad',fontSize:11,padding:'4px 8px',cursor:'pointer'}}
-              >{s.done?'↩':'✓'}</button>
-              <button
-                onClick={() => onEdit(s)}
-                style={{background:'none',border:'1px solid #3B82F6',borderRadius:8,color:'#3B82F6',fontSize:11,padding:'4px 8px',cursor:'pointer'}}
-              >✏️</button>
             </div>
-          </div>
-        )
-      })}
+          )
+        })}
+      </div>
     </div>
   )
 }
@@ -203,8 +232,10 @@ function DayTimeline({ sessions, clients }) {
                         position:'relative', zIndex:1,
                       }}>
                         <div style={{width:7,height:7,borderRadius:'50%',background:c?.color||'#888',flexShrink:0}}/>
-                        <span style={{fontSize:11,fontWeight:600,color:'#eef0f7',overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis',flex:1}}>{c?.ava}</span>
-                        {s.done && <span style={{color:'#3de87a',fontSize:10}}>✓</span>}
+                        <span style={{fontSize:11,fontWeight:600,color:'#eef0f7',overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis',flex:1}}>
+                          {atHour.length > 1 ? c?.ava : c?.name}
+                        </span>
+                        {s.done && <span style={{color:'#3de87a',fontSize:10,flexShrink:0}}>✓</span>}
                       </div>
                     )
                   })
@@ -213,6 +244,33 @@ function DayTimeline({ sessions, clients }) {
             )
           })}
         </div>
+      </div>
+    </div>
+  )
+}
+
+// ─── Pick client modal (for split swipe) ─────────────────────────────────────
+function PickClientModal({ sessions, clients, onPick, onClose }) {
+  return (
+    <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.75)',display:'flex',alignItems:'flex-end',justifyContent:'center',zIndex:300}} onClick={onClose}>
+      <div style={{background:'#181c24',border:'1px solid #2a3045',borderRadius:'20px 20px 0 0',width:'100%',maxWidth:480,padding:'20px 20px 36px'}} onClick={e=>e.stopPropagation()}>
+        <div style={{width:40,height:4,background:'#2a3045',borderRadius:2,margin:'0 auto 18px'}}/>
+        <div style={{fontFamily:'Bebas Neue',fontSize:22,marginBottom:16}}>Кого редагувати?</div>
+        {sessions.map(s => {
+          const c = clients.find(x => x.id === s.client_id)
+          return (
+            <div key={s.id} onClick={() => onPick(s)}
+              style={{display:'flex',alignItems:'center',gap:12,padding:'13px 14px',background:'#1e2330',borderRadius:12,marginBottom:8,cursor:'pointer',border:'1px solid #2a3045'}}>
+              <div style={{width:40,height:40,borderRadius:'50%',background:c?.color||'#888',display:'flex',alignItems:'center',justifyContent:'center',fontFamily:'Bebas Neue',fontSize:15,color:'#111'}}>{c?.ava||'?'}</div>
+              <div style={{flex:1}}>
+                <div style={{fontSize:14,fontWeight:600}}>{c?.name||'Гість'}</div>
+                <div style={{fontSize:12,color:'#8891ad'}}>{s.time} · {s.type}</div>
+              </div>
+              <span style={{color:'#3B82F6',fontSize:20}}>›</span>
+            </div>
+          )
+        })}
+        <button onClick={onClose} style={{width:'100%',marginTop:4,padding:11,borderRadius:12,border:'1px solid #2a3045',background:'transparent',color:'#8891ad',fontFamily:'DM Sans',fontSize:13,cursor:'pointer'}}>Скасувати</button>
       </div>
     </div>
   )
@@ -308,6 +366,12 @@ function ScheduleTab({ clients, sessions, setSessions }) {
   const [fClient2, setFClient2] = useState('')
   const [splitMode, setSplitMode] = useState(false)
   const [editSession, setEditSession] = useState(null)
+  const [pickList, setPickList] = useState(null)
+
+  const handleEdit = (group) => {
+    if (Array.isArray(group) && group.length > 1) setPickList(group)
+    else setEditSession(Array.isArray(group) ? group[0] : group)
+  }
 
   const weekDates = getWeekDates(refDate)
   const monthDates = getMonthDates(refDate.getFullYear(), refDate.getMonth())
@@ -420,8 +484,8 @@ function ScheduleTab({ clients, sessions, setSessions }) {
 
           {groupedSessions().map(([time, group]) =>
             group.length > 1
-              ? <SplitCard key={time} sessions={group} clients={clients} onEdit={setEditSession} onToggle={toggleDone}/>
-              : <SwipeSessionCard key={group[0].id} s={group[0]} clients={clients} onEdit={setEditSession} onToggle={toggleDone}/>
+              ? <SplitCard key={time} sessions={group} clients={clients} onEdit={handleEdit} onToggle={toggleDone}/>
+              : <SwipeSessionCard key={group[0].id} s={group[0]} clients={clients} onEdit={s => handleEdit([s])} onToggle={toggleDone}/>
           )}
 
           <div onClick={()=>{setFClient(clients[0]?.id||'');setShowModal(true)}} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 14px',borderRadius:12,border:'1px dashed #2a3045',cursor:'pointer',color:'#5a6482',fontSize:13,marginTop:4}}>＋ Додати сесію</div>
@@ -459,8 +523,8 @@ function ScheduleTab({ clients, sessions, setSessions }) {
 
             {groupedSessions().map(([time, group]) =>
               group.length > 1
-                ? <SplitCard key={time} sessions={group} clients={clients} onEdit={setEditSession} onToggle={toggleDone}/>
-                : <SwipeSessionCard key={group[0].id} s={group[0]} clients={clients} onEdit={setEditSession} onToggle={toggleDone}/>
+                ? <SplitCard key={time} sessions={group} clients={clients} onEdit={handleEdit} onToggle={toggleDone}/>
+                : <SwipeSessionCard key={group[0].id} s={group[0]} clients={clients} onEdit={s => handleEdit([s])} onToggle={toggleDone}/>
             )}
 
             <div onClick={()=>{setFClient(clients[0]?.id||'');setShowModal(true)}} style={{display:'flex',alignItems:'center',gap:10,padding:'8px 12px',borderRadius:10,border:'1px dashed #2a3045',cursor:'pointer',color:'#5a6482',fontSize:12,marginTop:4}}>＋ Додати сесію</div>
@@ -509,6 +573,15 @@ function ScheduleTab({ clients, sessions, setSessions }) {
             </div>
           </div>
         </div>
+      )}
+
+      {pickList && (
+        <PickClientModal
+          sessions={pickList}
+          clients={clients}
+          onPick={s => { setPickList(null); setEditSession(s) }}
+          onClose={() => setPickList(null)}
+        />
       )}
 
       {/* Edit modal */}
