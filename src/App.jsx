@@ -1035,11 +1035,17 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
 function StatsTab({ sessions, clients, finance }) {
   const today = todayStr()
   const now = new Date()
-  const weekStart = new Date(now); weekStart.setDate(now.getDate() - getMondayFirst(now))
-  const monthStart = new Date(now.getFullYear(),now.getMonth(),1)
-  const todayCount = sessions.filter(s=>s.date===today).length
-  const weekCount = sessions.filter(s=>new Date(s.date+'T12:00:00')>=weekStart).length
-  const monthCount = sessions.filter(s=>new Date(s.date+'T12:00:00')>=monthStart).length
+
+  // Use string comparison — safe, no UTC issues
+  const weekStartDate = new Date(now)
+  weekStartDate.setDate(now.getDate() - getMondayFirst(now))
+  const weekStartStr = dateToStr(weekStartDate)
+
+  const monthStartStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-01`
+
+  const todayCount = sessions.filter(s => s.date === today).length
+  const weekCount  = sessions.filter(s => s.date >= weekStartStr && s.date <= today).length
+  const monthCount = sessions.filter(s => s.date >= monthStartStr && s.date <= today).length
   const days = Array.from({length:7},(_,i)=>{
     const d = new Date(now); d.setDate(now.getDate()-6+i)
     return {ds:dateToStr(d),lbl:d.getDate(),day:DAYS_SHORT[getMondayFirst(d)]}
