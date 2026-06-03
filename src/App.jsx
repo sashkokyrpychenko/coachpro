@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { supabase } from './supabase'
 import './App.css'
 
@@ -12,12 +12,10 @@ function todayStr() {
   const d = new Date()
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
 }
-
 function getMondayFirst(date) {
   const d = date.getDay()
   return d === 0 ? 6 : d - 1
 }
-
 function getWeekDates(refDate) {
   const monday = new Date(refDate)
   monday.setDate(refDate.getDate() - getMondayFirst(refDate))
@@ -27,7 +25,6 @@ function getWeekDates(refDate) {
     return d
   })
 }
-
 function getMonthDates(year, month) {
   const first = new Date(year, month, 1)
   const last = new Date(year, month+1, 0)
@@ -46,11 +43,258 @@ function getMonthDates(year, month) {
   }
   return days
 }
-
 function dateToStr(date) {
   return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`
 }
 
+// ─── Swipeable single session card ───────────────────────────────────────────
+function SwipeSessionCard({ s, clients, onEdit, onToggle }) {
+  const c = clients.find(x => x.id === s.client_id)
+  const [offset, setOffset] = useState(0)
+  const startX = useRef(null)
+  const isDragging = useRef(false)
+
+  const onStart = (clientX) => { startX.current = clientX; isDragging.current = false }
+  const onMove = (clientX) => {
+    if (startX.current === null) return
+    const dx = clientX - startX.current
+    if (Math.abs(dx) > 5) isDragging.current = true
+    if (dx < 0) setOffset(Math.max(dx, -80))
+    else setOffset(0)
+  }
+  const onEnd = () => {
+    if (offset < -35) {
+      setOffset(-72)
+      setTimeout(() => { setOffset(0); onEdit(s) }, 200)
+    } else {
+      setOffset(0)
+    }
+    startX.current = null
+  }
+
+  return (
+    <div style={{position:'relative', overflow:'hidden', borderRadius:12, marginBottom:8}}>
+      {/* Behind: edit hint */}
+      <div style={{position:'absolute',right:0,top:0,bottom:0,width:80,background:'#3B82F6',display:'flex',alignItems:'center',justifyContent:'center',flexDirection:'column',gap:2,borderRadius:12}}>
+        <span style={{fontSize:18}}>✏️</span>
+        <span style={{color:'#fff',fontSize:10,fontWeight:600}}>Редагувати</span>
+      </div>
+      {/* Card */}
+      <div
+        onTouchStart={e => onStart(e.touches[0].clientX)}
+        onTouchMove={e => onMove(e.touches[0].clientX)}
+        onTouchEnd={onEnd}
+        onMouseDown={e => onStart(e.clientX)}
+        onMouseMove={e => { if (startX.current !== null) onMove(e.clientX) }}
+        onMouseUp={onEnd}
+        onMouseLeave={onEnd}
+        onClick={() => { if (!isDragging.current) onToggle(s.id, s.done) }}
+        style={{
+          transform:`translateX(${offset}px)`,
+          transition: offset === 0 ? 'transform 0.25s ease' : 'none',
+          display:'flex', alignItems:'center', gap:12,
+          padding:'12px 14px', borderRadius:12,
+          background:'#1e2330',
+          border:`1px solid ${s.done?'#3de87a33':'#2a3045'}`,
+          cursor:'pointer', userSelect:'none', position:'relative', zIndex:1,
+        }}
+      >
+        <div style={{width:40,height:40,borderRadius:'50%',background:c?.color||'#888',display:'flex',alignItems:'center',justifyContent:'center',fontFamily:'Bebas Neue',fontSize:15,color:'#111',flexShrink:0}}>{c?.ava||'?'}</div>
+        <div style={{flex:1}}>
+          <div style={{fontSize:14,fontWeight:600}}>{c?.name||'Гість'}</div>
+          <div style={{fontSize:12,color:'#8891ad',marginTop:2}}>{s.type}</div>
+        </div>
+        <div style={{textAlign:'right'}}>
+          <div style={{fontFamily:'Bebas Neue',fontSize:22,color:'#c8ff47'}}>{s.time}</div>
+          <span style={{fontSize:11,padding:'2px 10px',borderRadius:20,fontWeight:600,background:s.done?'rgba(61,232,122,.12)':'rgba(200,255,71,.12)',color:s.done?'#3de87a':'#c8ff47'}}>{s.done?'✓ Виконано':'Заплановано'}</span>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ─── Split card (same time, multiple clients) ─────────────────────────────────
+function SplitCard({ sessions, clients, onEdit, onToggle }) {
+  return (
+    <div style={{background:'#1e2330', borderRadius:12, marginBottom:8, border:'1px solid #2a3045', overflow:'hidden'}}>
+      <div style={{background:'#252c3d', padding:'6px 14px', display:'flex', alignItems:'center', gap:8, borderBottom:'1px solid #2a3045'}}>
+        <span style={{color:'#c8ff47', fontFamily:'Bebas Neue', fontSize:16}}>{sessions[0].time}</span>
+        <span style={{background:'rgba(200,255,71,.15)', color:'#c8ff47', fontSize:10, fontWeight:700, borderRadius:6, padding:'2px 8px', letterSpacing:.5}}>СПЛІТ</span>
+      </div>
+      {sessions.map((s, i) => {
+        const c = clients.find(x => x.id === s.client_id)
+        return (
+          <div
+            key={s.id}
+            style={{display:'flex', alignItems:'center', gap:12, padding:'11px 14px', borderBottom: i < sessions.length-1 ? '1px solid #2a3045' : 'none', cursor:'pointer'}}
+          >
+            <div style={{width:36,height:36,borderRadius:'50%',background:c?.color||'#888',display:'flex',alignItems:'center',justifyContent:'center',fontFamily:'Bebas Neue',fontSize:14,color:'#111',flexShrink:0}}>{c?.ava||'?'}</div>
+            <div style={{flex:1}}>
+              <div style={{fontSize:13,fontWeight:600}}>{c?.name||'Гість'}</div>
+              <div style={{fontSize:11,color:'#8891ad',marginTop:1}}>{s.type}</div>
+            </div>
+            <div style={{display:'flex', alignItems:'center', gap:8}}>
+              <span style={{fontSize:11,padding:'2px 8px',borderRadius:20,fontWeight:600,background:s.done?'rgba(61,232,122,.12)':'rgba(200,255,71,.12)',color:s.done?'#3de87a':'#c8ff47'}}>{s.done?'✓ Виконано':'Заплановано'}</span>
+              <button
+                onClick={() => onToggle(s.id, s.done)}
+                style={{background:'none',border:'1px solid #2a3045',borderRadius:8,color:'#8891ad',fontSize:11,padding:'4px 8px',cursor:'pointer'}}
+              >{s.done?'↩':'✓'}</button>
+              <button
+                onClick={() => onEdit(s)}
+                style={{background:'none',border:'1px solid #3B82F6',borderRadius:8,color:'#3B82F6',fontSize:11,padding:'4px 8px',cursor:'pointer'}}
+              >✏️</button>
+            </div>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+// ─── Day Timeline ─────────────────────────────────────────────────────────────
+function DayTimeline({ sessions, clients }) {
+  const HOURS = Array.from({length:17}, (_,i) => i + 6) // 06–22
+  const now = new Date()
+  const currentHour = now.getHours()
+
+  return (
+    <div style={{background:'#181c24', border:'1px solid #2a3045', borderRadius:14, padding:16, marginTop:12}}>
+      <div style={{fontSize:11,color:'#8891ad',fontWeight:600,textTransform:'uppercase',letterSpacing:.5,marginBottom:12}}>Денний графік</div>
+      <div style={{display:'flex', gap:8}}>
+        {/* Hours axis */}
+        <div style={{display:'flex', flexDirection:'column'}}>
+          {HOURS.map(h => (
+            <div key={h} style={{height:34, display:'flex', alignItems:'center', color: h === currentHour ? '#c8ff47' : '#5a6482', fontSize:10, width:34, fontFamily:'monospace', flexShrink:0}}>
+              {String(h).padStart(2,'0')}:00
+            </div>
+          ))}
+        </div>
+        {/* Slots */}
+        <div style={{flex:1}}>
+          {HOURS.map(h => {
+            const atHour = sessions.filter(s => parseInt(s.time.split(':')[0]) === h)
+            const isNow = h === currentHour
+
+            return (
+              <div key={h} style={{height:34, display:'flex', alignItems:'center', gap:4, position:'relative'}}>
+                {/* Grid line */}
+                <div style={{position:'absolute', left:0, right:0, top:'50%', height:1, background: isNow ? 'rgba(200,255,71,.3)' : '#2a3045'}}/>
+
+                {atHour.length === 0 ? (
+                  <div style={{
+                    flex:1, height:26, borderRadius:7,
+                    background: isNow ? 'rgba(200,255,71,.05)' : 'transparent',
+                    border: isNow ? '1px dashed rgba(200,255,71,.3)' : '1px dashed transparent',
+                    position:'relative', zIndex:1,
+                    display:'flex', alignItems:'center', paddingLeft:8,
+                  }}>
+                    {isNow && <span style={{color:'rgba(200,255,71,.5)',fontSize:9}}>← зараз</span>}
+                  </div>
+                ) : (
+                  atHour.map((s, idx) => {
+                    const c = clients.find(x => x.id === s.client_id)
+                    const w = atHour.length > 1 ? 'calc(50% - 3px)' : '100%'
+                    return (
+                      <div key={s.id} style={{
+                        width:w, height:28, borderRadius:8, flexShrink:0,
+                        background: (c?.color||'#888')+'20',
+                        border:`1.5px solid ${(c?.color||'#888')}50`,
+                        display:'flex', alignItems:'center', padding:'0 8px', gap:5,
+                        position:'relative', zIndex:1,
+                      }}>
+                        <div style={{width:7,height:7,borderRadius:'50%',background:c?.color||'#888',flexShrink:0}}/>
+                        <span style={{fontSize:11,fontWeight:600,color:'#eef0f7',overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis',flex:1}}>{c?.ava}</span>
+                        {s.done && <span style={{color:'#3de87a',fontSize:10}}>✓</span>}
+                      </div>
+                    )
+                  })
+                )}
+              </div>
+            )
+          })}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ─── Edit/Delete Modal ────────────────────────────────────────────────────────
+function EditSessionModal({ session, clients, onClose, onSave, onDelete }) {
+  const [clientId, setClientId] = useState(session.client_id)
+  const [time, setTime] = useState(session.time)
+  const [type, setType] = useState(session.type)
+  const [confirmDelete, setConfirmDelete] = useState(false)
+
+  const inp = {width:'100%',background:'#1e2330',border:'1px solid #2a3045',borderRadius:10,padding:'10px 14px',color:'#eef0f7',fontFamily:'DM Sans',fontSize:14,outline:'none',boxSizing:'border-box'}
+  const lbl = {fontSize:11,color:'#8891ad',textTransform:'uppercase',letterSpacing:.5,display:'block',marginBottom:6}
+
+  return (
+    <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.75)',display:'flex',alignItems:'flex-end',justifyContent:'center',zIndex:300,padding:'0'}} onClick={onClose}>
+      <div style={{background:'#181c24',border:'1px solid #2a3045',borderRadius:'20px 20px 0 0',width:'100%',maxWidth:480,padding:'20px 20px 36px'}} onClick={e=>e.stopPropagation()}>
+        {/* Handle */}
+        <div style={{width:40,height:4,background:'#2a3045',borderRadius:2,margin:'0 auto 18px'}}/>
+
+        <div style={{fontFamily:'Bebas Neue',fontSize:22,marginBottom:18}}>Редагувати сесію</div>
+
+        {/* Client */}
+        <label style={lbl}>Клієнт</label>
+        <div style={{display:'flex',gap:6,marginBottom:14,overflowX:'auto',paddingBottom:4}}>
+          {clients.map(c => (
+            <div
+              key={c.id}
+              onClick={() => setClientId(c.id)}
+              style={{
+                flexShrink:0, padding:'8px 12px', borderRadius:10,
+                border:`2px solid ${clientId===c.id ? c.color : '#2a3045'}`,
+                background: clientId===c.id ? c.color+'18' : '#1e2330',
+                display:'flex', alignItems:'center', gap:7, cursor:'pointer',
+              }}
+            >
+              <div style={{width:28,height:28,borderRadius:'50%',background:c.color,display:'flex',alignItems:'center',justifyContent:'center',fontFamily:'Bebas Neue',fontSize:12,color:'#111'}}>{c.ava}</div>
+              <span style={{fontSize:12,fontWeight:600,color:clientId===c.id?'#eef0f7':'#8891ad',whiteSpace:'nowrap'}}>{c.name.split(' ')[0]}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Time + Type */}
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:16}}>
+          <div>
+            <label style={lbl}>Час</label>
+            <input type="time" value={time} onChange={e=>setTime(e.target.value)} style={inp}/>
+          </div>
+          <div>
+            <label style={lbl}>Тип</label>
+            <input value={type} onChange={e=>setType(e.target.value)} placeholder="Тренування…" style={inp}/>
+          </div>
+        </div>
+
+        {/* Save */}
+        <button
+          onClick={() => onSave({...session, client_id:clientId, time, type})}
+          style={{width:'100%',padding:12,borderRadius:12,border:'none',background:'#c8ff47',color:'#111',fontFamily:'DM Sans',fontSize:14,fontWeight:700,cursor:'pointer',marginBottom:8}}
+        >Зберегти зміни</button>
+
+        {/* Delete */}
+        {!confirmDelete ? (
+          <button
+            onClick={() => setConfirmDelete(true)}
+            style={{width:'100%',padding:11,borderRadius:12,border:'1px solid rgba(255,79,79,.3)',background:'transparent',color:'#ff4f4f',fontFamily:'DM Sans',fontSize:13,fontWeight:600,cursor:'pointer'}}
+          >🗑 Видалити сесію</button>
+        ) : (
+          <div style={{background:'rgba(255,79,79,.08)',border:'1px solid rgba(255,79,79,.25)',borderRadius:12,padding:14}}>
+            <div style={{color:'#eef0f7',fontSize:13,textAlign:'center',marginBottom:12}}>Видалити цю сесію?</div>
+            <div style={{display:'flex',gap:8}}>
+              <button onClick={() => setConfirmDelete(false)} style={{flex:1,padding:'9px',borderRadius:10,border:'1px solid #2a3045',background:'#1e2330',color:'#eef0f7',fontFamily:'DM Sans',fontSize:13,cursor:'pointer'}}>Скасувати</button>
+              <button onClick={() => onDelete(session.id)} style={{flex:1,padding:'9px',borderRadius:10,border:'none',background:'#ff4f4f',color:'#fff',fontFamily:'DM Sans',fontSize:13,fontWeight:700,cursor:'pointer'}}>Видалити</button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+// ─── Schedule Tab ─────────────────────────────────────────────────────────────
 function ScheduleTab({ clients, sessions, setSessions }) {
   const today = new Date()
   const todayDs = todayStr()
@@ -63,11 +307,22 @@ function ScheduleTab({ clients, sessions, setSessions }) {
   const [fType, setFType] = useState('')
   const [fClient2, setFClient2] = useState('')
   const [splitMode, setSplitMode] = useState(false)
+  const [editSession, setEditSession] = useState(null)
 
   const weekDates = getWeekDates(refDate)
   const monthDates = getMonthDates(refDate.getFullYear(), refDate.getMonth())
   const selDate = new Date(selDs + 'T12:00:00')
   const daySessions = sessions.filter(s=>s.date===selDs).sort((a,b)=>a.time.localeCompare(b.time))
+
+  // Group by time for splits
+  const groupedSessions = () => {
+    const map = {}
+    daySessions.forEach(s => {
+      if (!map[s.time]) map[s.time] = []
+      map[s.time].push(s)
+    })
+    return Object.entries(map).sort((a,b) => a[0].localeCompare(b[0]))
+  }
 
   const toggleDone = async (id, done) => {
     await supabase.from('sessions').update({done:!done}).eq('id',id)
@@ -85,43 +340,41 @@ function ScheduleTab({ clients, sessions, setSessions }) {
     setShowModal(false); setFType(''); setSplitMode(false); setFClient2('')
   }
 
+  const saveEdit = async (updated) => {
+    const {error} = await supabase.from('sessions').update({
+      client_id: updated.client_id,
+      time: updated.time,
+      type: updated.type,
+    }).eq('id', updated.id)
+    if (!error) setSessions(sessions.map(s => s.id===updated.id ? {...s, ...updated} : s))
+    setEditSession(null)
+  }
+
+  const deleteSession = async (id) => {
+    await supabase.from('sessions').delete().eq('id', id)
+    setSessions(sessions.filter(s => s.id !== id))
+    setEditSession(null)
+  }
+
   const prevPeriod = () => {
     const d = new Date(refDate)
     if (viewMode==='week') d.setDate(d.getDate()-7)
     else d.setMonth(d.getMonth()-1)
     setRefDate(d)
   }
-
   const nextPeriod = () => {
     const d = new Date(refDate)
     if (viewMode==='week') d.setDate(d.getDate()+7)
     else d.setMonth(d.getMonth()+1)
     setRefDate(d)
   }
-
   const goToday = () => { setRefDate(new Date(today)); setSelDs(todayDs) }
 
   const card = {background:'#181c24',border:'1px solid #2a3045',borderRadius:14,padding:16,marginBottom:14}
 
-  const SessionCard = ({s}) => {
-    const c = clients.find(x=>x.id===s.client_id)
-    return (
-      <div onClick={()=>toggleDone(s.id,s.done)} style={{display:'flex',alignItems:'center',gap:12,padding:'12px 14px',borderRadius:12,background:'#1e2330',border:`1px solid ${s.done?'#3de87a33':'#2a3045'}`,marginBottom:8,cursor:'pointer',transition:'all .18s'}}>
-        <div style={{width:40,height:40,borderRadius:'50%',background:c?.color||'#888',display:'flex',alignItems:'center',justifyContent:'center',fontFamily:'Bebas Neue',fontSize:15,color:'#111',flexShrink:0}}>{c?.ava||'?'}</div>
-        <div style={{flex:1}}>
-          <div style={{fontSize:14,fontWeight:600}}>{c?.name||'Гість'}</div>
-          <div style={{fontSize:12,color:'#8891ad',marginTop:2}}>{s.type}</div>
-        </div>
-        <div style={{textAlign:'right'}}>
-          <div style={{fontFamily:'Bebas Neue',fontSize:22,color:'#c8ff47'}}>{s.time}</div>
-          <span style={{fontSize:11,padding:'2px 10px',borderRadius:20,fontWeight:600,background:s.done?'rgba(61,232,122,.12)':'rgba(200,255,71,.12)',color:s.done?'#3de87a':'#c8ff47'}}>{s.done?'✓ Виконано':'Заплановано'}</span>
-        </div>
-      </div>
-    )
-  }
-
   return (
     <div>
+      {/* Header */}
       <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:12}}>
         <button onClick={prevPeriod} style={{padding:'7px 12px',borderRadius:8,border:'1px solid #2a3045',background:'#1e2330',color:'#eef0f7',cursor:'pointer',fontSize:14}}>‹</button>
         <button onClick={nextPeriod} style={{padding:'7px 12px',borderRadius:8,border:'1px solid #2a3045',background:'#1e2330',color:'#eef0f7',cursor:'pointer',fontSize:14}}>›</button>
@@ -139,6 +392,7 @@ function ScheduleTab({ clients, sessions, setSessions }) {
 
       {viewMode==='week' && (
         <div style={card}>
+          {/* Week days */}
           <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:4,marginBottom:12}}>
             {weekDates.map((d,i)=>{
               const ds = dateToStr(d)
@@ -154,13 +408,26 @@ function ScheduleTab({ clients, sessions, setSessions }) {
               )
             })}
           </div>
+
+          {/* Day label */}
           <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12}}>
             <span style={{fontFamily:'Bebas Neue',fontSize:16,color:'#8891ad'}}>{DAYS_FULL[selDate.getDay()]}, {selDate.getDate()} {MONTHS_UK2[selDate.getMonth()]}</span>
             <small style={{color:'#5a6482',fontSize:12}}>{daySessions.length} сесій</small>
           </div>
+
+          {/* Sessions */}
           {daySessions.length===0 && <div style={{color:'#5a6482',textAlign:'center',padding:'16px 0',fontSize:14}}>Немає сесій</div>}
-          {daySessions.map(s=><SessionCard key={s.id} s={s}/>)}
+
+          {groupedSessions().map(([time, group]) =>
+            group.length > 1
+              ? <SplitCard key={time} sessions={group} clients={clients} onEdit={setEditSession} onToggle={toggleDone}/>
+              : <SwipeSessionCard key={group[0].id} s={group[0]} clients={clients} onEdit={setEditSession} onToggle={toggleDone}/>
+          )}
+
           <div onClick={()=>{setFClient(clients[0]?.id||'');setShowModal(true)}} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 14px',borderRadius:12,border:'1px dashed #2a3045',cursor:'pointer',color:'#5a6482',fontSize:13,marginTop:4}}>＋ Додати сесію</div>
+
+          {/* Timeline */}
+          <DayTimeline sessions={daySessions} clients={clients}/>
         </div>
       )}
 
@@ -189,12 +456,21 @@ function ScheduleTab({ clients, sessions, setSessions }) {
               <small style={{color:'#5a6482',fontSize:12}}>{daySessions.length} сесій</small>
             </div>
             {daySessions.length===0 && <div style={{color:'#5a6482',textAlign:'center',padding:'12px 0',fontSize:13}}>Немає сесій</div>}
-            {daySessions.map(s=><SessionCard key={s.id} s={s}/>)}
+
+            {groupedSessions().map(([time, group]) =>
+              group.length > 1
+                ? <SplitCard key={time} sessions={group} clients={clients} onEdit={setEditSession} onToggle={toggleDone}/>
+                : <SwipeSessionCard key={group[0].id} s={group[0]} clients={clients} onEdit={setEditSession} onToggle={toggleDone}/>
+            )}
+
             <div onClick={()=>{setFClient(clients[0]?.id||'');setShowModal(true)}} style={{display:'flex',alignItems:'center',gap:10,padding:'8px 12px',borderRadius:10,border:'1px dashed #2a3045',cursor:'pointer',color:'#5a6482',fontSize:12,marginTop:4}}>＋ Додати сесію</div>
+
+            <DayTimeline sessions={daySessions} clients={clients}/>
           </div>
         </div>
       )}
 
+      {/* Add session modal */}
       {showModal && (
         <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.7)',backdropFilter:'blur(4px)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:200,padding:20}}>
           <div style={{background:'#181c24',border:'1px solid #2a3045',borderRadius:20,width:'100%',maxWidth:480,padding:24}}>
@@ -234,10 +510,22 @@ function ScheduleTab({ clients, sessions, setSessions }) {
           </div>
         </div>
       )}
+
+      {/* Edit modal */}
+      {editSession && (
+        <EditSessionModal
+          session={editSession}
+          clients={clients}
+          onClose={() => setEditSession(null)}
+          onSave={saveEdit}
+          onDelete={deleteSession}
+        />
+      )}
     </div>
   )
 }
 
+// ─── Clients Tab (unchanged) ──────────────────────────────────────────────────
 function ClientsTab({ clients, setClients, sessions, setSessions, records, setRecords }) {
   const [search, setSearch] = useState('')
   const [openId, setOpenId] = useState(null)
@@ -247,9 +535,7 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
   const [nc, setNc] = useState({name:'',last:'',goal:'',w:'',h:'',clip:10})
   const [nr, setNr] = useState({exercise:'',value:'',unit:'кг'})
   const [saving, setSaving] = useState(false)
-
   const SCHEDULE_DAYS = ['ПН','ВТ','СР','ЧТ','ПТ','СБ','НД']
-
   const filtered = clients.filter(c=>c.name.toLowerCase().includes(search.toLowerCase()))
   const setTab = (id,t) => setTabMap(p=>({...p,[id]:t}))
   const getTab = (id) => tabMap[id]||'profile'
@@ -258,34 +544,27 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
     await supabase.from('clients').update({note}).eq('id',id)
     setClients(clients.map(c=>c.id===id?{...c,note}:c))
   }
-
   const updateStrengths = async (id, val) => {
     const arr = val.split('\n').map(s=>s.trim()).filter(Boolean)
     await supabase.from('clients').update({strengths:arr}).eq('id',id)
     setClients(clients.map(c=>c.id===id?{...c,strengths:arr}:c))
   }
-
   const updateWeaknesses = async (id, val) => {
     const arr = val.split('\n').map(s=>s.trim()).filter(Boolean)
     await supabase.from('clients').update({weaknesses:arr}).eq('id',id)
     setClients(clients.map(c=>c.id===id?{...c,weaknesses:arr}:c))
   }
-
   const toggleScheduleDay = async (client, dayIdx) => {
     const current = client.schedule_days || []
-    const updated = current.includes(dayIdx)
-      ? current.filter(d=>d!==dayIdx)
-      : [...current, dayIdx].sort()
+    const updated = current.includes(dayIdx) ? current.filter(d=>d!==dayIdx) : [...current, dayIdx].sort()
     await supabase.from('clients').update({schedule_days:updated}).eq('id',client.id)
     setClients(clients.map(c=>c.id===client.id?{...c,schedule_days:updated}:c))
   }
-
   const updateScheduleTime = async (client, dayIdx, time) => {
     const times = {...(client.schedule_times||{}), [dayIdx]: time}
     await supabase.from('clients').update({schedule_times:times}).eq('id',client.id)
     setClients(clients.map(c=>c.id===client.id?{...c,schedule_times:times}:c))
   }
-
   const fillRange = async (client) => {
     if (!client.schedule_days?.length) { alert('Оберіть дні тренувань'); return }
     const fromEl = document.getElementById(`fill-from-${client.id}`)
@@ -310,19 +589,16 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
     const {data,error} = await supabase.from('sessions').insert(inserts).select()
     if (!error&&data) { setSessions(prev=>[...prev,...data]); alert(`✅ Додано ${data.length} сесій!`) }
   }
-
   const useClip = async (id) => {
     const c = clients.find(x=>x.id===id)
     if (!c||c.clip_used>=c.clip_total) return
     await supabase.from('clients').update({clip_used:c.clip_used+1}).eq('id',id)
     setClients(clients.map(x=>x.id===id?{...x,clip_used:x.clip_used+1}:x))
   }
-
   const renewClip = async (id) => {
     await supabase.from('clients').update({clip_used:0}).eq('id',id)
     setClients(clients.map(x=>x.id===id?{...x,clip_used:0}:x))
   }
-
   const saveClient = async () => {
     if (!nc.name||saving) return
     setSaving(true)
@@ -340,7 +616,6 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
     setSaving(false); setShowAdd(false)
     setNc({name:'',last:'',goal:'',w:'',h:'',clip:10})
   }
-
   const saveRecord = async (clientId) => {
     if (!nr.exercise||!nr.value) return
     const now = new Date()
@@ -351,7 +626,6 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
     if (!error) setRecords([...records,data])
     setShowAddRecord(null); setNr({exercise:'',value:'',unit:'кг'})
   }
-
   const deleteRecord = async (id) => {
     await supabase.from('records').delete().eq('id',id)
     setRecords(records.filter(r=>r.id!==id))
@@ -367,7 +641,6 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
         <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="🔍  Пошук клієнта…" style={{...inp,flex:1}}/>
         <button onClick={()=>setShowAdd(true)} style={{padding:'10px 16px',borderRadius:10,border:'none',background:'#c8ff47',color:'#111',fontWeight:700,fontSize:14,cursor:'pointer'}}>＋</button>
       </div>
-
       <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(340px,1fr))',gap:12}}>
         {filtered.length===0 && <div style={{color:'#5a6482',textAlign:'center',padding:'40px 0',gridColumn:'1/-1'}}>Клієнтів ще немає</div>}
         {filtered.map(c=>{
@@ -376,7 +649,6 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
           const activeTab = getTab(c.id)
           const cSessions = sessions.filter(s=>s.client_id===c.id)
           const cRecords = records.filter(r=>r.client_id===c.id)
-
           return (
             <div key={c.id} style={{background:'#181c24',border:`1px solid ${isOpen?'#c8ff47':'#2a3045'}`,borderRadius:14,overflow:'hidden',alignSelf:'start'}}>
               <div onClick={()=>setOpenId(isOpen?null:c.id)} style={{display:'flex',alignItems:'center',gap:12,padding:14,cursor:'pointer'}}>
@@ -396,7 +668,6 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
                 </div>
                 <span style={{fontSize:12,fontWeight:600,color:c.color,minWidth:30,textAlign:'right'}}>{progress}%</span>
               </div>
-
               {isOpen && (
                 <div style={{borderTop:'1px solid #2a3045',padding:14}}>
                   <div style={{display:'flex',gap:6,marginBottom:14,flexWrap:'wrap'}}>
@@ -404,7 +675,6 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
                       <button key={t.id} onClick={()=>setTab(c.id,t.id)} style={{padding:'6px 12px',borderRadius:20,fontSize:12,fontWeight:600,cursor:'pointer',border:`1px solid ${activeTab===t.id?'#c8ff47':'#2a3045'}`,background:activeTab===t.id?'#c8ff47':'none',color:activeTab===t.id?'#111':'#8891ad'}}>{t.label}</button>
                     ))}
                   </div>
-
                   {activeTab==='profile' && (
                     <div>
                       <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:8,marginBottom:12}}>
@@ -429,7 +699,6 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
                       <textarea defaultValue={c.note} onBlur={e=>updateNote(c.id,e.target.value)} style={{width:'100%',background:'#1e2330',border:'1px solid #2a3045',borderRadius:10,padding:'10px 12px',color:'#eef0f7',fontFamily:'DM Sans',fontSize:13,resize:'none',outline:'none',minHeight:80,lineHeight:1.5}}/>
                     </div>
                   )}
-
                   {activeTab==='schedule' && (
                     <div>
                       <div style={{fontSize:11,color:'#8891ad',textTransform:'uppercase',letterSpacing:.5,marginBottom:10}}>Дні та час тренувань</div>
@@ -439,9 +708,7 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
                         return (
                           <div key={i} style={{display:'flex',alignItems:'center',gap:8,marginBottom:8}}>
                             <button onClick={()=>toggleScheduleDay(c,i)} style={{width:44,padding:'8px 0',borderRadius:10,border:`1px solid ${active?'#c8ff47':'#2a3045'}`,background:active?'#c8ff47':'#1e2330',color:active?'#111':'#8891ad',fontFamily:'DM Sans',fontSize:13,fontWeight:600,cursor:'pointer',flexShrink:0}}>{day}</button>
-                            {active && (
-                              <input type="time" defaultValue={timeVal} onBlur={e=>updateScheduleTime(c,i,e.target.value)} style={{background:'#1e2330',border:'1px solid #2a3045',borderRadius:8,padding:'7px 10px',color:'#eef0f7',fontFamily:'DM Sans',fontSize:13,outline:'none',width:110}}/>
-                            )}
+                            {active && <input type="time" defaultValue={timeVal} onBlur={e=>updateScheduleTime(c,i,e.target.value)} style={{background:'#1e2330',border:'1px solid #2a3045',borderRadius:8,padding:'7px 10px',color:'#eef0f7',fontFamily:'DM Sans',fontSize:13,outline:'none',width:110}}/>}
                             {!active && <span style={{fontSize:12,color:'#3a4460'}}>—</span>}
                           </div>
                         )
@@ -462,7 +729,6 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
                       </div>
                     </div>
                   )}
-
                   {activeTab==='records' && (
                     <div>
                       {cRecords.length===0 && <div style={{color:'#5a6482',textAlign:'center',padding:'16px 0',fontSize:14}}>Рекордів ще немає</div>}
@@ -479,7 +745,6 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
                       <button onClick={()=>setShowAddRecord(c.id)} style={{width:'100%',marginTop:8,padding:'10px',borderRadius:10,border:'1px dashed #2a3045',background:'none',color:'#5a6482',fontFamily:'DM Sans',fontSize:13,cursor:'pointer'}}>＋ Додати рекорд</button>
                     </div>
                   )}
-
                   {activeTab==='clip' && (
                     <div style={{background:'#1e2330',borderRadius:12,padding:14}}>
                       <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12}}>
@@ -497,7 +762,6 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
                       </div>
                     </div>
                   )}
-
                   {activeTab==='history' && (
                     <div>
                       {cSessions.filter(s=>s.done).sort((a,b)=>b.date.localeCompare(a.date)).map(s=>(
@@ -571,16 +835,15 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
   )
 }
 
+// ─── Stats Tab (unchanged) ────────────────────────────────────────────────────
 function StatsTab({ sessions, clients, finance }) {
   const today = todayStr()
   const now = new Date()
   const weekStart = new Date(now); weekStart.setDate(now.getDate() - getMondayFirst(now))
   const monthStart = new Date(now.getFullYear(),now.getMonth(),1)
-
   const todayCount = sessions.filter(s=>s.date===today).length
   const weekCount = sessions.filter(s=>new Date(s.date+'T12:00:00')>=weekStart).length
   const monthCount = sessions.filter(s=>new Date(s.date+'T12:00:00')>=monthStart).length
-
   const days = Array.from({length:7},(_,i)=>{
     const d = new Date(now); d.setDate(now.getDate()-6+i)
     return {ds:dateToStr(d),lbl:d.getDate(),day:DAYS_SHORT[getMondayFirst(d)]}
@@ -647,6 +910,7 @@ function StatsTab({ sessions, clients, finance }) {
   )
 }
 
+// ─── Root ─────────────────────────────────────────────────────────────────────
 export default function App() {
   const [tab, setTab] = useState('schedule')
   const [clients, setClients] = useState([])
