@@ -772,7 +772,16 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
       metric_id: metricId, client_id: clientId,
       value: Number(nv.value), date: nv.date
     }).select().single()
-    if (!error) setMeasurements(prev => [...prev, data])
+    if (!error) {
+      setMeasurements(prev => [...prev, data])
+      // reopen chart with updated measurements
+      if (openMetricChart) {
+        setOpenMetricChart(prev => ({
+          ...prev,
+          meas: [...prev.meas, data].sort((a,b) => a.date.localeCompare(b.date))
+        }))
+      }
+    }
     setShowAddMeasure(null); setNv({value:'', date: todayStr()})
   }
 
@@ -1168,7 +1177,7 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
 
       {/* Add Measurement Modal */}
       {showAddMeasure && (
-        <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.75)',display:'flex',alignItems:'flex-end',justifyContent:'center',zIndex:300}} onClick={()=>setShowAddMeasure(null)}>
+        <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.85)',display:'flex',alignItems:'flex-end',justifyContent:'center',zIndex:400}} onClick={()=>setShowAddMeasure(null)}>
           <div style={{background:'#181c24',border:'1px solid #2a3045',borderRadius:'20px 20px 0 0',width:'100%',maxWidth:480,padding:'20px 20px 36px'}} onClick={e=>e.stopPropagation()}>
             <div style={{width:40,height:4,background:'#2a3045',borderRadius:2,margin:'0 auto 18px'}}/>
             <div style={{fontFamily:'Bebas Neue',fontSize:22,marginBottom:16}}>Новий вимір</div>
@@ -1213,7 +1222,7 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
         const improving = delta!==null && delta<=0
         const lc = improving ? '#3de87a' : '#ff4f4f'
         return (
-          <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.8)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:300,padding:16}} onClick={()=>setOpenMetricChart(null)}>
+          <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.8)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:350,padding:16}} onClick={()=>setOpenMetricChart(null)}>
             <div style={{background:'#181c24',border:'1px solid #2a3045',borderRadius:20,width:'100%',maxWidth:420,padding:24}} onClick={e=>e.stopPropagation()}>
               <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:16}}>
                 <div>
