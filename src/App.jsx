@@ -174,70 +174,176 @@ function SplitCard({ sessions, clients, onEdit, onToggle }) {
   )
 }
 
-// ─── Day Timeline ─────────────────────────────────────────────────────────────
+// ─── Day Timeline (duration-aware) ───────────────────────────────────────────
 function DayTimeline({ sessions, clients }) {
-  const HOURS = Array.from({length:17}, (_,i) => i + 6) // 06–22
+  const SLOT_H = 48       // px per 60 min
+  const START_H = 6       // 06:00
+  const END_H = 23        // 23:00
+  const TOTAL_MIN = (END_H - START_H) * 60
+  const HOURS = Array.from({length: END_H - START_H}, (_, i) => i + START_H)
   const now = new Date()
-  const currentHour = now.getHours()
+  const currentMin = now.getHours() * 60 + now.getMinutes()
+  const nowOffset = ((currentMin - START_H * 60) / 60) * SLOT_H
+  const showNow = currentMin >= START_H * 60 && currentMin <= END_H * 60
+
+  // Convert "HH:MM" to minutes from START_H
+  const toMin = (t) => {
+    const [h, m] = t.split(':').map(Number)
+    return (h - START_H) * 60 + m
+  }
+
+  // Group overlapping sessions for split columns
+  const sessionBlocks = sessions.map(s => ({
+    ...s,
+    startMin: toMin(s.time),
+    dur: s.duration || 60,
+  }))
 
   return (
     <div style={{background:'#181c24', border:'1px solid #2a3045', borderRadius:14, padding:16, marginTop:12}}>
       <div style={{fontSize:11,color:'#8891ad',fontWeight:600,textTransform:'uppercase',letterSpacing:.5,marginBottom:12}}>Денний графік</div>
       <div style={{display:'flex', gap:8}}>
-        {/* Hours axis */}
-        <div style={{display:'flex', flexDirection:'column'}}>
+        {/* Hour labels */}
+        <div style={{display:'flex', flexDirection:'column', flexShrink:0}}>
           {HOURS.map(h => (
-            <div key={h} style={{height:34, display:'flex', alignItems:'center', color: h === currentHour ? '#c8ff47' : '#5a6482', fontSize:10, width:34, fontFamily:'monospace', flexShrink:0}}>
+            <div key={h} style={{
+              height: SLOT_H, display:'flex', alignItems:'flex-start', paddingTop:4,
+              color: h === now.getHours() ? '#c8ff47' : '#5a6482',
+              fontSize:10, width:36, fontFamily:'monospace',
+            }}>
               {String(h).padStart(2,'0')}:00
             </div>
           ))}
         </div>
-        {/* Slots */}
-        <div style={{flex:1}}>
-          {HOURS.map(h => {
-            const atHour = sessions.filter(s => parseInt(s.time.split(':')[0]) === h)
-            const isNow = h === currentHour
+
+        {/* Grid + blocks */}
+        <div style={{flex:1, position:'relative', height: HOURS.length * SLOT_H}}>
+          {/* Hour grid lines */}
+          {HOURS.map((h, i) => (
+            <div key={h} style={{
+              position:'absolute', left:0, right:0,
+              top: i * SLOT_H, height:1,
+              background: h === now.getHours() ? 'rgba(200,255,71,.25)' : '#2a3045',
+            }}/>
+          ))}
+
+          {/* Current time line */}
+          {showNow && (
+            <div style={{position:'absolute', left:0, right:0, top: nowOffset, zIndex:10, display:'flex', alignItems:'center', gap:4}}>
+              <div style={{width:8,height:8,borderRadius:'50%',background:'#c8ff47',flexShrink:0,marginLeft:-4}}/>
+              <div style={{flex:1,height:2,background:'#c8ff47',borderRadius:1}}/>
+            </div>
+          )}
+
+          {/* Session blocks */}
+          {sessionBlocks.map(s => {
+            const c = clients.find(x => x.id === s.client_id)
+            const top = (s.startMin / 60) * SLOT_H
+            const height = Math.max((s.dur / 60) * SLOT_H - 4, 24)
+
+            // Check for splits (same time)
+            const sameTime = sessionBlocks.filter(x => x.time === s.time)
+            const idx = sameTime.findIndex(x => x.id === s.id)
+            const isplit = sameTime.length > 1
+            const w = isplit ? 'calc(50% - 3px)' : '100%'
+            const left = isplit && idx > 0 ? 'calc(50% + 3px)' : '0'
 
             return (
-              <div key={h} style={{height:34, display:'flex', alignItems:'center', gap:4, position:'relative'}}>
-                {/* Grid line */}
-                <div style={{position:'absolute', left:0, right:0, top:'50%', height:1, background: isNow ? 'rgba(200,255,71,.3)' : '#2a3045'}}/>
-
-                {atHour.length === 0 ? (
-                  <div style={{
-                    flex:1, height:26, borderRadius:7,
-                    background: isNow ? 'rgba(200,255,71,.05)' : 'transparent',
-                    border: isNow ? '1px dashed rgba(200,255,71,.3)' : '1px dashed transparent',
-                    position:'relative', zIndex:1,
-                    display:'flex', alignItems:'center', paddingLeft:8,
-                  }}>
-                    {isNow && <span style={{color:'rgba(200,255,71,.5)',fontSize:9}}>← зараз</span>}
+              <div key={s.id} style={{
+                position:'absolute', top, left, width:w, height,
+                borderRadius:10,
+                background: (c?.color||'#888')+'18',
+                border:`1.5px solid ${(c?.color||'#888')}50`,
+                display:'flex', flexDirection:'column', justifyContent:'center',
+                padding:'4px 8px', overflow:'hidden', zIndex:2,
+              }}>
+                <div style={{display:'flex', alignItems:'center', gap:5}}>
+                  <div style={{width:20,height:20,borderRadius:'50%',background:c?.color||'#888',
+                    display:'flex',alignItems:'center',justifyContent:'center',
+                    fontWeight:700,fontSize:9,color:'#111',flexShrink:0}}>
+                    {c?.ava}
                   </div>
-                ) : (
-                  atHour.map((s, idx) => {
-                    const c = clients.find(x => x.id === s.client_id)
-                    const w = atHour.length > 1 ? 'calc(50% - 3px)' : '100%'
-                    return (
-                      <div key={s.id} style={{
-                        width:w, height:28, borderRadius:8, flexShrink:0,
-                        background: (c?.color||'#888')+'20',
-                        border:`1.5px solid ${(c?.color||'#888')}50`,
-                        display:'flex', alignItems:'center', padding:'0 8px', gap:5,
-                        position:'relative', zIndex:1,
-                      }}>
-                        <div style={{width:7,height:7,borderRadius:'50%',background:c?.color||'#888',flexShrink:0}}/>
-                        <span style={{fontSize:11,fontWeight:600,color:'#eef0f7',overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis',flex:1}}>
-                          {atHour.length > 1 ? c?.ava : c?.name}
-                        </span>
-                        {s.done && <span style={{color:'#3de87a',fontSize:10,flexShrink:0}}>✓</span>}
-                      </div>
-                    )
-                  })
+                  <span style={{fontSize:11,fontWeight:600,color:'#eef0f7',overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis',flex:1}}>
+                    {isplit ? c?.name?.split(' ')[0] : c?.name}
+                  </span>
+                  {s.done && <span style={{color:'#3de87a',fontSize:9,flexShrink:0}}>✓</span>}
+                </div>
+                {s.dur >= 45 && (
+                  <div style={{fontSize:9,color:'#5a6482',marginTop:2,marginLeft:25}}>
+                    {s.time} · {s.dur}хв
+                  </div>
                 )}
               </div>
             )
           })}
         </div>
+      </div>
+    </div>
+  )
+}
+
+// ─── Duration Drum Picker ─────────────────────────────────────────────────────
+function DurationPicker({ value, onChange }) {
+  const OPTIONS = [15, 20, 30, 45, 60, 75, 90, 105, 120, 150, 180]
+  const ITEM_H = 40
+  const VISIBLE = 3
+  const containerH = ITEM_H * VISIBLE
+
+  const scrollRef = useRef(null)
+  const isDragging = useRef(false)
+  const startY = useRef(0)
+  const startScroll = useRef(0)
+
+  useEffect(() => {
+    const idx = OPTIONS.indexOf(value)
+    if (scrollRef.current && idx >= 0) {
+      scrollRef.current.scrollTop = idx * ITEM_H
+    }
+  }, [])
+
+  const onScroll = () => {
+    if (!scrollRef.current) return
+    const idx = Math.round(scrollRef.current.scrollTop / ITEM_H)
+    const snapped = Math.max(0, Math.min(idx, OPTIONS.length - 1))
+    onChange(OPTIONS[snapped])
+  }
+
+  return (
+    <div style={{position:'relative', height:containerH, overflow:'hidden', borderRadius:12, background:'#1e2330', border:'1px solid #2a3045'}}>
+      {/* Selection highlight */}
+      <div style={{position:'absolute', left:0, right:0, top: ITEM_H, height: ITEM_H,
+        background:'rgba(200,255,71,.08)', borderTop:'1px solid rgba(200,255,71,.2)',
+        borderBottom:'1px solid rgba(200,255,71,.2)', pointerEvents:'none', zIndex:2}}/>
+      {/* Top/bottom fade */}
+      <div style={{position:'absolute',top:0,left:0,right:0,height:ITEM_H,
+        background:'linear-gradient(to bottom, #1e2330, transparent)',pointerEvents:'none',zIndex:3}}/>
+      <div style={{position:'absolute',bottom:0,left:0,right:0,height:ITEM_H,
+        background:'linear-gradient(to top, #1e2330, transparent)',pointerEvents:'none',zIndex:3}}/>
+      {/* Scroll container */}
+      <div
+        ref={scrollRef}
+        onScroll={onScroll}
+        style={{
+          height:'100%', overflowY:'scroll', scrollSnapType:'y mandatory',
+          scrollbarWidth:'none', msOverflowStyle:'none',
+          paddingTop: ITEM_H, paddingBottom: ITEM_H,
+        }}
+      >
+        <style>{`.dp-hide::-webkit-scrollbar{display:none}`}</style>
+        {OPTIONS.map(opt => (
+          <div key={opt}
+            onClick={() => { onChange(opt); if(scrollRef.current) scrollRef.current.scrollTop = OPTIONS.indexOf(opt)*ITEM_H }}
+            style={{
+              height: ITEM_H, display:'flex', alignItems:'center', justifyContent:'center',
+              scrollSnapAlign:'start', cursor:'pointer',
+              fontSize: value===opt ? 18 : 14,
+              fontWeight: value===opt ? 700 : 400,
+              color: value===opt ? '#c8ff47' : '#5a6482',
+              transition:'all 0.15s',
+            }}>
+            {opt} хв
+          </div>
+        ))}
       </div>
     </div>
   )
@@ -275,6 +381,7 @@ function EditSessionModal({ session, clients, onClose, onSave, onDelete }) {
   const [clientId, setClientId] = useState(session.client_id)
   const [time, setTime] = useState(session.time)
   const [type, setType] = useState(session.type)
+  const [duration, setDuration] = useState(session.duration || 60)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const scrollRef = useRef(null)
   const selectedRef = useRef(null)
@@ -322,8 +429,8 @@ function EditSessionModal({ session, clients, onClose, onSave, onDelete }) {
           ))}
         </div>
 
-        {/* Time + Type */}
-        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:16}}>
+        {/* Time + Type + Duration */}
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:14}}>
           <div>
             <label style={lbl}>Час</label>
             <input type="time" value={time} onChange={e=>setTime(e.target.value)} style={inp}/>
@@ -333,10 +440,13 @@ function EditSessionModal({ session, clients, onClose, onSave, onDelete }) {
             <input value={type} onChange={e=>setType(e.target.value)} placeholder="Тренування…" style={inp}/>
           </div>
         </div>
+        <label style={lbl}>Тривалість</label>
+        <DurationPicker value={duration} onChange={setDuration}/>
+        <div style={{marginBottom:16}}/>
 
         {/* Save */}
         <button
-          onClick={() => onSave({...session, client_id:clientId, time, type})}
+          onClick={() => onSave({...session, client_id:clientId, time, type, duration})}
           style={{width:'100%',padding:12,borderRadius:12,border:'none',background:'#c8ff47',color:'#111',fontFamily:'DM Sans',fontSize:14,fontWeight:700,cursor:'pointer',marginBottom:8}}
         >Зберегти зміни</button>
 
@@ -373,6 +483,7 @@ function ScheduleTab({ clients, sessions, setSessions }) {
   const [fType, setFType] = useState('')
   const [fClient2, setFClient2] = useState('')
   const [splitMode, setSplitMode] = useState(false)
+  const [fDuration, setFDuration] = useState(60)
   const [editSession, setEditSession] = useState(null)
   const [pickList, setPickList] = useState(null)
 
@@ -403,13 +514,13 @@ function ScheduleTab({ clients, sessions, setSessions }) {
 
   const saveSession = async () => {
     if (!fClient) return
-    const inserts = [{client_id:fClient, time:fTime, type:fType||'Тренування', date:selDs, done:false}]
+    const inserts = [{client_id:fClient, time:fTime, type:fType||'Тренування', date:selDs, done:false, duration:fDuration}]
     if (splitMode && fClient2 && fClient2!==fClient) {
-      inserts.push({client_id:fClient2, time:fTime, type:fType||'Тренування', date:selDs, done:false})
+      inserts.push({client_id:fClient2, time:fTime, type:fType||'Тренування', date:selDs, done:false, duration:fDuration})
     }
     const {data,error} = await supabase.from('sessions').insert(inserts).select()
     if (!error&&data) setSessions([...sessions,...data])
-    setShowModal(false); setFType(''); setSplitMode(false); setFClient2('')
+    setShowModal(false); setFType(''); setSplitMode(false); setFClient2(''); setFDuration(60)
   }
 
   const saveEdit = async (updated) => {
@@ -417,6 +528,7 @@ function ScheduleTab({ clients, sessions, setSessions }) {
       client_id: updated.client_id,
       time: updated.time,
       type: updated.type,
+      duration: updated.duration,
     }).eq('id', updated.id)
     if (!error) setSessions(sessions.map(s => s.id===updated.id ? {...s, ...updated} : s))
     setEditSession(null)
@@ -565,7 +677,7 @@ function ScheduleTab({ clients, sessions, setSessions }) {
                 </select>
               </>
             )}
-            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:16}}>
+            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:12}}>
               <div>
                 <label style={{fontSize:11,color:'#8891ad',textTransform:'uppercase',letterSpacing:.5,display:'block',marginBottom:6}}>Час</label>
                 <input type="time" value={fTime} onChange={e=>setFTime(e.target.value)} style={{width:'100%',background:'#1e2330',border:'1px solid #2a3045',borderRadius:10,padding:'10px 14px',color:'#eef0f7',fontFamily:'DM Sans',fontSize:14,outline:'none'}}/>
@@ -575,6 +687,9 @@ function ScheduleTab({ clients, sessions, setSessions }) {
                 <input value={fType} onChange={e=>setFType(e.target.value)} placeholder="Силові…" style={{width:'100%',background:'#1e2330',border:'1px solid #2a3045',borderRadius:10,padding:'10px 14px',color:'#eef0f7',fontFamily:'DM Sans',fontSize:14,outline:'none'}}/>
               </div>
             </div>
+            <label style={{fontSize:11,color:'#8891ad',textTransform:'uppercase',letterSpacing:.5,display:'block',marginBottom:6}}>Тривалість</label>
+            <DurationPicker value={fDuration} onChange={setFDuration}/>
+            <div style={{marginBottom:16}}/>
             <div style={{display:'flex',gap:10}}>
               <button onClick={()=>{setShowModal(false);setSplitMode(false)}} style={{flex:1,padding:'10px',borderRadius:10,border:'1px solid #2a3045',background:'#1e2330',color:'#eef0f7',fontFamily:'DM Sans',fontSize:13,fontWeight:600,cursor:'pointer'}}>Скасувати</button>
               <button onClick={saveSession} style={{flex:1,padding:'10px',borderRadius:10,border:'none',background:'#c8ff47',color:'#111',fontFamily:'DM Sans',fontSize:13,fontWeight:600,cursor:'pointer'}}>Додати</button>
