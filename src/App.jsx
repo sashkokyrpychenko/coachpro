@@ -731,7 +731,58 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
   const [nc, setNc] = useState({name:'',last:'',goal:'',w:'',h:'',clip:10})
   const [nr, setNr] = useState({exercise:'',value:'',unit:'кг'})
   const [saving, setSaving] = useState(false)
+  const [metrics, setMetrics] = useState([])
+  const [measurements, setMeasurements] = useState([])
+  const [showAddMetric, setShowAddMetric] = useState(null)       // clientId
+  const [showAddMeasure, setShowAddMeasure] = useState(null)     // metricId
+  const [openMetricChart, setOpenMetricChart] = useState(null)   // metric object
+  const [nm, setNm] = useState({name:'', unit:'кг'})
+  const [nv, setNv] = useState({value:'', date: todayStr()})
+
+  useEffect(() => {
+    const load = async () => {
+      const [met, meas] = await Promise.all([
+        supabase.from('metrics').select('*').order('name'),
+        supabase.from('measurements').select('*').order('date'),
+      ])
+      if (met.data) setMetrics(met.data)
+      if (meas.data) setMeasurements(meas.data)
+    }
+    load()
+  }, [])
+
+  const saveMetric = async (clientId) => {
+    if (!nm.name) return
+    const {data,error} = await supabase.from('metrics').insert({
+      client_id: clientId, name: nm.name, unit: nm.unit
+    }).select().single()
+    if (!error) setMetrics(prev => [...prev, data])
+    setShowAddMetric(null); setNm({name:'', unit:'кг'})
+  }
+
+  const deleteMetric = async (id) => {
+    await supabase.from('metrics').delete().eq('id', id)
+    setMetrics(prev => prev.filter(m => m.id !== id))
+    setMeasurements(prev => prev.filter(m => m.metric_id !== id))
+  }
+
+  const saveMeasurement = async (metricId, clientId) => {
+    if (!nv.value) return
+    const {data,error} = await supabase.from('measurements').insert({
+      metric_id: metricId, client_id: clientId,
+      value: Number(nv.value), date: nv.date
+    }).select().single()
+    if (!error) setMeasurements(prev => [...prev, data])
+    setShowAddMeasure(null); setNv({value:'', date: todayStr()})
+  }
+
+  const deleteMeasurement = async (id) => {
+    await supabase.from('measurements').delete().eq('id', id)
+    setMeasurements(prev => prev.filter(m => m.id !== id))
+  }
+
   const SCHEDULE_DAYS = ['ПН','ВТ','СР','ЧТ','ПТ','СБ','НД']
+  const UNITS = ['кг', 'см', '%', 'сек', 'хв', 'повт', 'ккал']
   const filtered = clients.filter(c=>c.name.toLowerCase().includes(search.toLowerCase()))
   const setTab = (id,t) => setTabMap(p=>({...p,[id]:t}))
   const getTab = (id) => tabMap[id]||'profile'
@@ -827,7 +878,7 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
     setRecords(records.filter(r=>r.id!==id))
   }
 
-  const DTABS = [{id:'profile',label:'Профіль'},{id:'schedule',label:'Графік'},{id:'records',label:'Рекорди'},{id:'clip',label:'Кліп-карта'},{id:'history',label:'Історія'}]
+  const DTABS = [{id:'profile',label:'Профіль'},{id:'metrics',label:'Показники'},{id:'schedule',label:'Графік'},{id:'records',label:'Рекорди'},{id:'clip',label:'Кліп-карта'},{id:'history',label:'Історія'}]
   const inp = {width:'100%',background:'#1e2330',border:'1px solid #2a3045',borderRadius:10,padding:'10px 14px',color:'#eef0f7',fontFamily:'DM Sans',fontSize:14,outline:'none'}
   const lbl = {fontSize:11,color:'#8891ad',textTransform:'uppercase',letterSpacing:.5,display:'block',marginBottom:6}
 
@@ -895,6 +946,66 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
                       <textarea defaultValue={c.note} onBlur={e=>updateNote(c.id,e.target.value)} style={{width:'100%',background:'#1e2330',border:'1px solid #2a3045',borderRadius:10,padding:'10px 12px',color:'#eef0f7',fontFamily:'DM Sans',fontSize:13,resize:'none',outline:'none',minHeight:80,lineHeight:1.5}}/>
                     </div>
                   )}
+                  {activeTab==='metrics' && (() => {
+                    const cMetrics = metrics.filter(m => m.client_id === c.id)
+                    return (
+                      <div>
+                        {cMetrics.length === 0 && (
+                          <div style={{color:'#5a6482',textAlign:'center',padding:'20px 0',fontSize:13}}>Показників ще немає</div>
+                        )}
+                        {cMetrics.map(metric => {
+                          const meas = measurements.filter(m => m.metric_id === metric.id).sort((a,b) => a.date.localeCompare(b.date))
+                          const last = meas[meas.length-1]
+                          const first = meas[0]
+                          const delta = last && first ? (last.value - first.value) : null
+                          const improving = delta !== null && delta <= 0
+                          // mini sparkline points
+                          const vals = meas.map(m => m.value)
+                          const minV = Math.min(...vals, 0)
+                          const maxV = Math.max(...vals, 1)
+                          const range = maxV - minV || 1
+                          return (
+                            <div key={metric.id}
+                              onClick={() => setOpenMetricChart({metric, meas})}
+                              style={{background:'#1e2330',borderRadius:12,padding:'12px 14px',marginBottom:8,cursor:'pointer',border:'1px solid #2a3045',display:'flex',alignItems:'center',gap:12}}>
+                              <div style={{flex:1}}>
+                                <div style={{fontSize:14,fontWeight:600}}>{metric.name}</div>
+                                <div style={{fontSize:11,color:'#8891ad',marginTop:2}}>
+                                  {meas.length} вимірів
+                                  {last ? ` · ${last.value} ${metric.unit}` : ''}
+                                </div>
+                              </div>
+                              <div style={{display:'flex',flexDirection:'column',alignItems:'flex-end',gap:4}}>
+                                {meas.length >= 2 && (
+                                  <svg width={70} height={28} style={{overflow:'visible'}}>
+                                    <polyline
+                                      points={meas.map((m,i) => `${(i/(meas.length-1))*70},${28-((m.value-minV)/range)*24}`).join(' ')}
+                                      fill="none" stroke={improving?'#3de87a':'#ff4f4f'} strokeWidth="2"
+                                      strokeLinecap="round" strokeLinejoin="round"
+                                    />
+                                    <circle cx={(meas.length-1)/(meas.length-1)*70} cy={28-((vals[vals.length-1]-minV)/range)*24}
+                                      r="3" fill={improving?'#3de87a':'#ff4f4f'}/>
+                                  </svg>
+                                )}
+                                {delta !== null && (
+                                  <span style={{fontSize:11,fontWeight:600,color:improving?'#3de87a':'#ff4f4f'}}>
+                                    {improving?'▼':'▲'} {Math.abs(delta).toFixed(1)} {metric.unit}
+                                  </span>
+                                )}
+                              </div>
+                              <button onClick={e=>{e.stopPropagation();deleteMetric(metric.id)}}
+                                style={{background:'none',border:'none',color:'#5a6482',cursor:'pointer',fontSize:14,padding:'0 2px'}}>✕</button>
+                            </div>
+                          )
+                        })}
+                        <button onClick={() => setShowAddMetric(c.id)}
+                          style={{width:'100%',marginTop:4,padding:'10px',borderRadius:10,border:'1px dashed #2a3045',background:'none',color:'#5a6482',fontFamily:'DM Sans',fontSize:13,cursor:'pointer'}}>
+                          ＋ Додати показник
+                        </button>
+                      </div>
+                    )
+                  })()}
+
                   {activeTab==='schedule' && (
                     <div>
                       <div style={{fontSize:11,color:'#8891ad',textTransform:'uppercase',letterSpacing:.5,marginBottom:10}}>Дні та час тренувань</div>
@@ -1027,11 +1138,154 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
           </div>
         </div>
       )}
+
+      {/* Add Metric Modal */}
+      {showAddMetric && (
+        <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.75)',display:'flex',alignItems:'flex-end',justifyContent:'center',zIndex:300}} onClick={()=>setShowAddMetric(null)}>
+          <div style={{background:'#181c24',border:'1px solid #2a3045',borderRadius:'20px 20px 0 0',width:'100%',maxWidth:480,padding:'20px 20px 36px'}} onClick={e=>e.stopPropagation()}>
+            <div style={{width:40,height:4,background:'#2a3045',borderRadius:2,margin:'0 auto 18px'}}/>
+            <div style={{fontFamily:'Bebas Neue',fontSize:22,marginBottom:16}}>Новий показник</div>
+            <label style={lbl}>Назва</label>
+            <input value={nm.name} onChange={e=>setNm({...nm,name:e.target.value})}
+              placeholder="Вага тіла, Обхват талії…"
+              style={{...inp,marginBottom:14}}/>
+            <label style={lbl}>Одиниця</label>
+            <div style={{display:'flex',gap:8,flexWrap:'wrap',marginBottom:20}}>
+              {UNITS.map(u=>(
+                <button key={u} onClick={()=>setNm({...nm,unit:u})}
+                  style={{padding:'7px 14px',borderRadius:10,border:`1.5px solid ${nm.unit===u?'#c8ff47':'#2a3045'}`,background:nm.unit===u?'rgba(200,255,71,.12)':'#1e2330',color:nm.unit===u?'#c8ff47':'#8891ad',fontSize:13,fontWeight:nm.unit===u?700:400,cursor:'pointer'}}>
+                  {u}
+                </button>
+              ))}
+            </div>
+            <button onClick={()=>saveMetric(showAddMetric)}
+              style={{width:'100%',padding:12,borderRadius:12,border:'none',background:'#c8ff47',color:'#111',fontSize:14,fontWeight:700,cursor:'pointer'}}>
+              Додати показник
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Add Measurement Modal */}
+      {showAddMeasure && (
+        <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.75)',display:'flex',alignItems:'flex-end',justifyContent:'center',zIndex:300}} onClick={()=>setShowAddMeasure(null)}>
+          <div style={{background:'#181c24',border:'1px solid #2a3045',borderRadius:'20px 20px 0 0',width:'100%',maxWidth:480,padding:'20px 20px 36px'}} onClick={e=>e.stopPropagation()}>
+            <div style={{width:40,height:4,background:'#2a3045',borderRadius:2,margin:'0 auto 18px'}}/>
+            <div style={{fontFamily:'Bebas Neue',fontSize:22,marginBottom:16}}>Новий вимір</div>
+            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:20}}>
+              <div>
+                <label style={lbl}>Значення ({showAddMeasure.unit})</label>
+                <input type="number" value={nv.value} onChange={e=>setNv({...nv,value:e.target.value})}
+                  placeholder="0" style={inp}/>
+              </div>
+              <div>
+                <label style={lbl}>Дата</label>
+                <input type="date" value={nv.date} onChange={e=>setNv({...nv,date:e.target.value})}
+                  style={inp}/>
+              </div>
+            </div>
+            <button onClick={()=>saveMeasurement(showAddMeasure.id, showAddMeasure.client_id)}
+              style={{width:'100%',padding:12,borderRadius:12,border:'none',background:'#c8ff47',color:'#111',fontSize:14,fontWeight:700,cursor:'pointer'}}>
+              Зберегти вимір
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Metric Chart Modal */}
+      {openMetricChart && (() => {
+        const {metric, meas} = openMetricChart
+        const sorted = [...meas].sort((a,b)=>a.date.localeCompare(b.date))
+        const vals = sorted.map(m=>m.value)
+        const minV = Math.min(...vals)
+        const maxV = Math.max(...vals)
+        const range = maxV - minV || 1
+        const W=320, H=140, PL=36, PR=12, PT=16, PB=24
+        const cW = W-PL-PR, cH = H-PT-PB
+        const pts = sorted.map((m,i)=>({
+          x: PL + (i/(sorted.length-1||1))*cW,
+          y: PT + (1-(m.value-minV)/range)*cH,
+          ...m
+        }))
+        const pathD = pts.map((p,i)=>`${i===0?'M':'L'}${p.x},${p.y}`).join(' ')
+        const areaD = pathD+` L${pts[pts.length-1]?.x},${PT+cH} L${pts[0]?.x},${PT+cH} Z`
+        const delta = vals.length>1 ? vals[vals.length-1]-vals[0] : null
+        const improving = delta!==null && delta<=0
+        const lc = improving ? '#3de87a' : '#ff4f4f'
+        return (
+          <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.8)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:300,padding:16}} onClick={()=>setOpenMetricChart(null)}>
+            <div style={{background:'#181c24',border:'1px solid #2a3045',borderRadius:20,width:'100%',maxWidth:420,padding:24}} onClick={e=>e.stopPropagation()}>
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:16}}>
+                <div>
+                  <div style={{fontWeight:700,fontSize:18,color:'#eef0f7'}}>{metric.name}</div>
+                  <div style={{color:'#8891ad',fontSize:12,marginTop:2}}>{sorted.length} вимірів · {metric.unit}</div>
+                </div>
+                {delta!==null && (
+                  <div style={{textAlign:'right'}}>
+                    <div style={{color:lc,fontWeight:700,fontSize:18}}>{improving?'▼':'▲'} {Math.abs(delta).toFixed(1)} {metric.unit}</div>
+                    <div style={{color:'#5a6482',fontSize:11}}>з початку</div>
+                  </div>
+                )}
+              </div>
+
+              {sorted.length >= 2 ? (
+                <svg width="100%" viewBox={`0 0 ${W} ${H}`} style={{overflow:'visible',marginBottom:12}}>
+                  {[0,0.5,1].map((t,i)=>{
+                    const y=PT+t*cH; const v=(maxV-t*range).toFixed(1)
+                    return <g key={i}>
+                      <line x1={PL} y1={y} x2={W-PR} y2={y} stroke="#2a3045" strokeWidth="1" strokeDasharray="4,4"/>
+                      <text x={PL-4} y={y+4} fontSize="9" fill="#5a6482" textAnchor="end">{v}</text>
+                    </g>
+                  })}
+                  <path d={areaD} fill={lc} opacity="0.08"/>
+                  <path d={pathD} fill="none" stroke={lc} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  {pts.map((p,i)=>(
+                    <circle key={i} cx={p.x} cy={p.y} r="3.5" fill={lc} stroke="#181c24" strokeWidth="2"/>
+                  ))}
+                  {pts.map((p,i)=>(
+                    (i===0||i===pts.length-1) &&
+                    <text key={`l${i}`} x={p.x} y={H-4} fontSize="9" fill="#5a6482" textAnchor="middle">
+                      {p.date.slice(5).replace('-','/')}
+                    </text>
+                  ))}
+                </svg>
+              ) : (
+                <div style={{color:'#5a6482',textAlign:'center',padding:'20px 0',fontSize:13}}>Потрібно мінімум 2 виміри для графіку</div>
+              )}
+
+              <div style={{borderTop:'1px solid #2a3045',paddingTop:12,marginBottom:12}}>
+                <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
+                  <div style={{fontSize:12,color:'#8891ad'}}>Всі виміри</div>
+                  <button onClick={()=>setShowAddMeasure(metric)}
+                    style={{background:'#c8ff47',color:'#111',border:'none',borderRadius:8,padding:'5px 14px',fontSize:12,fontWeight:700,cursor:'pointer'}}>
+                    + Додати вимір
+                  </button>
+                </div>
+                <div style={{maxHeight:160,overflowY:'auto',display:'flex',flexDirection:'column',gap:6}}>
+                  {[...sorted].reverse().map(m=>(
+                    <div key={m.id} style={{display:'flex',justifyContent:'space-between',alignItems:'center',background:'#1e2330',borderRadius:8,padding:'8px 12px'}}>
+                      <div style={{color:'#8891ad',fontSize:12}}>{m.date.slice(5).replace('-','/')}.{m.date.slice(0,4)}</div>
+                      <div style={{display:'flex',alignItems:'center',gap:8}}>
+                        <span style={{color:'#eef0f7',fontWeight:600,fontSize:15}}>{m.value} <span style={{color:'#5a6482',fontSize:11,fontWeight:400}}>{metric.unit}</span></span>
+                        <button onClick={()=>deleteMeasurement(m.id)}
+                          style={{background:'none',border:'none',color:'#5a6482',cursor:'pointer',fontSize:13}}>✕</button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <button onClick={()=>setOpenMetricChart(null)}
+                style={{width:'100%',padding:10,borderRadius:12,border:'1px solid #2a3045',background:'transparent',color:'#8891ad',fontSize:13,cursor:'pointer'}}>
+                Закрити
+              </button>
+            </div>
+          </div>
+        )
+      })()}
     </div>
   )
 }
-
-// ─── Stats Tab (unchanged) ────────────────────────────────────────────────────
 function StatsTab({ sessions, clients, finance }) {
   const today = todayStr()
   const now = new Date()
