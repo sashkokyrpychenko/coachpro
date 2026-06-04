@@ -149,9 +149,9 @@ function SplitCard({ sessions, clients, onEdit, onToggle }) {
         onMouseUp={onEnd} onMouseLeave={onEnd}
         style={{transform:`translateX(${offset}px)`, transition: offset===0 ? 'transform 0.25s ease' : 'none', background:'#1a2744', borderRadius:12, border:'1px solid #2a4a7f', overflow:'hidden', position:'relative', zIndex:1, userSelect:'none'}}
       >
-        <div style={{background:'#1e3054', padding:'6px 14px', display:'flex', alignItems:'center', gap:8, borderBottom:'1px solid #2a4a7f'}}>
-          <span style={{color:'#C4ED00', fontFamily:'Bebas Neue', fontSize:16}}>{sessions[0].time}</span>
-          <span style={{background:'rgba(200,255,71,.15)', color:'#C4ED00', fontSize:10, fontWeight:700, borderRadius:6, padding:'2px 8px', letterSpacing:.5}}>СПЛІТ</span>
+        <div style={{background:'#1e3054', padding:'8px 14px', display:'flex', alignItems:'center', gap:8, borderBottom:'1px solid #2a4a7f'}}>
+          <span style={{color:'#C4ED00', fontFamily:'Bebas Neue', fontSize:22, letterSpacing:1}}>{sessions[0].time}</span>
+          <span style={{background:'rgba(196,237,0,.15)', color:'#C4ED00', fontSize:10, fontWeight:700, borderRadius:6, padding:'2px 8px', letterSpacing:.5}}>СПЛІТ</span>
         </div>
         {sessions.map((s, i) => {
           const c = clients.find(x => x.id === s.client_id)
@@ -582,8 +582,8 @@ function ScheduleTab({ clients, sessions, setSessions }) {
         </div>
         <button onClick={goToday} style={{padding:'6px 12px',borderRadius:8,border:'1px solid #2a4a7f',background:'#1a2744',color:'#9CA3AF',cursor:'pointer',fontSize:12,fontWeight:600}}>Сьогодні</button>
         <div style={{display:'flex',borderRadius:8,overflow:'hidden',border:'1px solid #2a4a7f'}}>
-          <button onClick={()=>setViewMode('week')} style={{width:72,padding:'6px 0',border:'none',background:viewMode==='week'?'#C4ED00':'#1a2744',color:viewMode==='week'?'#111':'#9CA3AF',cursor:'pointer',fontSize:12,fontWeight:600}}>Тиждень</button>
-          <button onClick={()=>setViewMode('month')} style={{width:72,padding:'6px 0',border:'none',background:viewMode==='month'?'#C4ED00':'#1a2744',color:viewMode==='month'?'#111':'#9CA3AF',cursor:'pointer',fontSize:12,fontWeight:600}}>Місяць</button>
+          <button onClick={()=>setViewMode('week')} style={{width:80,padding:'6px 0',border:'none',background:viewMode==='week'?'#C4ED00':'#1a2744',color:viewMode==='week'?'#111':'#9CA3AF',cursor:'pointer',fontSize:12,fontWeight:600}}>Тиждень</button>
+          <button onClick={()=>setViewMode('month')} style={{width:80,padding:'6px 0',border:'none',background:viewMode==='month'?'#C4ED00':'#1a2744',color:viewMode==='month'?'#111':'#9CA3AF',cursor:'pointer',fontSize:12,fontWeight:600}}>Місяць</button>
         </div>
       </div>
 
