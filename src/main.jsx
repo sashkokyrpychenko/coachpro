@@ -9,8 +9,8 @@ function Root() {
 
   useEffect(() => {
     // Мінімум 1.2с показуємо splash, потім плавно зникає
-    const t1 = setTimeout(() => setFadeOut(true), 1200)
-    const t2 = setTimeout(() => setReady(true), 1800)
+    const t1 = setTimeout(() => setFadeOut(true), 300)
+    const t2 = setTimeout(() => setReady(true), 700)
     return () => { clearTimeout(t1); clearTimeout(t2) }
   }, [])
 
