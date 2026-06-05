@@ -354,25 +354,22 @@ function ClipTab({ c, clients, setClients, sessions, pricePlans }) {
   const [showAllPlans, setShowAllPlans] = useState(false)
 
   const activePlan = pricePlans.find(p => p.id === c.active_plan_id)
-  const cSessions = sessions.filter(s => s.client_id === c.id)
-  const doneSessions = cSessions
-    .filter(s => s.done && (c.clip_renewed_at ? s.date >= c.clip_renewed_at : true))
-    .sort((a,b) => a.date.localeCompare(b.date))
-    .slice(-c.clip_total)
+  const clipDates = Array.isArray(c.clip_dates) ? [...c.clip_dates].sort() : []
   const isExhausted = c.clip_used >= c.clip_total
   const progress = c.clip_total ? Math.round((c.clip_used/c.clip_total)*100) : 0
 
   const useClip = async () => {
     if (c.clip_used >= c.clip_total) return
     const newUsed = c.clip_used + 1
-    await supabase.from('clients').update({clip_used:newUsed}).eq('id',c.id)
-    setClients(prev => prev.map(x => x.id===c.id ? {...x,clip_used:newUsed} : x))
+    const newDates = [...(c.clip_dates||[]), todayStr()]
+    await supabase.from('clients').update({clip_used:newUsed, clip_dates:newDates}).eq('id',c.id)
+    setClients(prev => prev.map(x => x.id===c.id ? {...x,clip_used:newUsed,clip_dates:newDates} : x))
   }
 
   const renewClip = async () => {
     const renewDate = todayStr()
-    await supabase.from('clients').update({clip_used:0,clip_renewed_at:renewDate}).eq('id',c.id)
-    setClients(prev => prev.map(x => x.id===c.id ? {...x,clip_used:0,clip_renewed_at:renewDate} : x))
+    await supabase.from('clients').update({clip_used:0,clip_renewed_at:renewDate,clip_dates:[]}).eq('id',c.id)
+    setClients(prev => prev.map(x => x.id===c.id ? {...x,clip_used:0,clip_renewed_at:renewDate,clip_dates:[]} : x))
   }
 
   const selectPlan = async (p) => {
@@ -452,7 +449,7 @@ function ClipTab({ c, clients, setClients, sessions, pricePlans }) {
           <div style={{display:'flex',flexWrap:'wrap',gap:6,marginBottom:14}}>
             {Array.from({length:c.clip_total},(_,i)=>{
               const isDone = i < c.clip_used
-              const s = doneSessions[i]
+              const dateStr = clipDates[i] || null
               return (
                 <div key={i} style={{display:'flex',flexDirection:'column',alignItems:'center',gap:2,width:'calc(16.66% - 5px)'}}>
                   <div style={{width:34,height:34,borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',fontSize:13,fontWeight:700,
@@ -462,23 +459,22 @@ function ClipTab({ c, clients, setClients, sessions, pricePlans }) {
                     {isDone?'✓':i+1}
                   </div>
                   <div style={{fontSize:8,color:isDone?'#C4ED00':'#6B7280',textAlign:'center',opacity:isDone?1:0.4}}>
-                    {isDone&&s ? s.date.slice(5).replace('-','/') : '—'}
+                    {isDone && dateStr ? dateStr.slice(5).replace('-','/') : '—'}
                   </div>
                 </div>
               )
             })}
           </div>
 
-          {doneSessions.length > 0 && (
+          {clipDates.length > 0 && (
             <div style={{borderTop:'1px solid #2a4a7f',paddingTop:12,marginBottom:12}}>
               <div style={{fontSize:11,color:'#9CA3AF',textTransform:'uppercase',letterSpacing:.5,marginBottom:8}}>Відвідування</div>
               <div style={{display:'flex',flexDirection:'column',gap:5}}>
-                {[...doneSessions].reverse().map((s,i)=>(
-                  <div key={s.id} style={{display:'flex',alignItems:'center',gap:10,background:'#162032',borderRadius:9,padding:'8px 12px'}}>
-                    <div style={{width:22,height:22,borderRadius:'50%',background:'#C4ED00',display:'flex',alignItems:'center',justifyContent:'center',fontSize:10,fontWeight:700,color:'#111',flexShrink:0}}>{doneSessions.length-i}</div>
+                {[...clipDates].reverse().map((date,i)=>(
+                  <div key={i} style={{display:'flex',alignItems:'center',gap:10,background:'#162032',borderRadius:9,padding:'8px 12px'}}>
+                    <div style={{width:22,height:22,borderRadius:'50%',background:'#C4ED00',display:'flex',alignItems:'center',justifyContent:'center',fontSize:10,fontWeight:700,color:'#111',flexShrink:0}}>{clipDates.length-i}</div>
                     <div style={{flex:1}}>
-                      <div style={{fontSize:12,fontWeight:600,color:'#F3F4F6'}}>{s.date.slice(8,10)}/{s.date.slice(5,7)}/{s.date.slice(0,4)}</div>
-                      <div style={{fontSize:10,color:'#9CA3AF'}}>{s.time} · {s.type}</div>
+                      <div style={{fontSize:12,fontWeight:600,color:'#F3F4F6'}}>{date.slice(8,10)}/{date.slice(5,7)}/{date.slice(0,4)}</div>
                     </div>
                     <span style={{color:'#3de87a',fontSize:11}}>✓</span>
                   </div>
