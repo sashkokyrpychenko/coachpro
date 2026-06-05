@@ -352,6 +352,8 @@ function DurationPicker({ value, onChange }) {
 // ─── Clip Tab Component ───────────────────────────────────────────────────────
 function ClipTab({ c, clients, setClients, sessions, pricePlans }) {
   const [showAllPlans, setShowAllPlans] = useState(false)
+  const [editDateIdx, setEditDateIdx] = useState(null) // індекс кружечка для редагування дати
+  const [editDateVal, setEditDateVal] = useState('')
 
   const activePlan = pricePlans.find(p => p.id === c.active_plan_id)
   const clipDates = Array.isArray(c.clip_dates) ? [...c.clip_dates].sort() : []
@@ -374,13 +376,48 @@ function ClipTab({ c, clients, setClients, sessions, pricePlans }) {
 
   const selectPlan = async (p) => {
     const renewDate = todayStr()
-    await supabase.from('clients').update({active_plan_id:p.id,clip_total:p.sessions,clip_used:0,clip_renewed_at:renewDate}).eq('id',c.id)
-    setClients(prev => prev.map(x => x.id===c.id ? {...x,active_plan_id:p.id,clip_total:p.sessions,clip_used:0,clip_renewed_at:renewDate} : x))
+    await supabase.from('clients').update({active_plan_id:p.id,clip_total:p.sessions,clip_used:0,clip_renewed_at:renewDate,clip_dates:[]}).eq('id',c.id)
+    setClients(prev => prev.map(x => x.id===c.id ? {...x,active_plan_id:p.id,clip_total:p.sessions,clip_used:0,clip_renewed_at:renewDate,clip_dates:[]} : x))
     setShowAllPlans(false)
+  }
+
+  const openEditDate = (i) => {
+    setEditDateIdx(i)
+    setEditDateVal(clipDates[i] || todayStr())
+  }
+
+  const saveEditDate = async () => {
+    const newDates = [...clipDates]
+    newDates[editDateIdx] = editDateVal
+    await supabase.from('clients').update({clip_dates:newDates}).eq('id',c.id)
+    setClients(prev => prev.map(x => x.id===c.id ? {...x,clip_dates:newDates} : x))
+    setEditDateIdx(null)
   }
 
   return (
     <div style={{background:'#1a2744',borderRadius:12,padding:14}}>
+
+      {/* Модал редагування дати */}
+      {editDateIdx !== null && (
+        <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.75)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:300}} onClick={()=>setEditDateIdx(null)}>
+          <div style={{background:'#162032',border:'1px solid #2a4a7f',borderRadius:16,padding:24,width:280}} onClick={e=>e.stopPropagation()}>
+            <div style={{fontFamily:'Bebas Neue',fontSize:20,marginBottom:16,color:'#F3F4F6'}}>Змінити дату #{editDateIdx+1}</div>
+            <input type="date" value={editDateVal} onChange={e=>setEditDateVal(e.target.value)}
+              style={{width:'100%',padding:'10px 12px',borderRadius:10,border:'1px solid #2a4a7f',background:'#1e3054',color:'#F3F4F6',fontSize:14,marginBottom:16,boxSizing:'border-box'}}/>
+            <div style={{display:'flex',gap:8}}>
+              <button onClick={()=>setEditDateIdx(null)}
+                style={{flex:1,padding:'9px',borderRadius:10,border:'1px solid #2a4a7f',background:'transparent',color:'#9CA3AF',fontSize:13,cursor:'pointer'}}>
+                Скасувати
+              </button>
+              <button onClick={saveEditDate}
+                style={{flex:1,padding:'9px',borderRadius:10,border:'none',background:'#C4ED00',color:'#111',fontSize:13,fontWeight:700,cursor:'pointer'}}>
+                Зберегти
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Active plan or full list */}
       {!showAllPlans ? (
         <div style={{marginBottom:14}}>
@@ -451,7 +488,8 @@ function ClipTab({ c, clients, setClients, sessions, pricePlans }) {
               const isDone = i < c.clip_used
               const dateStr = clipDates[i] || null
               return (
-                <div key={i} style={{display:'flex',flexDirection:'column',alignItems:'center',gap:2,width:'calc(16.66% - 5px)'}}>
+                <div key={i} onClick={()=>isDone && openEditDate(i)}
+                  style={{display:'flex',flexDirection:'column',alignItems:'center',gap:2,width:'calc(16.66% - 5px)',cursor:isDone?'pointer':'default'}}>
                   <div style={{width:34,height:34,borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',fontSize:13,fontWeight:700,
                     background:isDone?'#C4ED00':i===c.clip_used?'rgba(71,212,255,.1)':'#1e3054',
                     border:isDone?'2px solid #C4ED00':i===c.clip_used?'2px solid #47d4ff':'2px solid #2a4a7f',
