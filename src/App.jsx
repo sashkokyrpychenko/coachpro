@@ -359,7 +359,6 @@ function ClipTab({ c, clients, setClients, sessions, pricePlans }) {
     .filter(s => s.done && (c.clip_renewed_at ? s.date >= c.clip_renewed_at : true))
     .sort((a,b) => a.date.localeCompare(b.date))
     .slice(-c.clip_total)
-    .reverse()
   const isExhausted = c.clip_used >= c.clip_total
   const progress = c.clip_total ? Math.round((c.clip_used/c.clip_total)*100) : 0
 
@@ -474,9 +473,9 @@ function ClipTab({ c, clients, setClients, sessions, pricePlans }) {
             <div style={{borderTop:'1px solid #2a4a7f',paddingTop:12,marginBottom:12}}>
               <div style={{fontSize:11,color:'#9CA3AF',textTransform:'uppercase',letterSpacing:.5,marginBottom:8}}>Відвідування</div>
               <div style={{display:'flex',flexDirection:'column',gap:5}}>
-                {doneSessions.map((s,i)=>(
+                {[...doneSessions].reverse().map((s,i)=>(
                   <div key={s.id} style={{display:'flex',alignItems:'center',gap:10,background:'#162032',borderRadius:9,padding:'8px 12px'}}>
-                    <div style={{width:22,height:22,borderRadius:'50%',background:'#C4ED00',display:'flex',alignItems:'center',justifyContent:'center',fontSize:10,fontWeight:700,color:'#111',flexShrink:0}}>{i+1}</div>
+                    <div style={{width:22,height:22,borderRadius:'50%',background:'#C4ED00',display:'flex',alignItems:'center',justifyContent:'center',fontSize:10,fontWeight:700,color:'#111',flexShrink:0}}>{doneSessions.length-i}</div>
                     <div style={{flex:1}}>
                       <div style={{fontSize:12,fontWeight:600,color:'#F3F4F6'}}>{s.date.slice(8,10)}/{s.date.slice(5,7)}/{s.date.slice(0,4)}</div>
                       <div style={{fontSize:10,color:'#9CA3AF'}}>{s.time} · {s.type}</div>
