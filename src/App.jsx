@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import * as React from 'react'
 import { supabase } from './supabase'
 import './App.css'
 
@@ -515,13 +516,46 @@ function ScheduleTab({ clients, sessions, setSessions }) {
   const toggleDone = async (id, done) => {
     const session = sessions.find(s => s.id === id)
     if (!session) return
-    // Find split partners (same time and date)
     const partners = sessions.filter(s =>
       s.date === session.date && s.time === session.time && s.id !== id
     )
     const allIds = [id, ...partners.map(s => s.id)]
     await supabase.from('sessions').update({done:!done}).in('id', allIds)
     setSessions(sessions.map(s => allIds.includes(s.id) ? {...s, done:!done} : s))
+
+    // Auto clip: якщо відмічаємо як виконано (не скасовуємо)
+    if (!done) {
+      const client = clients.find(c => c.id === session.client_id)
+      if (client && client.active_plan_id && client.clip_used < client.clip_total) {
+        const newUsed = client.clip_used + 1
+        const isRazove = client.clip_total === 1
+        if (isRazove) {
+          // Разове — поновлюємо автоматично
+          const renewDate = todayStr()
+          await supabase.from('clients').update({clip_used:0, clip_renewed_at:renewDate}).eq('id', client.id)
+          setClients(prev => prev.map(c => c.id===client.id ? {...c, clip_used:0, clip_renewed_at:renewDate} : c))
+        } else {
+          await supabase.from('clients').update({clip_used:newUsed}).eq('id', client.id)
+          setClients(prev => prev.map(c => c.id===client.id ? {...c, clip_used:newUsed} : c))
+        }
+      }
+      // Для спліту — знімаємо у партнера теж
+      if (partners.length > 0) {
+        const partnerClient = clients.find(c => c.id === partners[0].client_id)
+        if (partnerClient && partnerClient.active_plan_id && partnerClient.clip_used < partnerClient.clip_total) {
+          const newUsed = partnerClient.clip_used + 1
+          const isRazove = partnerClient.clip_total === 1
+          if (isRazove) {
+            const renewDate = todayStr()
+            await supabase.from('clients').update({clip_used:0, clip_renewed_at:renewDate}).eq('id', partnerClient.id)
+            setClients(prev => prev.map(c => c.id===partnerClient.id ? {...c, clip_used:0, clip_renewed_at:renewDate} : c))
+          } else {
+            await supabase.from('clients').update({clip_used:newUsed}).eq('id', partnerClient.id)
+            setClients(prev => prev.map(c => c.id===partnerClient.id ? {...c, clip_used:newUsed} : c))
+          }
+        }
+      }
+    }
   }
 
   const saveSession = async () => {
@@ -896,17 +930,21 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
     setSaving(true)
     const fullName = nc.last?nc.name+' '+nc.last:nc.name
     const initials = (nc.name[0]||'')+(nc.last[0]||'')
+    const selectedPlan = pricePlans.find(p=>p.id===nc.planId)
     const {data,error} = await supabase.from('clients').insert({
       name:fullName, goal:nc.goal||'Загальна форма',
       weight:Number(nc.w)||70, height:Number(nc.h)||170,
       color:COLORS[clients.length%COLORS.length], ava:initials||'??',
       note:'', strengths:[], weaknesses:[],
-      clip_total:Number(nc.clip), clip_used:0,
+      clip_total: selectedPlan ? selectedPlan.sessions : Number(nc.clip)||1,
+      clip_used:0,
+      active_plan_id: nc.planId||null,
+      clip_renewed_at: nc.planId ? todayStr() : null,
       schedule_days:[], schedule_times:{}
     }).select().single()
     if (!error) setClients(prev => [...prev, data].sort((a,b) => a.name.localeCompare(b.name, 'uk')))
     setSaving(false); setShowAdd(false)
-    setNc({name:'',last:'',goal:'',w:'',h:'',clip:10})
+    setNc({name:'',last:'',goal:'',w:'',h:'',clip:10,planId:null})
   }
   const saveRecord = async (clientId) => {
     if (!nr.exercise||!nr.value) return
@@ -1103,46 +1141,140 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
                   )}
                   {activeTab==='clip' && (() => {
                     const activePlan = pricePlans.find(p => p.id === c.active_plan_id)
+                    const [showAllPlans, setShowAllPlans] = React.useState(false)
+                    const doneSessions = cSessions
+                      .filter(s => s.done && c.clip_renewed_at ? s.date >= c.clip_renewed_at : s.done)
+                      .sort((a,b) => b.date.localeCompare(a.date))
+                      .slice(0, c.clip_total)
+                    const isExhausted = c.clip_used >= c.clip_total
+                    const progress = c.clip_total ? Math.round((c.clip_used/c.clip_total)*100) : 0
+
                     return (
                     <div style={{background:'#1a2744',borderRadius:12,padding:14}}>
-                      {/* Plan selector */}
-                      {pricePlans.length > 0 && (
-                        <div style={{marginBottom:12}}>
-                          <div style={{fontSize:11,color:'#9CA3AF',textTransform:'uppercase',letterSpacing:.5,marginBottom:8}}>Пакет</div>
+
+                      {/* Active plan or full list */}
+                      {!showAllPlans ? (
+                        <div style={{marginBottom:14}}>
+                          <div style={{fontSize:11,color:'#9CA3AF',textTransform:'uppercase',letterSpacing:.5,marginBottom:8}}>Поточний тариф</div>
+                          {activePlan ? (
+                            <>
+                              <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',background:'#162032',border:'1.5px solid rgba(196,237,0,.3)',borderRadius:10,padding:'11px 14px',marginBottom:8}}>
+                                <div>
+                                  <div style={{fontSize:13,fontWeight:700,color:'#F3F4F6'}}>{activePlan.name}</div>
+                                  <div style={{fontSize:11,color:'#9CA3AF',marginTop:2}}>{activePlan.sessions} тренувань</div>
+                                </div>
+                                <div style={{fontFamily:'Bebas Neue',fontSize:18,color:'#C4ED00'}}>{Number(activePlan.price).toLocaleString('uk')} ₴</div>
+                              </div>
+                              <button onClick={()=>setShowAllPlans(true)}
+                                style={{width:'100%',padding:'8px',borderRadius:9,border:'1px solid #2a4a7f',background:'transparent',color:'#9CA3AF',fontSize:12,cursor:'pointer'}}>
+                                🔄 Змінити тариф
+                              </button>
+                            </>
+                          ) : (
+                            <button onClick={()=>setShowAllPlans(true)}
+                              style={{width:'100%',padding:'10px',borderRadius:9,border:'1px dashed #2a4a7f',background:'transparent',color:'#9CA3AF',fontSize:13,cursor:'pointer'}}>
+                              + Обрати тариф
+                            </button>
+                          )}
+                        </div>
+                      ) : (
+                        <div style={{marginBottom:14}}>
+                          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:10}}>
+                            <div style={{fontSize:14,fontWeight:700}}>{activePlan?'Змінити тариф':'Обрати тариф'}</div>
+                            {activePlan && <button onClick={()=>setShowAllPlans(false)} style={{background:'none',border:'none',color:'#9CA3AF',fontSize:20,cursor:'pointer',lineHeight:1}}>✕</button>}
+                          </div>
                           <div style={{display:'flex',flexDirection:'column',gap:6}}>
                             {pricePlans.map(p=>(
                               <div key={p.id}
                                 onClick={async()=>{
-                                  await supabase.from('clients').update({active_plan_id:p.id, clip_total:p.sessions, clip_used:0}).eq('id',c.id)
-                                  setClients(clients.map(x=>x.id===c.id?{...x,active_plan_id:p.id,clip_total:p.sessions,clip_used:0}:x))
+                                  const renewDate = todayStr()
+                                  await supabase.from('clients').update({active_plan_id:p.id,clip_total:p.sessions,clip_used:0,clip_renewed_at:renewDate}).eq('id',c.id)
+                                  setClients(clients.map(x=>x.id===c.id?{...x,active_plan_id:p.id,clip_total:p.sessions,clip_used:0,clip_renewed_at:renewDate}:x))
+                                  setShowAllPlans(false)
                                 }}
-                                style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'9px 12px',borderRadius:10,cursor:'pointer',
+                                style={{display:'flex',alignItems:'center',gap:10,padding:'11px 14px',borderRadius:11,cursor:'pointer',
                                   border:`1.5px solid ${c.active_plan_id===p.id?'#C4ED00':'#2a4a7f'}`,
                                   background:c.active_plan_id===p.id?'rgba(196,237,0,.08)':'#162032'}}>
-                                <div>
+                                <div style={{flex:1}}>
                                   <div style={{fontSize:13,fontWeight:600,color:'#F3F4F6'}}>{p.name}</div>
-                                  <div style={{fontSize:11,color:'#9CA3AF'}}>{p.sessions} тренувань</div>
+                                  <div style={{fontSize:11,color:'#9CA3AF',marginTop:2}}>{p.sessions} тренувань</div>
                                 </div>
-                                <div style={{fontFamily:'Bebas Neue',fontSize:18,color:'#C4ED00'}}>{Number(p.price).toLocaleString('uk')} ₴</div>
+                                <div style={{fontFamily:'Bebas Neue',fontSize:16,color:'#C4ED00'}}>{Number(p.price).toLocaleString('uk')} ₴</div>
+                                {c.active_plan_id===p.id && <span style={{color:'#C4ED00',fontSize:16}}>✓</span>}
                               </div>
                             ))}
                           </div>
                         </div>
                       )}
 
-                      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12}}>
-                        <span style={{fontFamily:'Bebas Neue',fontSize:16}}>Кліп-карта</span>
-                        <span style={{fontSize:11,padding:'3px 9px',borderRadius:20,fontWeight:600,background:c.clip_used>=c.clip_total?'rgba(255,79,79,.12)':'rgba(61,232,122,.12)',color:c.clip_used>=c.clip_total?'#ff4f4f':'#3de87a'}}>{c.clip_used>=c.clip_total?'Вичерпано':`Залишилось: ${c.clip_total-c.clip_used}`}</span>
-                      </div>
-                      <div style={{display:'flex',flexWrap:'wrap',gap:6,marginBottom:12}}>
-                        {Array.from({length:c.clip_total},(_,i)=>(
-                          <div key={i} style={{width:32,height:32,borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',fontSize:12,fontWeight:700,background:i<c.clip_used?'#C4ED00':i===c.clip_used?'rgba(71,212,255,.1)':'#1e3054',border:i<c.clip_used?'2px solid #C4ED00':i===c.clip_used?'2px solid #47d4ff':'2px solid #2a4a7f',color:i<c.clip_used?'#111':'#6B7280'}}>{i<c.clip_used?'✓':''}</div>
-                        ))}
-                      </div>
-                      <div style={{display:'flex',gap:8}}>
-                        <button onClick={()=>useClip(c.id)} style={{flex:1,padding:'9px',borderRadius:10,border:'1px solid #2a4a7f',background:'#1e3054',color:'#F3F4F6',fontFamily:'DM Sans',fontSize:12,fontWeight:600,cursor:'pointer'}}>Відмітити</button>
-                        <button onClick={()=>renewClip(c.id)} style={{flex:1,padding:'9px',borderRadius:10,border:'none',background:'#C4ED00',color:'#111',fontFamily:'DM Sans',fontSize:12,fontWeight:600,cursor:'pointer'}}>Поновити</button>
-                      </div>
+                      {/* Clip card */}
+                      {activePlan && !showAllPlans && (
+                        <>
+                          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
+                            <div style={{fontSize:14,fontWeight:700}}>Кліп-карта</div>
+                            <span style={{fontSize:11,padding:'3px 9px',borderRadius:20,fontWeight:600,
+                              background:isExhausted?'rgba(255,79,79,.12)':'rgba(61,232,122,.12)',
+                              color:isExhausted?'#ff4f4f':'#3de87a'}}>
+                              {isExhausted?'Вичерпано':`Залишилось: ${c.clip_total-c.clip_used}`}
+                            </span>
+                          </div>
+
+                          {/* Progress bar */}
+                          <div style={{height:5,background:'#1e3054',borderRadius:3,marginBottom:12,overflow:'hidden'}}>
+                            <div style={{height:'100%',borderRadius:3,width:`${progress}%`,background:isExhausted?'#ff4f4f':'#C4ED00',transition:'width 0.3s'}}/>
+                          </div>
+
+                          {/* Circles with dates */}
+                          <div style={{display:'flex',flexWrap:'wrap',gap:6,marginBottom:14}}>
+                            {Array.from({length:c.clip_total},(_,i)=>{
+                              const isDone = i < c.clip_used
+                              const s = doneSessions[i]
+                              return (
+                                <div key={i} style={{display:'flex',flexDirection:'column',alignItems:'center',gap:2,width:'calc(16.66% - 5px)'}}>
+                                  <div style={{width:34,height:34,borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',fontSize:13,fontWeight:700,
+                                    background:isDone?'#C4ED00':i===c.clip_used?'rgba(71,212,255,.1)':'#1e3054',
+                                    border:isDone?'2px solid #C4ED00':i===c.clip_used?'2px solid #47d4ff':'2px solid #2a4a7f',
+                                    color:isDone?'#111':'#6B7280'}}>
+                                    {isDone?'✓':i+1}
+                                  </div>
+                                  <div style={{fontSize:8,color:isDone?'#C4ED00':'#6B7280',textAlign:'center',opacity:isDone?1:0.4}}>
+                                    {isDone&&s ? s.date.slice(5).replace('-','/') : '—'}
+                                  </div>
+                                </div>
+                              )
+                            })}
+                          </div>
+
+                          {/* Visit history */}
+                          {doneSessions.length > 0 && (
+                            <div style={{borderTop:'1px solid #2a4a7f',paddingTop:12,marginBottom:12}}>
+                              <div style={{fontSize:11,color:'#9CA3AF',textTransform:'uppercase',letterSpacing:.5,marginBottom:8}}>Відвідування</div>
+                              <div style={{display:'flex',flexDirection:'column',gap:5}}>
+                                {doneSessions.map((s,i)=>(
+                                  <div key={s.id} style={{display:'flex',alignItems:'center',gap:10,background:'#162032',borderRadius:9,padding:'8px 12px'}}>
+                                    <div style={{width:22,height:22,borderRadius:'50%',background:'#C4ED00',display:'flex',alignItems:'center',justifyContent:'center',fontSize:10,fontWeight:700,color:'#111',flexShrink:0}}>{i+1}</div>
+                                    <div style={{flex:1}}>
+                                      <div style={{fontSize:12,fontWeight:600,color:'#F3F4F6'}}>{s.date.slice(8,10)}/{s.date.slice(5,7)}/{s.date.slice(0,4)}</div>
+                                      <div style={{fontSize:10,color:'#9CA3AF'}}>{s.time} · {s.type}</div>
+                                    </div>
+                                    <span style={{color:'#3de87a',fontSize:11}}>✓</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Actions */}
+                          <div style={{display:'flex',gap:8}}>
+                            <button onClick={()=>useClip(c.id)} style={{flex:1,padding:'9px',borderRadius:10,border:'1px solid #2a4a7f',background:'#1e3054',color:'#F3F4F6',fontFamily:'DM Sans',fontSize:12,fontWeight:600,cursor:'pointer'}}>Відмітити</button>
+                            <button onClick={async()=>{
+                              const renewDate = todayStr()
+                              await supabase.from('clients').update({clip_used:0,clip_renewed_at:renewDate}).eq('id',c.id)
+                              setClients(clients.map(x=>x.id===c.id?{...x,clip_used:0,clip_renewed_at:renewDate}:x))
+                            }} style={{flex:1,padding:'9px',borderRadius:10,border:'none',background:'#C4ED00',color:'#111',fontFamily:'DM Sans',fontSize:12,fontWeight:600,cursor:'pointer'}}>Поновити</button>
+                          </div>
+                        </>
+                      )}
                     </div>
                     )
                   })()}
@@ -1177,15 +1309,32 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
             </div>
             <label style={lbl}>Мета</label>
             <input value={nc.goal} onChange={e=>setNc({...nc,goal:e.target.value})} placeholder="Схуднення…" style={{...inp,marginBottom:12}}/>
-            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:8,marginBottom:16}}>
+            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:16}}>
               <div><label style={lbl}>Вага</label><input type="number" value={nc.w} onChange={e=>setNc({...nc,w:e.target.value})} placeholder="70" style={inp}/></div>
               <div><label style={lbl}>Зріст</label><input type="number" value={nc.h} onChange={e=>setNc({...nc,h:e.target.value})} placeholder="170" style={inp}/></div>
-              <div><label style={lbl}>Кліп</label>
-                <select value={nc.clip} onChange={e=>setNc({...nc,clip:e.target.value})} style={{...inp,padding:'10px 8px'}}>
-                  <option value={8}>8</option><option value={10}>10</option><option value={12}>12</option><option value={20}>20</option>
-                </select>
-              </div>
             </div>
+            {pricePlans.length > 0 && (
+              <>
+                <label style={lbl}>Тариф (необов'язково)</label>
+                <div style={{display:'flex',flexDirection:'column',gap:6,marginBottom:16}}>
+                  {pricePlans.map(p=>(
+                    <div key={p.id} onClick={()=>setNc({...nc,planId:p.id,clip:p.sessions})}
+                      style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'9px 12px',borderRadius:10,cursor:'pointer',
+                        border:`1.5px solid ${nc.planId===p.id?'#C4ED00':'#2a4a7f'}`,
+                        background:nc.planId===p.id?'rgba(196,237,0,.08)':'#1a2744'}}>
+                      <div>
+                        <div style={{fontSize:13,fontWeight:600,color:'#F3F4F6'}}>{p.name}</div>
+                        <div style={{fontSize:11,color:'#9CA3AF'}}>{p.sessions} тренувань</div>
+                      </div>
+                      <div style={{display:'flex',alignItems:'center',gap:8}}>
+                        <div style={{fontFamily:'Bebas Neue',fontSize:16,color:'#C4ED00'}}>{Number(p.price).toLocaleString('uk')} ₴</div>
+                        {nc.planId===p.id && <span style={{color:'#C4ED00'}}>✓</span>}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
             <div style={{display:'flex',gap:10}}>
               <button onClick={()=>setShowAdd(false)} style={{flex:1,padding:'10px',borderRadius:10,border:'1px solid #2a4a7f',background:'#1a2744',color:'#F3F4F6',fontFamily:'DM Sans',fontSize:13,fontWeight:600,cursor:'pointer'}}>Скасувати</button>
               <button onClick={saveClient} disabled={saving} style={{flex:1,padding:'10px',borderRadius:10,border:'none',background:'#C4ED00',color:'#111',fontFamily:'DM Sans',fontSize:13,fontWeight:600,cursor:'pointer'}}>{saving?'Збереження…':'Додати'}</button>
