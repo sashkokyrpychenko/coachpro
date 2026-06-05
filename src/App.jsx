@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from 'react'
-import * as React from 'react'
 import { supabase } from './supabase'
 import './App.css'
 
@@ -350,7 +349,153 @@ function DurationPicker({ value, onChange }) {
   )
 }
 
-// ─── Pick client modal (for split swipe) ─────────────────────────────────────
+// ─── Clip Tab Component ───────────────────────────────────────────────────────
+function ClipTab({ c, clients, setClients, sessions, pricePlans }) {
+  const [showAllPlans, setShowAllPlans] = useState(false)
+
+  const activePlan = pricePlans.find(p => p.id === c.active_plan_id)
+  const cSessions = sessions.filter(s => s.client_id === c.id)
+  const doneSessions = cSessions
+    .filter(s => s.done && (c.clip_renewed_at ? s.date >= c.clip_renewed_at : true))
+    .sort((a,b) => b.date.localeCompare(a.date))
+    .slice(0, c.clip_total)
+  const isExhausted = c.clip_used >= c.clip_total
+  const progress = c.clip_total ? Math.round((c.clip_used/c.clip_total)*100) : 0
+
+  const useClip = async () => {
+    if (c.clip_used >= c.clip_total) return
+    const newUsed = c.clip_used + 1
+    await supabase.from('clients').update({clip_used:newUsed}).eq('id',c.id)
+    setClients(prev => prev.map(x => x.id===c.id ? {...x,clip_used:newUsed} : x))
+  }
+
+  const renewClip = async () => {
+    const renewDate = todayStr()
+    await supabase.from('clients').update({clip_used:0,clip_renewed_at:renewDate}).eq('id',c.id)
+    setClients(prev => prev.map(x => x.id===c.id ? {...x,clip_used:0,clip_renewed_at:renewDate} : x))
+  }
+
+  const selectPlan = async (p) => {
+    const renewDate = todayStr()
+    await supabase.from('clients').update({active_plan_id:p.id,clip_total:p.sessions,clip_used:0,clip_renewed_at:renewDate}).eq('id',c.id)
+    setClients(prev => prev.map(x => x.id===c.id ? {...x,active_plan_id:p.id,clip_total:p.sessions,clip_used:0,clip_renewed_at:renewDate} : x))
+    setShowAllPlans(false)
+  }
+
+  return (
+    <div style={{background:'#1a2744',borderRadius:12,padding:14}}>
+      {/* Active plan or full list */}
+      {!showAllPlans ? (
+        <div style={{marginBottom:14}}>
+          <div style={{fontSize:11,color:'#9CA3AF',textTransform:'uppercase',letterSpacing:.5,marginBottom:8}}>Поточний тариф</div>
+          {activePlan ? (
+            <>
+              <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',background:'#162032',border:'1.5px solid rgba(196,237,0,.3)',borderRadius:10,padding:'11px 14px',marginBottom:8}}>
+                <div>
+                  <div style={{fontSize:13,fontWeight:700,color:'#F3F4F6'}}>{activePlan.name}</div>
+                  <div style={{fontSize:11,color:'#9CA3AF',marginTop:2}}>{activePlan.sessions} тренувань</div>
+                </div>
+                <div style={{fontFamily:'Bebas Neue',fontSize:18,color:'#C4ED00'}}>{Number(activePlan.price).toLocaleString('uk')} ₴</div>
+              </div>
+              <button onClick={()=>setShowAllPlans(true)}
+                style={{width:'100%',padding:'8px',borderRadius:9,border:'1px solid #2a4a7f',background:'transparent',color:'#9CA3AF',fontSize:12,cursor:'pointer'}}>
+                🔄 Змінити тариф
+              </button>
+            </>
+          ) : (
+            <button onClick={()=>setShowAllPlans(true)}
+              style={{width:'100%',padding:'10px',borderRadius:9,border:'1px dashed #2a4a7f',background:'transparent',color:'#9CA3AF',fontSize:13,cursor:'pointer'}}>
+              + Обрати тариф
+            </button>
+          )}
+        </div>
+      ) : (
+        <div style={{marginBottom:14}}>
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:10}}>
+            <div style={{fontSize:14,fontWeight:700}}>{activePlan?'Змінити тариф':'Обрати тариф'}</div>
+            {activePlan && <button onClick={()=>setShowAllPlans(false)} style={{background:'none',border:'none',color:'#9CA3AF',fontSize:20,cursor:'pointer',lineHeight:1}}>✕</button>}
+          </div>
+          <div style={{display:'flex',flexDirection:'column',gap:6}}>
+            {pricePlans.map(p=>(
+              <div key={p.id} onClick={()=>selectPlan(p)}
+                style={{display:'flex',alignItems:'center',gap:10,padding:'11px 14px',borderRadius:11,cursor:'pointer',
+                  border:`1.5px solid ${c.active_plan_id===p.id?'#C4ED00':'#2a4a7f'}`,
+                  background:c.active_plan_id===p.id?'rgba(196,237,0,.08)':'#162032'}}>
+                <div style={{flex:1}}>
+                  <div style={{fontSize:13,fontWeight:600,color:'#F3F4F6'}}>{p.name}</div>
+                  <div style={{fontSize:11,color:'#9CA3AF',marginTop:2}}>{p.sessions} тренувань</div>
+                </div>
+                <div style={{fontFamily:'Bebas Neue',fontSize:16,color:'#C4ED00'}}>{Number(p.price).toLocaleString('uk')} ₴</div>
+                {c.active_plan_id===p.id && <span style={{color:'#C4ED00',fontSize:16}}>✓</span>}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Clip card */}
+      {activePlan && !showAllPlans && (
+        <>
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
+            <div style={{fontSize:14,fontWeight:700}}>Кліп-карта</div>
+            <span style={{fontSize:11,padding:'3px 9px',borderRadius:20,fontWeight:600,
+              background:isExhausted?'rgba(255,79,79,.12)':'rgba(61,232,122,.12)',
+              color:isExhausted?'#ff4f4f':'#3de87a'}}>
+              {isExhausted?'Вичерпано':`Залишилось: ${c.clip_total-c.clip_used}`}
+            </span>
+          </div>
+
+          <div style={{height:5,background:'#1e3054',borderRadius:3,marginBottom:12,overflow:'hidden'}}>
+            <div style={{height:'100%',borderRadius:3,width:`${progress}%`,background:isExhausted?'#ff4f4f':'#C4ED00',transition:'width 0.3s'}}/>
+          </div>
+
+          <div style={{display:'flex',flexWrap:'wrap',gap:6,marginBottom:14}}>
+            {Array.from({length:c.clip_total},(_,i)=>{
+              const isDone = i < c.clip_used
+              const s = doneSessions[i]
+              return (
+                <div key={i} style={{display:'flex',flexDirection:'column',alignItems:'center',gap:2,width:'calc(16.66% - 5px)'}}>
+                  <div style={{width:34,height:34,borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',fontSize:13,fontWeight:700,
+                    background:isDone?'#C4ED00':i===c.clip_used?'rgba(71,212,255,.1)':'#1e3054',
+                    border:isDone?'2px solid #C4ED00':i===c.clip_used?'2px solid #47d4ff':'2px solid #2a4a7f',
+                    color:isDone?'#111':'#6B7280'}}>
+                    {isDone?'✓':i+1}
+                  </div>
+                  <div style={{fontSize:8,color:isDone?'#C4ED00':'#6B7280',textAlign:'center',opacity:isDone?1:0.4}}>
+                    {isDone&&s ? s.date.slice(5).replace('-','/') : '—'}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+
+          {doneSessions.length > 0 && (
+            <div style={{borderTop:'1px solid #2a4a7f',paddingTop:12,marginBottom:12}}>
+              <div style={{fontSize:11,color:'#9CA3AF',textTransform:'uppercase',letterSpacing:.5,marginBottom:8}}>Відвідування</div>
+              <div style={{display:'flex',flexDirection:'column',gap:5}}>
+                {doneSessions.map((s,i)=>(
+                  <div key={s.id} style={{display:'flex',alignItems:'center',gap:10,background:'#162032',borderRadius:9,padding:'8px 12px'}}>
+                    <div style={{width:22,height:22,borderRadius:'50%',background:'#C4ED00',display:'flex',alignItems:'center',justifyContent:'center',fontSize:10,fontWeight:700,color:'#111',flexShrink:0}}>{i+1}</div>
+                    <div style={{flex:1}}>
+                      <div style={{fontSize:12,fontWeight:600,color:'#F3F4F6'}}>{s.date.slice(8,10)}/{s.date.slice(5,7)}/{s.date.slice(0,4)}</div>
+                      <div style={{fontSize:10,color:'#9CA3AF'}}>{s.time} · {s.type}</div>
+                    </div>
+                    <span style={{color:'#3de87a',fontSize:11}}>✓</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div style={{display:'flex',gap:8}}>
+            <button onClick={useClip} style={{flex:1,padding:'9px',borderRadius:10,border:'1px solid #2a4a7f',background:'#1e3054',color:'#F3F4F6',fontFamily:'DM Sans',fontSize:12,fontWeight:600,cursor:'pointer'}}>Відмітити</button>
+            <button onClick={renewClip} style={{flex:1,padding:'9px',borderRadius:10,border:'none',background:'#C4ED00',color:'#111',fontFamily:'DM Sans',fontSize:12,fontWeight:600,cursor:'pointer'}}>Поновити</button>
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
 function PickClientModal({ sessions, clients, onPick, onClose }) {
   return (
     <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.75)',display:'flex',alignItems:'flex-end',justifyContent:'center',zIndex:300}} onClick={onClose}>
@@ -1139,145 +1284,9 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
                       <button onClick={()=>setShowAddRecord(c.id)} style={{width:'100%',marginTop:8,padding:'10px',borderRadius:10,border:'1px dashed #2a4a7f',background:'none',color:'#6B7280',fontFamily:'DM Sans',fontSize:13,cursor:'pointer'}}>＋ Додати рекорд</button>
                     </div>
                   )}
-                  {activeTab==='clip' && (() => {
-                    const activePlan = pricePlans.find(p => p.id === c.active_plan_id)
-                    const [showAllPlans, setShowAllPlans] = React.useState(false)
-                    const doneSessions = cSessions
-                      .filter(s => s.done && c.clip_renewed_at ? s.date >= c.clip_renewed_at : s.done)
-                      .sort((a,b) => b.date.localeCompare(a.date))
-                      .slice(0, c.clip_total)
-                    const isExhausted = c.clip_used >= c.clip_total
-                    const progress = c.clip_total ? Math.round((c.clip_used/c.clip_total)*100) : 0
-
-                    return (
-                    <div style={{background:'#1a2744',borderRadius:12,padding:14}}>
-
-                      {/* Active plan or full list */}
-                      {!showAllPlans ? (
-                        <div style={{marginBottom:14}}>
-                          <div style={{fontSize:11,color:'#9CA3AF',textTransform:'uppercase',letterSpacing:.5,marginBottom:8}}>Поточний тариф</div>
-                          {activePlan ? (
-                            <>
-                              <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',background:'#162032',border:'1.5px solid rgba(196,237,0,.3)',borderRadius:10,padding:'11px 14px',marginBottom:8}}>
-                                <div>
-                                  <div style={{fontSize:13,fontWeight:700,color:'#F3F4F6'}}>{activePlan.name}</div>
-                                  <div style={{fontSize:11,color:'#9CA3AF',marginTop:2}}>{activePlan.sessions} тренувань</div>
-                                </div>
-                                <div style={{fontFamily:'Bebas Neue',fontSize:18,color:'#C4ED00'}}>{Number(activePlan.price).toLocaleString('uk')} ₴</div>
-                              </div>
-                              <button onClick={()=>setShowAllPlans(true)}
-                                style={{width:'100%',padding:'8px',borderRadius:9,border:'1px solid #2a4a7f',background:'transparent',color:'#9CA3AF',fontSize:12,cursor:'pointer'}}>
-                                🔄 Змінити тариф
-                              </button>
-                            </>
-                          ) : (
-                            <button onClick={()=>setShowAllPlans(true)}
-                              style={{width:'100%',padding:'10px',borderRadius:9,border:'1px dashed #2a4a7f',background:'transparent',color:'#9CA3AF',fontSize:13,cursor:'pointer'}}>
-                              + Обрати тариф
-                            </button>
-                          )}
-                        </div>
-                      ) : (
-                        <div style={{marginBottom:14}}>
-                          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:10}}>
-                            <div style={{fontSize:14,fontWeight:700}}>{activePlan?'Змінити тариф':'Обрати тариф'}</div>
-                            {activePlan && <button onClick={()=>setShowAllPlans(false)} style={{background:'none',border:'none',color:'#9CA3AF',fontSize:20,cursor:'pointer',lineHeight:1}}>✕</button>}
-                          </div>
-                          <div style={{display:'flex',flexDirection:'column',gap:6}}>
-                            {pricePlans.map(p=>(
-                              <div key={p.id}
-                                onClick={async()=>{
-                                  const renewDate = todayStr()
-                                  await supabase.from('clients').update({active_plan_id:p.id,clip_total:p.sessions,clip_used:0,clip_renewed_at:renewDate}).eq('id',c.id)
-                                  setClients(clients.map(x=>x.id===c.id?{...x,active_plan_id:p.id,clip_total:p.sessions,clip_used:0,clip_renewed_at:renewDate}:x))
-                                  setShowAllPlans(false)
-                                }}
-                                style={{display:'flex',alignItems:'center',gap:10,padding:'11px 14px',borderRadius:11,cursor:'pointer',
-                                  border:`1.5px solid ${c.active_plan_id===p.id?'#C4ED00':'#2a4a7f'}`,
-                                  background:c.active_plan_id===p.id?'rgba(196,237,0,.08)':'#162032'}}>
-                                <div style={{flex:1}}>
-                                  <div style={{fontSize:13,fontWeight:600,color:'#F3F4F6'}}>{p.name}</div>
-                                  <div style={{fontSize:11,color:'#9CA3AF',marginTop:2}}>{p.sessions} тренувань</div>
-                                </div>
-                                <div style={{fontFamily:'Bebas Neue',fontSize:16,color:'#C4ED00'}}>{Number(p.price).toLocaleString('uk')} ₴</div>
-                                {c.active_plan_id===p.id && <span style={{color:'#C4ED00',fontSize:16}}>✓</span>}
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Clip card */}
-                      {activePlan && !showAllPlans && (
-                        <>
-                          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
-                            <div style={{fontSize:14,fontWeight:700}}>Кліп-карта</div>
-                            <span style={{fontSize:11,padding:'3px 9px',borderRadius:20,fontWeight:600,
-                              background:isExhausted?'rgba(255,79,79,.12)':'rgba(61,232,122,.12)',
-                              color:isExhausted?'#ff4f4f':'#3de87a'}}>
-                              {isExhausted?'Вичерпано':`Залишилось: ${c.clip_total-c.clip_used}`}
-                            </span>
-                          </div>
-
-                          {/* Progress bar */}
-                          <div style={{height:5,background:'#1e3054',borderRadius:3,marginBottom:12,overflow:'hidden'}}>
-                            <div style={{height:'100%',borderRadius:3,width:`${progress}%`,background:isExhausted?'#ff4f4f':'#C4ED00',transition:'width 0.3s'}}/>
-                          </div>
-
-                          {/* Circles with dates */}
-                          <div style={{display:'flex',flexWrap:'wrap',gap:6,marginBottom:14}}>
-                            {Array.from({length:c.clip_total},(_,i)=>{
-                              const isDone = i < c.clip_used
-                              const s = doneSessions[i]
-                              return (
-                                <div key={i} style={{display:'flex',flexDirection:'column',alignItems:'center',gap:2,width:'calc(16.66% - 5px)'}}>
-                                  <div style={{width:34,height:34,borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',fontSize:13,fontWeight:700,
-                                    background:isDone?'#C4ED00':i===c.clip_used?'rgba(71,212,255,.1)':'#1e3054',
-                                    border:isDone?'2px solid #C4ED00':i===c.clip_used?'2px solid #47d4ff':'2px solid #2a4a7f',
-                                    color:isDone?'#111':'#6B7280'}}>
-                                    {isDone?'✓':i+1}
-                                  </div>
-                                  <div style={{fontSize:8,color:isDone?'#C4ED00':'#6B7280',textAlign:'center',opacity:isDone?1:0.4}}>
-                                    {isDone&&s ? s.date.slice(5).replace('-','/') : '—'}
-                                  </div>
-                                </div>
-                              )
-                            })}
-                          </div>
-
-                          {/* Visit history */}
-                          {doneSessions.length > 0 && (
-                            <div style={{borderTop:'1px solid #2a4a7f',paddingTop:12,marginBottom:12}}>
-                              <div style={{fontSize:11,color:'#9CA3AF',textTransform:'uppercase',letterSpacing:.5,marginBottom:8}}>Відвідування</div>
-                              <div style={{display:'flex',flexDirection:'column',gap:5}}>
-                                {doneSessions.map((s,i)=>(
-                                  <div key={s.id} style={{display:'flex',alignItems:'center',gap:10,background:'#162032',borderRadius:9,padding:'8px 12px'}}>
-                                    <div style={{width:22,height:22,borderRadius:'50%',background:'#C4ED00',display:'flex',alignItems:'center',justifyContent:'center',fontSize:10,fontWeight:700,color:'#111',flexShrink:0}}>{i+1}</div>
-                                    <div style={{flex:1}}>
-                                      <div style={{fontSize:12,fontWeight:600,color:'#F3F4F6'}}>{s.date.slice(8,10)}/{s.date.slice(5,7)}/{s.date.slice(0,4)}</div>
-                                      <div style={{fontSize:10,color:'#9CA3AF'}}>{s.time} · {s.type}</div>
-                                    </div>
-                                    <span style={{color:'#3de87a',fontSize:11}}>✓</span>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-
-                          {/* Actions */}
-                          <div style={{display:'flex',gap:8}}>
-                            <button onClick={()=>useClip(c.id)} style={{flex:1,padding:'9px',borderRadius:10,border:'1px solid #2a4a7f',background:'#1e3054',color:'#F3F4F6',fontFamily:'DM Sans',fontSize:12,fontWeight:600,cursor:'pointer'}}>Відмітити</button>
-                            <button onClick={async()=>{
-                              const renewDate = todayStr()
-                              await supabase.from('clients').update({clip_used:0,clip_renewed_at:renewDate}).eq('id',c.id)
-                              setClients(clients.map(x=>x.id===c.id?{...x,clip_used:0,clip_renewed_at:renewDate}:x))
-                            }} style={{flex:1,padding:'9px',borderRadius:10,border:'none',background:'#C4ED00',color:'#111',fontFamily:'DM Sans',fontSize:12,fontWeight:600,cursor:'pointer'}}>Поновити</button>
-                          </div>
-                        </>
-                      )}
-                    </div>
-                    )
-                  })()}
+                  {activeTab==='clip' && (
+                    <ClipTab c={c} clients={clients} setClients={setClients} sessions={sessions} pricePlans={pricePlans}/>
+                  )}
                   {activeTab==='history' && (
                     <div>
                       {cSessions.filter(s=>s.done).sort((a,b)=>b.date.localeCompare(a.date)).map(s=>(
