@@ -357,8 +357,9 @@ function ClipTab({ c, clients, setClients, sessions, pricePlans }) {
   const cSessions = sessions.filter(s => s.client_id === c.id)
   const doneSessions = cSessions
     .filter(s => s.done && (c.clip_renewed_at ? s.date >= c.clip_renewed_at : true))
-    .sort((a,b) => b.date.localeCompare(a.date))
-    .slice(0, c.clip_total)
+    .sort((a,b) => a.date.localeCompare(b.date))
+    .slice(-c.clip_total)
+    .reverse()
   const isExhausted = c.clip_used >= c.clip_total
   const progress = c.clip_total ? Math.round((c.clip_used/c.clip_total)*100) : 0
 
