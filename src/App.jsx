@@ -6,7 +6,7 @@ import './App.css'
 
 const _fontLink = document.createElement('link')
 _fontLink.rel = 'stylesheet'
-_fontLink.href = 'https://api.fontshare.com/v2/css?f[]=clash-display@400,500,600,700&f[]=cabinet-grotesk@400,500,700,800&display=swap'
+_fontLink.href = 'https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=DM+Sans:wght@300;400;500;600;700&display=swap'
 document.head.appendChild(_fontLink)
 
 const _darkStyle = document.createElement('style')
@@ -119,13 +119,13 @@ function SwipeSessionCard({ s, clients, onEdit, onToggle }) {
           cursor:'pointer', userSelect:'none', position:'relative', zIndex:1,
         }}
       >
-        <div style={{width:40,height:40,borderRadius:'50%',background:c?.color||'#888',display:'flex',alignItems:'center',justifyContent:'center',fontFamily:'Clash Display',fontSize:15,color:'#111',flexShrink:0}}>{c?.ava||'?'}</div>
+        <div style={{width:40,height:40,borderRadius:'50%',background:c?.color||'#888',display:'flex',alignItems:'center',justifyContent:'center',fontFamily:'Oswald',fontSize:15,color:'#111',flexShrink:0}}>{c?.ava||'?'}</div>
         <div style={{flex:1}}>
           <div style={{fontSize:14,fontWeight:600}}>{c?.name||'Гість'}</div>
           <div style={{fontSize:12,color:'#4A90B8',marginTop:2}}>{s.type}</div>
         </div>
         <div style={{textAlign:'right', display:'flex', flexDirection:'column', alignItems:'flex-end', gap:6}}>
-          <div style={{fontFamily:'Clash Display',fontSize:22,color:'#00F5FF'}}>{s.time}</div>
+          <div style={{fontFamily:'Oswald',fontSize:22,color:'#00F5FF'}}>{s.time}</div>
           <span style={{fontSize:11,padding:'2px 10px',borderRadius:20,fontWeight:600,background:s.done?'rgba(22,163,74,.12)':'rgba(0,245,255,.12)',color:s.done?'#00FF88':'#00F5FF'}}>{s.done?'✓ Виконано':'Заплановано'}</span>
         </div>
       </div>
@@ -170,7 +170,7 @@ function SplitCard({ sessions, clients, onEdit, onToggle }) {
         style={{transform:`translateX(${offset}px)`, transition: offset===0 ? 'transform 0.25s ease' : 'none', background:'#0D0D16', borderRadius:12, border:'1px solid #1A2E4A', overflow:'hidden', position:'relative', zIndex:1, userSelect:'none'}}
       >
         <div style={{background:'#08080F', padding:'8px 14px', display:'flex', alignItems:'center', gap:8, borderBottom:'1px solid #162038'}}>
-          <span style={{color:'#00F5FF', fontFamily:'Clash Display', fontSize:22, letterSpacing:1}}>{sessions[0].time}</span>
+          <span style={{color:'#00F5FF', fontFamily:'Oswald', fontSize:22, letterSpacing:1}}>{sessions[0].time}</span>
           <span style={{background:'rgba(0,245,255,.15)', color:'#00F5FF', fontSize:10, fontWeight:700, borderRadius:6, padding:'2px 8px', letterSpacing:.5}}>СПЛІТ</span>
         </div>
         {sessions.map((s, i) => {
@@ -180,7 +180,7 @@ function SplitCard({ sessions, clients, onEdit, onToggle }) {
               onClick={() => { if (!dragging.current) onToggle(s.id, s.done) }}
               style={{display:'flex', alignItems:'center', gap:12, padding:'11px 14px', borderBottom: i < sessions.length-1 ? '1px solid #1A2E4A' : 'none', cursor:'pointer'}}
             >
-              <div style={{width:36,height:36,borderRadius:'50%',background:c?.color||'#888',display:'flex',alignItems:'center',justifyContent:'center',fontFamily:'Clash Display',fontSize:14,color:'#111',flexShrink:0}}>{c?.ava||'?'}</div>
+              <div style={{width:36,height:36,borderRadius:'50%',background:c?.color||'#888',display:'flex',alignItems:'center',justifyContent:'center',fontFamily:'Oswald',fontSize:14,color:'#111',flexShrink:0}}>{c?.ava||'?'}</div>
               <div style={{flex:1}}>
                 <div style={{fontSize:13,fontWeight:600}}>{c?.name||'Гість'}</div>
                 <div style={{fontSize:11,color:'#4A90B8',marginTop:1}}>{s.type}</div>
@@ -229,7 +229,7 @@ function DayTimeline({ sessions, clients, onClientClick }) {
             <div key={h} style={{
               height: SLOT_H, display:'flex', alignItems:'flex-start', paddingTop:4,
               color: h === now.getHours() ? '#00F5FF' : '#3A4A5A',
-              fontSize:10, width:36, fontFamily:'Cabinet Grotesk',
+              fontSize:10, width:36, fontFamily:'DM Sans',
             }}>
               {String(h).padStart(2,'0')}:00
             </div>
@@ -442,7 +442,7 @@ function ClipTab({ c, clients, setClients, sessions, pricePlans, setFinance }) {
       {editDateIdx !== null && (
         <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.75)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:300}} onClick={()=>setEditDateIdx(null)}>
           <div style={{background:'#111118',border:'1px solid #1A2E4A',borderRadius:16,padding:24,width:280}} onClick={e=>e.stopPropagation()}>
-            <div style={{fontFamily:'Clash Display',fontSize:20,marginBottom:16,color:'#E8EAF0'}}>Змінити дату #{editDateIdx+1}</div>
+            <div style={{fontFamily:'Oswald',fontSize:20,marginBottom:16,color:'#E8EAF0'}}>Змінити дату #{editDateIdx+1}</div>
             <input type="date" value={editDateVal} onChange={e=>setEditDateVal(e.target.value)}
               style={{width:'100%',padding:'10px 12px',borderRadius:10,border:'1px solid #1A2E4A',background:'#08080F',color:'#E8EAF0',fontSize:14,marginBottom:16,boxSizing:'border-box'}}/>
             <div style={{display:'flex',gap:8}}>
@@ -470,7 +470,7 @@ function ClipTab({ c, clients, setClients, sessions, pricePlans, setFinance }) {
                   <div style={{fontSize:13,fontWeight:700,color:'#E8EAF0'}}>{activePlan.name}</div>
                   <div style={{fontSize:11,color:'#4A90B8',marginTop:2}}>{activePlan.sessions} тренувань</div>
                 </div>
-                <div style={{fontFamily:'Clash Display',fontSize:18,color:'#00F5FF'}}>{Number(activePlan.price).toLocaleString('uk')} ₴</div>
+                <div style={{fontFamily:'Oswald',fontSize:18,color:'#00F5FF'}}>{Number(activePlan.price).toLocaleString('uk')} ₴</div>
               </div>
               <button onClick={()=>setShowAllPlans(true)}
                 style={{width:'100%',padding:'8px',borderRadius:9,border:'1px solid #1A2E4A',background:'transparent',color:'#4A90B8',fontSize:12,cursor:'pointer'}}>
@@ -500,7 +500,7 @@ function ClipTab({ c, clients, setClients, sessions, pricePlans, setFinance }) {
                   <div style={{fontSize:13,fontWeight:600,color:'#E8EAF0'}}>{p.name}</div>
                   <div style={{fontSize:11,color:'#4A90B8',marginTop:2}}>{p.sessions} тренувань</div>
                 </div>
-                <div style={{fontFamily:'Clash Display',fontSize:16,color:'#00F5FF'}}>{Number(p.price).toLocaleString('uk')} ₴</div>
+                <div style={{fontFamily:'Oswald',fontSize:16,color:'#00F5FF'}}>{Number(p.price).toLocaleString('uk')} ₴</div>
                 {c.active_plan_id===p.id && <span style={{color:'#00F5FF',fontSize:16}}>✓</span>}
               </div>
             ))}
@@ -563,8 +563,8 @@ function ClipTab({ c, clients, setClients, sessions, pricePlans, setFinance }) {
           )}
 
           <div style={{display:'flex',gap:8}}>
-            <button onClick={useClip} style={{flex:1,padding:'9px',borderRadius:10,border:'1px solid #1A2E4A',background:'#08080F',color:'#E8EAF0',fontFamily:'Cabinet Grotesk',fontSize:12,fontWeight:600,cursor:'pointer'}}>Відмітити</button>
-            <button onClick={renewClip} style={{flex:1,padding:'9px',borderRadius:10,border:'none',background:'#00F5FF',color:'#111',fontFamily:'Cabinet Grotesk',fontSize:12,fontWeight:600,cursor:'pointer'}}>Поновити</button>
+            <button onClick={useClip} style={{flex:1,padding:'9px',borderRadius:10,border:'1px solid #1A2E4A',background:'#08080F',color:'#E8EAF0',fontFamily:'DM Sans',fontSize:12,fontWeight:600,cursor:'pointer'}}>Відмітити</button>
+            <button onClick={renewClip} style={{flex:1,padding:'9px',borderRadius:10,border:'none',background:'#00F5FF',color:'#111',fontFamily:'DM Sans',fontSize:12,fontWeight:600,cursor:'pointer'}}>Поновити</button>
           </div>
         </>
       )}
@@ -576,13 +576,13 @@ function PickClientModal({ sessions, clients, onPick, onClose }) {
     <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.75)',display:'flex',alignItems:'flex-end',justifyContent:'center',zIndex:300}} onClick={onClose}>
       <div style={{background:'#111118',border:'1px solid #1A2E4A',borderRadius:'20px 20px 0 0',width:'100%',maxWidth:480,padding:'20px 20px 36px'}} onClick={e=>e.stopPropagation()}>
         <div style={{width:40,height:4,background:'#1E2A3A',borderRadius:2,margin:'0 auto 18px'}}/>
-        <div style={{fontFamily:'Clash Display',fontSize:22,marginBottom:16}}>Кого редагувати?</div>
+        <div style={{fontFamily:'Oswald',fontSize:22,marginBottom:16}}>Кого редагувати?</div>
         {sessions.map(s => {
           const c = clients.find(x => x.id === s.client_id)
           return (
             <div key={s.id} onClick={() => onPick(s)}
               style={{display:'flex',alignItems:'center',gap:12,padding:'13px 14px',background:'#0D0D16',borderRadius:12,marginBottom:8,cursor:'pointer',border:'1px solid #1A2E4A'}}>
-              <div style={{width:40,height:40,borderRadius:'50%',background:c?.color||'#888',display:'flex',alignItems:'center',justifyContent:'center',fontFamily:'Clash Display',fontSize:15,color:'#111'}}>{c?.ava||'?'}</div>
+              <div style={{width:40,height:40,borderRadius:'50%',background:c?.color||'#888',display:'flex',alignItems:'center',justifyContent:'center',fontFamily:'Oswald',fontSize:15,color:'#111'}}>{c?.ava||'?'}</div>
               <div style={{flex:1}}>
                 <div style={{fontSize:14,fontWeight:600}}>{c?.name||'Гість'}</div>
                 <div style={{fontSize:12,color:'#4A90B8'}}>{s.time} · {s.type}</div>
@@ -591,7 +591,7 @@ function PickClientModal({ sessions, clients, onPick, onClose }) {
             </div>
           )
         })}
-        <button onClick={onClose} style={{width:'100%',marginTop:4,padding:11,borderRadius:12,border:'1px solid #1A2E4A',background:'transparent',color:'#4A90B8',fontFamily:'Cabinet Grotesk',fontSize:13,cursor:'pointer'}}>Скасувати</button>
+        <button onClick={onClose} style={{width:'100%',marginTop:4,padding:11,borderRadius:12,border:'1px solid #1A2E4A',background:'transparent',color:'#4A90B8',fontFamily:'DM Sans',fontSize:13,cursor:'pointer'}}>Скасувати</button>
       </div>
     </div>
   )
@@ -619,7 +619,7 @@ function EditSessionModal({ session, clients, onClose, onSave, onDelete }) {
     }
   }, [])
 
-  const inp = {width:'100%',background:'#0D0D16',border:'1px solid #1A2E4A',borderRadius:10,padding:'10px 14px',color:'#E8EAF0',fontFamily:'Cabinet Grotesk',fontSize:14,outline:'none',boxSizing:'border-box'}
+  const inp = {width:'100%',background:'#0D0D16',border:'1px solid #1A2E4A',borderRadius:10,padding:'10px 14px',color:'#E8EAF0',fontFamily:'DM Sans',fontSize:14,outline:'none',boxSizing:'border-box'}
   const lbl = {fontSize:11,color:'#4A90B8',textTransform:'uppercase',letterSpacing:.5,display:'block',marginBottom:6}
 
   return (
@@ -628,7 +628,7 @@ function EditSessionModal({ session, clients, onClose, onSave, onDelete }) {
         {/* Handle */}
         <div style={{width:40,height:4,background:'#1E2A3A',borderRadius:2,margin:'0 auto 18px'}}/>
 
-        <div style={{fontFamily:'Clash Display',fontSize:22,marginBottom:18}}>Редагувати сесію</div>
+        <div style={{fontFamily:'Oswald',fontSize:22,marginBottom:18}}>Редагувати сесію</div>
 
         {/* Client */}
         <label style={lbl}>Клієнт</label>
@@ -645,7 +645,7 @@ function EditSessionModal({ session, clients, onClose, onSave, onDelete }) {
                 display:'flex', alignItems:'center', gap:7, cursor:'pointer',
               }}
             >
-              <div style={{width:28,height:28,borderRadius:'50%',background:c.color,display:'flex',alignItems:'center',justifyContent:'center',fontFamily:'Clash Display',fontSize:12,color:'#111'}}>{c.ava}</div>
+              <div style={{width:28,height:28,borderRadius:'50%',background:c.color,display:'flex',alignItems:'center',justifyContent:'center',fontFamily:'Oswald',fontSize:12,color:'#111'}}>{c.ava}</div>
               <span style={{fontSize:12,fontWeight:600,color:clientId===c.id?'#E8EAF0':'#4A5A6A',whiteSpace:'nowrap'}}>{c.name.split(' ')[0]}</span>
             </div>
           ))}
@@ -673,21 +673,21 @@ function EditSessionModal({ session, clients, onClose, onSave, onDelete }) {
         {/* Save */}
         <button
           onClick={() => onSave({...session, client_id:clientId, date, time, type, duration})}
-          style={{width:'100%',padding:12,borderRadius:12,border:'none',background:'#00F5FF',color:'#111',fontFamily:'Cabinet Grotesk',fontSize:14,fontWeight:700,cursor:'pointer',marginBottom:8}}
+          style={{width:'100%',padding:12,borderRadius:12,border:'none',background:'#00F5FF',color:'#111',fontFamily:'DM Sans',fontSize:14,fontWeight:700,cursor:'pointer',marginBottom:8}}
         >Зберегти зміни</button>
 
         {/* Delete */}
         {!confirmDelete ? (
           <button
             onClick={() => setConfirmDelete(true)}
-            style={{width:'100%',padding:11,borderRadius:12,border:'1px solid rgba(255,79,79,.3)',background:'transparent',color:'#FF4466',fontFamily:'Cabinet Grotesk',fontSize:13,fontWeight:600,cursor:'pointer'}}
+            style={{width:'100%',padding:11,borderRadius:12,border:'1px solid rgba(255,79,79,.3)',background:'transparent',color:'#FF4466',fontFamily:'DM Sans',fontSize:13,fontWeight:600,cursor:'pointer'}}
           >🗑 Видалити сесію</button>
         ) : (
           <div style={{background:'rgba(255,79,79,.08)',border:'1px solid rgba(255,79,79,.25)',borderRadius:12,padding:14}}>
             <div style={{color:'#E8EAF0',fontSize:13,textAlign:'center',marginBottom:12}}>Видалити цю сесію?</div>
             <div style={{display:'flex',gap:8}}>
-              <button onClick={() => setConfirmDelete(false)} style={{flex:1,padding:'9px',borderRadius:10,border:'1px solid #1A2E4A',background:'#0D0D16',color:'#E8EAF0',fontFamily:'Cabinet Grotesk',fontSize:13,cursor:'pointer'}}>Скасувати</button>
-              <button onClick={() => onDelete(session.id)} style={{flex:1,padding:'9px',borderRadius:10,border:'none',background:'#FF4466',color:'#fff',fontFamily:'Cabinet Grotesk',fontSize:13,fontWeight:700,cursor:'pointer'}}>Видалити</button>
+              <button onClick={() => setConfirmDelete(false)} style={{flex:1,padding:'9px',borderRadius:10,border:'1px solid #1A2E4A',background:'#0D0D16',color:'#E8EAF0',fontFamily:'DM Sans',fontSize:13,cursor:'pointer'}}>Скасувати</button>
+              <button onClick={() => onDelete(session.id)} style={{flex:1,padding:'9px',borderRadius:10,border:'none',background:'#FF4466',color:'#fff',fontFamily:'DM Sans',fontSize:13,fontWeight:700,cursor:'pointer'}}>Видалити</button>
             </div>
           </div>
         )}
@@ -829,7 +829,7 @@ function ScheduleTab({ clients, sessions, setSessions, onClientClick }) {
       <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:12}}>
         <button onClick={prevPeriod} style={{padding:'7px 12px',borderRadius:8,border:'1px solid #1A2E4A',background:'#0D0D16',color:'#E8EAF0',cursor:'pointer',fontSize:14}}>‹</button>
         <button onClick={nextPeriod} style={{padding:'7px 12px',borderRadius:8,border:'1px solid #1A2E4A',background:'#0D0D16',color:'#E8EAF0',cursor:'pointer',fontSize:14}}>›</button>
-        <div style={{fontFamily:'Clash Display',fontSize:20,flex:1}}>
+        <div style={{fontFamily:'Oswald',fontSize:20,flex:1}}>
           {viewMode==='week'
             ? `${weekDates[0].getDate()} — ${weekDates[6].getDate()} ${MONTHS_UK[weekDates[6].getMonth()]}`
             : `${MONTHS_UK[refDate.getMonth()]} ${refDate.getFullYear()}`}
@@ -862,7 +862,7 @@ function ScheduleTab({ clients, sessions, setSessions, onClientClick }) {
 
           {/* Day label */}
           <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12}}>
-            <span style={{fontFamily:'Clash Display',fontSize:16,color:'#4A90B8'}}>{DAYS_FULL[selDate.getDay()]}, {selDate.getDate()} {MONTHS_UK2[selDate.getMonth()]}</span>
+            <span style={{fontFamily:'Oswald',fontSize:16,color:'#4A90B8'}}>{DAYS_FULL[selDate.getDay()]}, {selDate.getDate()} {MONTHS_UK2[selDate.getMonth()]}</span>
             <small style={{color:'#4A90B8',fontSize:12}}>{daySessions.length} сесій</small>
           </div>
 
@@ -903,7 +903,7 @@ function ScheduleTab({ clients, sessions, setSessions, onClientClick }) {
           </div>
           <div style={{borderTop:'1px solid #162038',paddingTop:12}}>
             <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:10}}>
-              <span style={{fontFamily:'Clash Display',fontSize:16,color:'#4A90B8'}}>{selDate.getDate()} {MONTHS_UK2[selDate.getMonth()]}</span>
+              <span style={{fontFamily:'Oswald',fontSize:16,color:'#4A90B8'}}>{selDate.getDate()} {MONTHS_UK2[selDate.getMonth()]}</span>
               <small style={{color:'#4A90B8',fontSize:12}}>{daySessions.length} сесій</small>
             </div>
             {daySessions.length===0 && <div style={{color:'#4A90B8',textAlign:'center',padding:'12px 0',fontSize:13}}>Немає сесій</div>}
@@ -925,20 +925,20 @@ function ScheduleTab({ clients, sessions, setSessions, onClientClick }) {
       {showModal && (
         <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.7)',backdropFilter:'blur(4px)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:200,padding:20}}>
           <div style={{background:'#111118',border:'1px solid #1A2E4A',borderRadius:20,width:'100%',maxWidth:480,padding:24}}>
-            <div style={{fontFamily:'Clash Display',fontSize:22,marginBottom:16}}>Нова сесія — {selDate.getDate()} {MONTHS_UK2[selDate.getMonth()]}</div>
+            <div style={{fontFamily:'Oswald',fontSize:22,marginBottom:16}}>Нова сесія — {selDate.getDate()} {MONTHS_UK2[selDate.getMonth()]}</div>
             <div style={{display:'flex',gap:8,marginBottom:12}}>
-              <button onClick={()=>setSplitMode(false)} style={{flex:1,padding:'8px',borderRadius:10,border:`1px solid ${!splitMode?'#00F5FF':'#1E2A3A'}`,background:!splitMode?'rgba(0,245,255,.1)':'none',color:!splitMode?'#00F5FF':'#4A5A6A',fontFamily:'Cabinet Grotesk',fontSize:12,fontWeight:600,cursor:'pointer'}}>👤 Один клієнт</button>
-              <button onClick={()=>setSplitMode(true)} style={{flex:1,padding:'8px',borderRadius:10,border:`1px solid ${splitMode?'#00F5FF':'#1E2A3A'}`,background:splitMode?'rgba(0,245,255,.1)':'none',color:splitMode?'#00F5FF':'#4A5A6A',fontFamily:'Cabinet Grotesk',fontSize:12,fontWeight:600,cursor:'pointer'}}>👥 Спліт (двоє)</button>
+              <button onClick={()=>setSplitMode(false)} style={{flex:1,padding:'8px',borderRadius:10,border:`1px solid ${!splitMode?'#00F5FF':'#1E2A3A'}`,background:!splitMode?'rgba(0,245,255,.1)':'none',color:!splitMode?'#00F5FF':'#4A5A6A',fontFamily:'DM Sans',fontSize:12,fontWeight:600,cursor:'pointer'}}>👤 Один клієнт</button>
+              <button onClick={()=>setSplitMode(true)} style={{flex:1,padding:'8px',borderRadius:10,border:`1px solid ${splitMode?'#00F5FF':'#1E2A3A'}`,background:splitMode?'rgba(0,245,255,.1)':'none',color:splitMode?'#00F5FF':'#4A5A6A',fontFamily:'DM Sans',fontSize:12,fontWeight:600,cursor:'pointer'}}>👥 Спліт (двоє)</button>
             </div>
             <label style={{fontSize:11,color:'#4A90B8',textTransform:'uppercase',letterSpacing:.5,display:'block',marginBottom:6}}>{splitMode?'Перший клієнт':'Клієнт'}</label>
-            <select value={fClient} onChange={e=>setFClient(e.target.value)} style={{width:'100%',background:'#0D0D16',border:'1px solid #1A2E4A',borderRadius:10,padding:'10px 14px',color:'#E8EAF0',fontFamily:'Cabinet Grotesk',fontSize:14,marginBottom:12,outline:'none'}}>
+            <select value={fClient} onChange={e=>setFClient(e.target.value)} style={{width:'100%',background:'#0D0D16',border:'1px solid #1A2E4A',borderRadius:10,padding:'10px 14px',color:'#E8EAF0',fontFamily:'DM Sans',fontSize:14,marginBottom:12,outline:'none'}}>
               <option value="">— Оберіть —</option>
               {clients.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
             {splitMode && (
               <>
                 <label style={{fontSize:11,color:'#4A90B8',textTransform:'uppercase',letterSpacing:.5,display:'block',marginBottom:6}}>Другий клієнт</label>
-                <select value={fClient2} onChange={e=>setFClient2(e.target.value)} style={{width:'100%',background:'#0D0D16',border:'1px solid #1A2E4A',borderRadius:10,padding:'10px 14px',color:'#E8EAF0',fontFamily:'Cabinet Grotesk',fontSize:14,marginBottom:12,outline:'none'}}>
+                <select value={fClient2} onChange={e=>setFClient2(e.target.value)} style={{width:'100%',background:'#0D0D16',border:'1px solid #1A2E4A',borderRadius:10,padding:'10px 14px',color:'#E8EAF0',fontFamily:'DM Sans',fontSize:14,marginBottom:12,outline:'none'}}>
                   <option value="">— Оберіть —</option>
                   {clients.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}
                 </select>
@@ -947,19 +947,19 @@ function ScheduleTab({ clients, sessions, setSessions, onClientClick }) {
             <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:12}}>
               <div>
                 <label style={{fontSize:11,color:'#4A90B8',textTransform:'uppercase',letterSpacing:.5,display:'block',marginBottom:6}}>Час</label>
-                <input type="time" value={fTime} onChange={e=>setFTime(e.target.value)} style={{width:'100%',background:'#0D0D16',border:'1px solid #1A2E4A',borderRadius:10,padding:'10px 14px',color:'#E8EAF0',fontFamily:'Cabinet Grotesk',fontSize:14,outline:'none'}}/>
+                <input type="time" value={fTime} onChange={e=>setFTime(e.target.value)} style={{width:'100%',background:'#0D0D16',border:'1px solid #1A2E4A',borderRadius:10,padding:'10px 14px',color:'#E8EAF0',fontFamily:'DM Sans',fontSize:14,outline:'none'}}/>
               </div>
               <div>
                 <label style={{fontSize:11,color:'#4A90B8',textTransform:'uppercase',letterSpacing:.5,display:'block',marginBottom:6}}>Тип</label>
-                <input value={fType} onChange={e=>setFType(e.target.value)} placeholder="Силові…" style={{width:'100%',background:'#0D0D16',border:'1px solid #1A2E4A',borderRadius:10,padding:'10px 14px',color:'#E8EAF0',fontFamily:'Cabinet Grotesk',fontSize:14,outline:'none'}}/>
+                <input value={fType} onChange={e=>setFType(e.target.value)} placeholder="Силові…" style={{width:'100%',background:'#0D0D16',border:'1px solid #1A2E4A',borderRadius:10,padding:'10px 14px',color:'#E8EAF0',fontFamily:'DM Sans',fontSize:14,outline:'none'}}/>
               </div>
             </div>
             <label style={{fontSize:11,color:'#4A90B8',textTransform:'uppercase',letterSpacing:.5,display:'block',marginBottom:6}}>Тривалість</label>
             <DurationPicker value={fDuration} onChange={setFDuration}/>
             <div style={{marginBottom:16}}/>
             <div style={{display:'flex',gap:10}}>
-              <button onClick={()=>{setShowModal(false);setSplitMode(false)}} style={{flex:1,padding:'10px',borderRadius:10,border:'1px solid #1A2E4A',background:'#0D0D16',color:'#E8EAF0',fontFamily:'Cabinet Grotesk',fontSize:13,fontWeight:600,cursor:'pointer'}}>Скасувати</button>
-              <button onClick={saveSession} style={{flex:1,padding:'10px',borderRadius:10,border:'none',background:'#00F5FF',color:'#111',fontFamily:'Cabinet Grotesk',fontSize:13,fontWeight:600,cursor:'pointer'}}>Додати</button>
+              <button onClick={()=>{setShowModal(false);setSplitMode(false)}} style={{flex:1,padding:'10px',borderRadius:10,border:'1px solid #1A2E4A',background:'#0D0D16',color:'#E8EAF0',fontFamily:'DM Sans',fontSize:13,fontWeight:600,cursor:'pointer'}}>Скасувати</button>
+              <button onClick={saveSession} style={{flex:1,padding:'10px',borderRadius:10,border:'none',background:'#00F5FF',color:'#111',fontFamily:'DM Sans',fontSize:13,fontWeight:600,cursor:'pointer'}}>Додати</button>
             </div>
           </div>
         </div>
@@ -1192,7 +1192,7 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
   }
 
   const DTABS = [{id:'profile',label:'Профіль'},{id:'metrics',label:'Показники'},{id:'schedule',label:'Графік'},{id:'records',label:'Рекорди'},{id:'clip',label:'Кліп-карта'},{id:'history',label:'Історія'}]
-  const inp = {width:'100%',background:'#0D0D16',border:'1px solid #1A2E4A',borderRadius:10,padding:'10px 14px',color:'#E8EAF0',fontFamily:'Cabinet Grotesk',fontSize:14,outline:'none'}
+  const inp = {width:'100%',background:'#0D0D16',border:'1px solid #1A2E4A',borderRadius:10,padding:'10px 14px',color:'#E8EAF0',fontFamily:'DM Sans',fontSize:14,outline:'none'}
   const lbl = {fontSize:11,color:'#4A90B8',textTransform:'uppercase',letterSpacing:.5,display:'block',marginBottom:6}
 
   return (
@@ -1212,7 +1212,7 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
           return (
             <div key={c.id} style={{background:'#111118',border:`1px solid ${isOpen?'#00F5FF':'#1E2A3A'}`,borderRadius:14,overflow:'hidden',alignSelf:'start'}}>
               <div onClick={()=>setOpenId(isOpen?null:c.id)} style={{display:'flex',alignItems:'center',gap:12,padding:14,cursor:'pointer'}}>
-                <div style={{width:46,height:46,borderRadius:'50%',background:c.color,display:'flex',alignItems:'center',justifyContent:'center',fontFamily:'Clash Display',fontSize:18,color:'#111',flexShrink:0}}>{c.ava}</div>
+                <div style={{width:46,height:46,borderRadius:'50%',background:c.color,display:'flex',alignItems:'center',justifyContent:'center',fontFamily:'Oswald',fontSize:18,color:'#111',flexShrink:0}}>{c.ava}</div>
                 <div style={{flex:1}}>
                   <div style={{fontSize:15,fontWeight:600}}>{c.name}</div>
                   <div style={{fontSize:12,color:'#4A90B8',marginTop:2}}>{c.goal}</div>
@@ -1244,7 +1244,7 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
                       <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:8,marginBottom:12}}>
                         {[['Вага',`${c.weight} кг`],['Зріст',`${c.height} см`],['З нами',c.started_at ? c.started_at.slice(0,10).split('-').reverse().join('.') : '—']].map(([l,v])=>(
                           <div key={l} style={{background:'#0D0D16',borderRadius:10,padding:10,textAlign:'center'}}>
-                            <div style={{fontFamily:'Clash Display',fontSize:22}}>{v}</div>
+                            <div style={{fontFamily:'Oswald',fontSize:22}}>{v}</div>
                             <div style={{fontSize:10,color:'#4A90B8',marginTop:2}}>{l}</div>
                           </div>
                         ))}
@@ -1252,26 +1252,26 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
                       <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:12}}>
                         <div style={{background:'#0D0D16',borderRadius:10,padding:10}}>
                           <div style={{fontSize:11,fontWeight:600,color:'#00FF88',marginBottom:6,textTransform:'uppercase',letterSpacing:.5}}>💪 Сильні</div>
-                          <textarea defaultValue={(c.strengths||[]).join('\n')} onBlur={e=>updateStrengths(c.id,e.target.value)} placeholder="По одному на рядок" style={{width:'100%',background:'#08080F',border:'1px solid #1A2E4A',borderRadius:8,padding:'8px',color:'#E8EAF0',fontFamily:'Cabinet Grotesk',fontSize:12,resize:'none',outline:'none',minHeight:70,lineHeight:1.5}}/>
+                          <textarea defaultValue={(c.strengths||[]).join('\n')} onBlur={e=>updateStrengths(c.id,e.target.value)} placeholder="По одному на рядок" style={{width:'100%',background:'#08080F',border:'1px solid #1A2E4A',borderRadius:8,padding:'8px',color:'#E8EAF0',fontFamily:'DM Sans',fontSize:12,resize:'none',outline:'none',minHeight:70,lineHeight:1.5}}/>
                         </div>
                         <div style={{background:'#0D0D16',borderRadius:10,padding:10}}>
                           <div style={{fontSize:11,fontWeight:600,color:'#FF4466',marginBottom:6,textTransform:'uppercase',letterSpacing:.5}}>⚠️ Слабкі</div>
-                          <textarea defaultValue={(c.weaknesses||[]).join('\n')} onBlur={e=>updateWeaknesses(c.id,e.target.value)} placeholder="По одному на рядок" style={{width:'100%',background:'#08080F',border:'1px solid #1A2E4A',borderRadius:8,padding:'8px',color:'#E8EAF0',fontFamily:'Cabinet Grotesk',fontSize:12,resize:'none',outline:'none',minHeight:70,lineHeight:1.5}}/>
+                          <textarea defaultValue={(c.weaknesses||[]).join('\n')} onBlur={e=>updateWeaknesses(c.id,e.target.value)} placeholder="По одному на рядок" style={{width:'100%',background:'#08080F',border:'1px solid #1A2E4A',borderRadius:8,padding:'8px',color:'#E8EAF0',fontFamily:'DM Sans',fontSize:12,resize:'none',outline:'none',minHeight:70,lineHeight:1.5}}/>
                         </div>
                       </div>
                       <div style={{fontSize:11,color:'#4A90B8',textTransform:'uppercase',letterSpacing:.5,marginBottom:6}}>📝 Нотатка</div>
-                      <textarea defaultValue={c.note} onBlur={e=>updateNote(c.id,e.target.value)} style={{width:'100%',background:'#08080F',border:'1px solid #1A2E4A',borderRadius:10,padding:'10px 12px',color:'#E8EAF0',fontFamily:'Cabinet Grotesk',fontSize:13,resize:'none',outline:'none',minHeight:80,lineHeight:1.5}}/>
+                      <textarea defaultValue={c.note} onBlur={e=>updateNote(c.id,e.target.value)} style={{width:'100%',background:'#08080F',border:'1px solid #1A2E4A',borderRadius:10,padding:'10px 12px',color:'#E8EAF0',fontFamily:'DM Sans',fontSize:13,resize:'none',outline:'none',minHeight:80,lineHeight:1.5}}/>
                       {(c.phone||c.telegram) && (
                         <div style={{display:'flex',gap:8,marginTop:12}}>
                           {c.phone && (
                             <button onClick={()=>{navigator.clipboard.writeText(c.phone);alert('Номер скопійовано!')}}
-                              style={{flex:1,padding:'10px 8px',borderRadius:10,border:'1px solid #1A2E4A',background:'#0D0D16',color:'#E8EAF0',fontFamily:'Cabinet Grotesk',fontSize:12,fontWeight:600,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:6}}>
+                              style={{flex:1,padding:'10px 8px',borderRadius:10,border:'1px solid #1A2E4A',background:'#0D0D16',color:'#E8EAF0',fontFamily:'DM Sans',fontSize:12,fontWeight:600,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:6}}>
                               📞 {c.phone}
                             </button>
                           )}
                           {c.telegram && (
                             <button onClick={()=>window.open(c.telegram.startsWith('http')?c.telegram:`https://t.me/${c.telegram.replace('@','')}`, '_blank')}
-                              style={{flex:1,padding:'10px 8px',borderRadius:10,border:'1px solid #1A2E4A',background:'rgba(36,161,222,.15)',color:'#29b6f6',fontFamily:'Cabinet Grotesk',fontSize:12,fontWeight:700,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:6}}>
+                              style={{flex:1,padding:'10px 8px',borderRadius:10,border:'1px solid #1A2E4A',background:'rgba(36,161,222,.15)',color:'#29b6f6',fontFamily:'DM Sans',fontSize:12,fontWeight:700,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:6}}>
                               <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L8.32 13.617l-2.96-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.828.942z"/></svg> Telegram
                             </button>
                           )}
@@ -1332,7 +1332,7 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
                           )
                         })}
                         <button onClick={() => setShowAddMetric(c.id)}
-                          style={{width:'100%',marginTop:4,padding:'10px',borderRadius:10,border:'1px dashed #1A2E4A',background:'none',color:'#4A90B8',fontFamily:'Cabinet Grotesk',fontSize:13,cursor:'pointer'}}>
+                          style={{width:'100%',marginTop:4,padding:'10px',borderRadius:10,border:'1px dashed #1A2E4A',background:'none',color:'#4A90B8',fontFamily:'DM Sans',fontSize:13,cursor:'pointer'}}>
                           ＋ Додати показник
                         </button>
                       </div>
@@ -1347,8 +1347,8 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
                         const timeVal = (c.schedule_times||{})[i] || '10:00'
                         return (
                           <div key={i} style={{display:'flex',alignItems:'center',gap:8,marginBottom:8}}>
-                            <button onClick={()=>toggleScheduleDay(c,i)} style={{width:44,padding:'8px 0',borderRadius:10,border:`1px solid ${active?'#00F5FF':'#1E2A3A'}`,background:active?'#00F5FF':'#0D0D16',color:active?'#111':'#4A5A6A',fontFamily:'Cabinet Grotesk',fontSize:13,fontWeight:600,cursor:'pointer',flexShrink:0}}>{day}</button>
-                            {active && <input type="time" defaultValue={timeVal} onBlur={e=>updateScheduleTime(c,i,e.target.value)} style={{background:'#0D0D16',border:'1px solid #1A2E4A',borderRadius:8,padding:'7px 10px',color:'#E8EAF0',fontFamily:'Cabinet Grotesk',fontSize:13,outline:'none',width:110}}/>}
+                            <button onClick={()=>toggleScheduleDay(c,i)} style={{width:44,padding:'8px 0',borderRadius:10,border:`1px solid ${active?'#00F5FF':'#1E2A3A'}`,background:active?'#00F5FF':'#0D0D16',color:active?'#111':'#4A5A6A',fontFamily:'DM Sans',fontSize:13,fontWeight:600,cursor:'pointer',flexShrink:0}}>{day}</button>
+                            {active && <input type="time" defaultValue={timeVal} onBlur={e=>updateScheduleTime(c,i,e.target.value)} style={{background:'#0D0D16',border:'1px solid #1A2E4A',borderRadius:8,padding:'7px 10px',color:'#E8EAF0',fontFamily:'DM Sans',fontSize:13,outline:'none',width:110}}/>}
                             {!active && <span style={{fontSize:12,color:'#1A2A3A'}}>—</span>}
                           </div>
                         )
@@ -1358,14 +1358,14 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
                         <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:10}}>
                           <div>
                             <label style={{fontSize:11,color:'#4A90B8',display:'block',marginBottom:4}}>З дати</label>
-                            <input type="date" id={`fill-from-${c.id}`} defaultValue={todayStr()} style={{width:'100%',background:'#0D0D16',border:'1px solid #1A2E4A',borderRadius:8,padding:'8px 10px',color:'#E8EAF0',fontFamily:'Cabinet Grotesk',fontSize:13,outline:'none'}}/>
+                            <input type="date" id={`fill-from-${c.id}`} defaultValue={todayStr()} style={{width:'100%',background:'#0D0D16',border:'1px solid #1A2E4A',borderRadius:8,padding:'8px 10px',color:'#E8EAF0',fontFamily:'DM Sans',fontSize:13,outline:'none'}}/>
                           </div>
                           <div>
                             <label style={{fontSize:11,color:'#4A90B8',display:'block',marginBottom:4}}>До дати</label>
-                            <input type="date" id={`fill-to-${c.id}`} defaultValue={(() => { const d=new Date(); d.setMonth(d.getMonth()+1); return dateToStr(d) })()} style={{width:'100%',background:'#0D0D16',border:'1px solid #1A2E4A',borderRadius:8,padding:'8px 10px',color:'#E8EAF0',fontFamily:'Cabinet Grotesk',fontSize:13,outline:'none'}}/>
+                            <input type="date" id={`fill-to-${c.id}`} defaultValue={(() => { const d=new Date(); d.setMonth(d.getMonth()+1); return dateToStr(d) })()} style={{width:'100%',background:'#0D0D16',border:'1px solid #1A2E4A',borderRadius:8,padding:'8px 10px',color:'#E8EAF0',fontFamily:'DM Sans',fontSize:13,outline:'none'}}/>
                           </div>
                         </div>
-                        <button onClick={()=>fillRange(c)} style={{width:'100%',padding:'11px',borderRadius:10,border:'none',background:'#00F5FF',color:'#111',fontFamily:'Cabinet Grotesk',fontSize:13,fontWeight:700,cursor:'pointer'}}>⚡ Заповнити розклад</button>
+                        <button onClick={()=>fillRange(c)} style={{width:'100%',padding:'11px',borderRadius:10,border:'none',background:'#00F5FF',color:'#111',fontFamily:'DM Sans',fontSize:13,fontWeight:700,cursor:'pointer'}}>⚡ Заповнити розклад</button>
                       </div>
                     </div>
                   )}
@@ -1378,11 +1378,11 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
                             <div style={{fontSize:13,fontWeight:600}}>{r.exercise}</div>
                             <div style={{fontSize:11,color:'#4A90B8',marginTop:2}}>{r.date}</div>
                           </div>
-                          <div style={{fontFamily:'Clash Display',fontSize:22,color:'#00F5FF'}}>{r.value} <span style={{fontFamily:'Cabinet Grotesk',fontSize:12,color:'#4A90B8'}}>{r.unit}</span></div>
+                          <div style={{fontFamily:'Oswald',fontSize:22,color:'#00F5FF'}}>{r.value} <span style={{fontFamily:'DM Sans',fontSize:12,color:'#4A90B8'}}>{r.unit}</span></div>
                           <button onClick={()=>deleteRecord(r.id)} style={{background:'none',border:'none',color:'#4A90B8',cursor:'pointer',fontSize:16,padding:'0 4px'}}>✕</button>
                         </div>
                       ))}
-                      <button onClick={()=>setShowAddRecord(c.id)} style={{width:'100%',marginTop:8,padding:'10px',borderRadius:10,border:'1px dashed #1A2E4A',background:'none',color:'#4A90B8',fontFamily:'Cabinet Grotesk',fontSize:13,cursor:'pointer'}}>＋ Додати рекорд</button>
+                      <button onClick={()=>setShowAddRecord(c.id)} style={{width:'100%',marginTop:8,padding:'10px',borderRadius:10,border:'1px dashed #1A2E4A',background:'none',color:'#4A90B8',fontFamily:'DM Sans',fontSize:13,cursor:'pointer'}}>＋ Додати рекорд</button>
                     </div>
                   )}
                   {activeTab==='clip' && (
@@ -1392,7 +1392,7 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
                     <div>
                       {cSessions.filter(s=>s.done).sort((a,b)=>b.date.localeCompare(a.date)).map(s=>(
                         <div key={s.id} style={{display:'flex',alignItems:'center',gap:10,background:'#0D0D16',borderRadius:10,padding:'10px 12px',marginBottom:6}}>
-                          <div style={{fontFamily:'Clash Display',fontSize:14,color:'#00F5FF',minWidth:55}}>{s.date.slice(5).replace('-','/')}</div>
+                          <div style={{fontFamily:'Oswald',fontSize:14,color:'#00F5FF',minWidth:55}}>{s.date.slice(5).replace('-','/')}</div>
                           <div>
                             <div style={{fontSize:13,fontWeight:600}}>{s.type}</div>
                             <div style={{fontSize:11,color:'#4A90B8',marginTop:2}}>{s.time} · Виконано</div>
@@ -1412,7 +1412,7 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
       {showAdd && (
         <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.7)',backdropFilter:'blur(4px)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:200,padding:20}}>
           <div style={{background:'#111118',border:'1px solid #1A2E4A',borderRadius:20,width:'100%',maxWidth:480,padding:24}}>
-            <div style={{fontFamily:'Clash Display',fontSize:22,marginBottom:16}}>Новий клієнт</div>
+            <div style={{fontFamily:'Oswald',fontSize:22,marginBottom:16}}>Новий клієнт</div>
             <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:12}}>
               <div><label style={lbl}>Ім'я</label><input value={nc.name} onChange={e=>setNc({...nc,name:e.target.value})} placeholder="Аліна" style={inp}/></div>
               <div><label style={lbl}>Прізвище</label><input value={nc.last} onChange={e=>setNc({...nc,last:e.target.value})} placeholder="Мороз" style={inp}/></div>
@@ -1437,7 +1437,7 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
                         <div style={{fontSize:11,color:'#4A90B8'}}>{p.sessions} тренувань</div>
                       </div>
                       <div style={{display:'flex',alignItems:'center',gap:8}}>
-                        <div style={{fontFamily:'Clash Display',fontSize:16,color:'#00F5FF'}}>{Number(p.price).toLocaleString('uk')} ₴</div>
+                        <div style={{fontFamily:'Oswald',fontSize:16,color:'#00F5FF'}}>{Number(p.price).toLocaleString('uk')} ₴</div>
                         {nc.planId===p.id && <span style={{color:'#00F5FF'}}>✓</span>}
                       </div>
                     </div>
@@ -1446,8 +1446,8 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
               </>
             )}
             <div style={{display:'flex',gap:10}}>
-              <button onClick={()=>setShowAdd(false)} style={{flex:1,padding:'10px',borderRadius:10,border:'1px solid #1A2E4A',background:'#0D0D16',color:'#E8EAF0',fontFamily:'Cabinet Grotesk',fontSize:13,fontWeight:600,cursor:'pointer'}}>Скасувати</button>
-              <button onClick={saveClient} disabled={saving} style={{flex:1,padding:'10px',borderRadius:10,border:'none',background:'#00F5FF',color:'#111',fontFamily:'Cabinet Grotesk',fontSize:13,fontWeight:600,cursor:'pointer'}}>{saving?'Збереження…':'Додати'}</button>
+              <button onClick={()=>setShowAdd(false)} style={{flex:1,padding:'10px',borderRadius:10,border:'1px solid #1A2E4A',background:'#0D0D16',color:'#E8EAF0',fontFamily:'DM Sans',fontSize:13,fontWeight:600,cursor:'pointer'}}>Скасувати</button>
+              <button onClick={saveClient} disabled={saving} style={{flex:1,padding:'10px',borderRadius:10,border:'none',background:'#00F5FF',color:'#111',fontFamily:'DM Sans',fontSize:13,fontWeight:600,cursor:'pointer'}}>{saving?'Збереження…':'Додати'}</button>
             </div>
           </div>
         </div>
@@ -1456,7 +1456,7 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
       {showAddRecord && (
         <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.7)',backdropFilter:'blur(4px)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:200,padding:20}}>
           <div style={{background:'#111118',border:'1px solid #1A2E4A',borderRadius:20,width:'100%',maxWidth:440,padding:24}}>
-            <div style={{fontFamily:'Clash Display',fontSize:22,marginBottom:16}}>Новий рекорд</div>
+            <div style={{fontFamily:'Oswald',fontSize:22,marginBottom:16}}>Новий рекорд</div>
             <label style={lbl}>Вправа</label>
             <input value={nr.exercise} onChange={e=>setNr({...nr,exercise:e.target.value})} placeholder="Жим лежачи…" style={{...inp,marginBottom:12}}/>
             <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:16}}>
@@ -1468,8 +1468,8 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
               </div>
             </div>
             <div style={{display:'flex',gap:10}}>
-              <button onClick={()=>setShowAddRecord(null)} style={{flex:1,padding:'10px',borderRadius:10,border:'1px solid #1A2E4A',background:'#0D0D16',color:'#E8EAF0',fontFamily:'Cabinet Grotesk',fontSize:13,fontWeight:600,cursor:'pointer'}}>Скасувати</button>
-              <button onClick={()=>saveRecord(showAddRecord)} style={{flex:1,padding:'10px',borderRadius:10,border:'none',background:'#00F5FF',color:'#111',fontFamily:'Cabinet Grotesk',fontSize:13,fontWeight:600,cursor:'pointer'}}>Зберегти</button>
+              <button onClick={()=>setShowAddRecord(null)} style={{flex:1,padding:'10px',borderRadius:10,border:'1px solid #1A2E4A',background:'#0D0D16',color:'#E8EAF0',fontFamily:'DM Sans',fontSize:13,fontWeight:600,cursor:'pointer'}}>Скасувати</button>
+              <button onClick={()=>saveRecord(showAddRecord)} style={{flex:1,padding:'10px',borderRadius:10,border:'none',background:'#00F5FF',color:'#111',fontFamily:'DM Sans',fontSize:13,fontWeight:600,cursor:'pointer'}}>Зберегти</button>
             </div>
           </div>
         </div>
@@ -1480,7 +1480,7 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
         <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.75)',display:'flex',alignItems:'flex-end',justifyContent:'center',zIndex:300}} onClick={()=>setEditClient(null)}>
           <div style={{background:'#111118',border:'1px solid #1A2E4A',borderRadius:'20px 20px 0 0',width:'100%',maxWidth:480,padding:'20px 20px 36px'}} onClick={e=>e.stopPropagation()}>
             <div style={{width:40,height:4,background:'#1E2A3A',borderRadius:2,margin:'0 auto 18px'}}/>
-            <div style={{fontFamily:'Clash Display',fontSize:22,marginBottom:16}}>Редагувати клієнта</div>
+            <div style={{fontFamily:'Oswald',fontSize:22,marginBottom:16}}>Редагувати клієнта</div>
             <label style={lbl}>Повне ім'я</label>
             <input value={ec.name} onChange={e=>setEc({...ec,name:e.target.value})} style={{...inp,marginBottom:12}}/>
             <label style={lbl}>Мета</label>
@@ -1502,11 +1502,11 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
             <label style={lbl}>Telegram (посилання або @username)</label>
             <input value={ec.telegram} onChange={e=>setEc({...ec,telegram:e.target.value})} placeholder="https://t.me/username" style={{...inp,marginBottom:20}}/>
             <button onClick={saveEditClient}
-              style={{width:'100%',padding:12,borderRadius:12,border:'none',background:'#00F5FF',color:'#111',fontFamily:'Cabinet Grotesk',fontSize:14,fontWeight:700,cursor:'pointer',marginBottom:8}}>
+              style={{width:'100%',padding:12,borderRadius:12,border:'none',background:'#00F5FF',color:'#111',fontFamily:'DM Sans',fontSize:14,fontWeight:700,cursor:'pointer',marginBottom:8}}>
               Зберегти зміни
             </button>
             <button onClick={async()=>{if(window.confirm(`Видалити ${editClient.name}? Всі сесії теж видаляться.`)){await deleteClient(editClient.id);setEditClient(null)}}}
-              style={{width:'100%',padding:11,borderRadius:12,border:'1px solid rgba(255,79,79,.3)',background:'transparent',color:'#FF4466',fontFamily:'Cabinet Grotesk',fontSize:13,fontWeight:600,cursor:'pointer'}}>
+              style={{width:'100%',padding:11,borderRadius:12,border:'1px solid rgba(255,79,79,.3)',background:'transparent',color:'#FF4466',fontFamily:'DM Sans',fontSize:13,fontWeight:600,cursor:'pointer'}}>
               🗑 Видалити клієнта
             </button>
           </div>
@@ -1518,7 +1518,7 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
         <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.75)',display:'flex',alignItems:'flex-end',justifyContent:'center',zIndex:300}} onClick={()=>setShowAddMetric(null)}>
           <div style={{background:'#111118',border:'1px solid #1A2E4A',borderRadius:'20px 20px 0 0',width:'100%',maxWidth:480,padding:'20px 20px 36px'}} onClick={e=>e.stopPropagation()}>
             <div style={{width:40,height:4,background:'#1E2A3A',borderRadius:2,margin:'0 auto 18px'}}/>
-            <div style={{fontFamily:'Clash Display',fontSize:22,marginBottom:16}}>Новий показник</div>
+            <div style={{fontFamily:'Oswald',fontSize:22,marginBottom:16}}>Новий показник</div>
             <label style={lbl}>Назва</label>
             <input value={nm.name} onChange={e=>setNm({...nm,name:e.target.value})}
               placeholder="Вага тіла, Обхват талії…"
@@ -1545,7 +1545,7 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
         <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.85)',display:'flex',alignItems:'flex-end',justifyContent:'center',zIndex:400}} onClick={()=>setShowAddMeasure(null)}>
           <div style={{background:'#111118',border:'1px solid #1A2E4A',borderRadius:'20px 20px 0 0',width:'100%',maxWidth:480,padding:'20px 20px 36px'}} onClick={e=>e.stopPropagation()}>
             <div style={{width:40,height:4,background:'#1E2A3A',borderRadius:2,margin:'0 auto 18px'}}/>
-            <div style={{fontFamily:'Clash Display',fontSize:22,marginBottom:16}}>Новий вимір</div>
+            <div style={{fontFamily:'Oswald',fontSize:22,marginBottom:16}}>Новий вимір</div>
             <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:20}}>
               <div>
                 <label style={lbl}>Значення ({showAddMeasure.unit})</label>
@@ -1697,7 +1697,7 @@ function StatsTab({ sessions, clients, finance, pricePlans, setPricePlans }) {
     setPricePlans(prev => prev.filter(p => p.id!==id))
   }
 
-  const inp = {width:'100%',background:'#0D0D16',border:'1px solid #1A2E4A',borderRadius:10,padding:'10px 14px',color:'#E8EAF0',fontFamily:'Cabinet Grotesk',fontSize:14,outline:'none',boxSizing:'border-box'}
+  const inp = {width:'100%',background:'#0D0D16',border:'1px solid #1A2E4A',borderRadius:10,padding:'10px 14px',color:'#E8EAF0',fontFamily:'DM Sans',fontSize:14,outline:'none',boxSizing:'border-box'}
   const lbl = {fontSize:11,color:'#4A90B8',textTransform:'uppercase',letterSpacing:.5,display:'block',marginBottom:6}
 
   return (
@@ -1706,7 +1706,7 @@ function StatsTab({ sessions, clients, finance, pricePlans, setPricePlans }) {
       <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:12,marginBottom:16}}>
         {[['Сьогодні',todayCount,'#00F5FF'],['Тиждень',weekCount,'#47d4ff'],['Місяць',monthCount,'#00FF88']].map(([l,v,cl])=>(
           <div key={l} style={{background:'#111118',border:'1px solid #1A2E4A',borderRadius:14,padding:16,textAlign:'center'}}>
-            <div style={{fontFamily:'Clash Display',fontSize:42,color:cl,lineHeight:1}}>{v}</div>
+            <div style={{fontFamily:'Oswald',fontSize:42,color:cl,lineHeight:1}}>{v}</div>
             <div style={{fontSize:12,color:'#4A90B8',marginTop:6}}>{l}</div>
           </div>
         ))}
@@ -1715,7 +1715,7 @@ function StatsTab({ sessions, clients, finance, pricePlans, setPricePlans }) {
       <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(300px,1fr))',gap:16}}>
         {/* Activity chart */}
         <div style={{background:'#111118',border:'1px solid #1A2E4A',borderRadius:14,padding:16}}>
-          <div style={{fontFamily:'Clash Display',fontSize:18,marginBottom:14}}>Активність — 7 днів</div>
+          <div style={{fontFamily:'Oswald',fontSize:18,marginBottom:14}}>Активність — 7 днів</div>
           <div style={{display:'flex',alignItems:'flex-end',gap:8,height:120,marginBottom:8}}>
             {counts.map((c,i)=>(
               <div key={i} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'flex-end',height:'100%',gap:4}}>
@@ -1736,15 +1736,15 @@ function StatsTab({ sessions, clients, finance, pricePlans, setPricePlans }) {
 
         {/* Finance */}
         <div style={{background:'#111118',border:'1px solid #1A2E4A',borderRadius:14,padding:16}}>
-          <div style={{fontFamily:'Clash Display',fontSize:18,marginBottom:14}}>Фінанси</div>
+          <div style={{fontFamily:'Oswald',fontSize:18,marginBottom:14}}>Фінанси</div>
           <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:14}}>
             <div style={{background:'#0D0D16',borderRadius:10,padding:12}}>
               <div style={{fontSize:11,color:'#4A90B8',marginBottom:4}}>Дохід</div>
-              <div style={{fontFamily:'Clash Display',fontSize:26,color:'#00FF88'}}>{income.toLocaleString('uk')} ₴</div>
+              <div style={{fontFamily:'Oswald',fontSize:26,color:'#00FF88'}}>{income.toLocaleString('uk')} ₴</div>
             </div>
             <div style={{background:'#0D0D16',borderRadius:10,padding:12}}>
               <div style={{fontSize:11,color:'#4A90B8',marginBottom:4}}>Клієнтів</div>
-              <div style={{fontFamily:'Clash Display',fontSize:26,color:'#00F5FF'}}>{clients.length}</div>
+              <div style={{fontFamily:'Oswald',fontSize:26,color:'#00F5FF'}}>{clients.length}</div>
             </div>
           </div>
           {finance.map((f,i)=>(
@@ -1753,7 +1753,7 @@ function StatsTab({ sessions, clients, finance, pricePlans, setPricePlans }) {
                 <div style={{fontSize:14,fontWeight:500}}>{f.name}</div>
                 <div style={{fontSize:11,color:'#4A90B8',marginTop:2}}>{f.date}</div>
               </div>
-              <div style={{fontFamily:'Clash Display',fontSize:20,color:f.type==='in'?'#00FF88':'#FF4466'}}>{f.amount>0?'+':''}{Number(f.amount).toLocaleString('uk')} ₴</div>
+              <div style={{fontFamily:'Oswald',fontSize:20,color:f.type==='in'?'#00FF88':'#FF4466'}}>{f.amount>0?'+':''}{Number(f.amount).toLocaleString('uk')} ₴</div>
             </div>
           ))}
           {finance.length===0&&<div style={{color:'#4A90B8',textAlign:'center',padding:'20px 0'}}>Фінансів ще немає</div>}
@@ -1762,7 +1762,7 @@ function StatsTab({ sessions, clients, finance, pricePlans, setPricePlans }) {
         {/* Price plans */}
         <div style={{background:'#111118',border:'1px solid #1A2E4A',borderRadius:14,padding:16}}>
           <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:14}}>
-            <div style={{fontFamily:'Clash Display',fontSize:18}}>Прайс-листи</div>
+            <div style={{fontFamily:'Oswald',fontSize:18}}>Прайс-листи</div>
             <button onClick={()=>{setEditPlan(null);setNp({name:'',sessions:1,price:''});setShowAddPlan(true)}}
               style={{background:'#00F5FF',color:'#111',border:'none',borderRadius:8,padding:'6px 14px',fontSize:12,fontWeight:700,cursor:'pointer'}}>
               + Додати
@@ -1775,7 +1775,7 @@ function StatsTab({ sessions, clients, finance, pricePlans, setPricePlans }) {
                 <div style={{fontSize:13,fontWeight:600,color:'#E8EAF0'}}>{p.name}</div>
                 <div style={{fontSize:11,color:'#4A90B8',marginTop:2}}>{p.sessions} {p.sessions===1?'тренування':'тренувань'}</div>
               </div>
-              <div style={{fontFamily:'Clash Display',fontSize:20,color:'#00F5FF'}}>{Number(p.price).toLocaleString('uk')} ₴</div>
+              <div style={{fontFamily:'Oswald',fontSize:20,color:'#00F5FF'}}>{Number(p.price).toLocaleString('uk')} ₴</div>
               <button onClick={()=>{setEditPlan(p);setNp({name:p.name,sessions:p.sessions,price:p.price});setShowAddPlan(true)}}
                 style={{background:'none',border:'1px solid #1A2E4A',borderRadius:7,color:'#4A90B8',fontSize:12,padding:'4px 8px',cursor:'pointer'}}>✏️</button>
               <button onClick={()=>deletePlan(p.id)}
@@ -1790,7 +1790,7 @@ function StatsTab({ sessions, clients, finance, pricePlans, setPricePlans }) {
         <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.75)',display:'flex',alignItems:'flex-end',justifyContent:'center',zIndex:200}} onClick={()=>setShowAddPlan(false)}>
           <div style={{background:'#111118',border:'1px solid #1A2E4A',borderRadius:'20px 20px 0 0',width:'100%',maxWidth:480,padding:'20px 20px 36px'}} onClick={e=>e.stopPropagation()}>
             <div style={{width:40,height:4,background:'#1E2A3A',borderRadius:2,margin:'0 auto 18px'}}/>
-            <div style={{fontFamily:'Clash Display',fontSize:22,marginBottom:16}}>{editPlan?'Редагувати план':'Новий план'}</div>
+            <div style={{fontFamily:'Oswald',fontSize:22,marginBottom:16}}>{editPlan?'Редагувати план':'Новий план'}</div>
             <label style={lbl}>Назва</label>
             <input value={np.name} onChange={e=>setNp({...np,name:e.target.value})}
               placeholder="Спліт 2026 · 12 тренувань…" style={{...inp,marginBottom:12}}/>
@@ -1865,14 +1865,14 @@ function ProfileTab({ sessions, clients, finance, setFinance, pricePlans, setPri
     setPricePlans(prev=>prev.filter(p=>p.id!==id))
   }
 
-  const inp = {width:'100%',background:'#0D0D16',border:'1px solid #1A2E4A',borderRadius:10,padding:'10px 14px',color:'#E8EAF0',fontFamily:'Cabinet Grotesk',fontSize:14,outline:'none',boxSizing:'border-box'}
+  const inp = {width:'100%',background:'#0D0D16',border:'1px solid #1A2E4A',borderRadius:10,padding:'10px 14px',color:'#E8EAF0',fontFamily:'DM Sans',fontSize:14,outline:'none',boxSizing:'border-box'}
   const lbl = {fontSize:11,color:'#4A90B8',textTransform:'uppercase',letterSpacing:.5,display:'block',marginBottom:6}
 
   return (
     <div>
       {/* Header */}
       <div style={{marginBottom:20}}>
-        <div style={{fontFamily:'Clash Display',fontSize:26,letterSpacing:0.5,color:'#00F5FF'}}>COACH<span style={{color:'#E8EAF0'}}>PRO</span></div>
+        <div style={{fontFamily:'Oswald',fontSize:26,letterSpacing:0.5,color:'#00F5FF'}}>COACH<span style={{color:'#E8EAF0'}}>PRO</span></div>
         <div style={{fontSize:12,color:'#4A90B8',marginTop:2}}>{DAYS_FULL[now.getDay()]}, {now.getDate()} {MONTHS_UK2[now.getMonth()]}</div>
       </div>
 
@@ -1895,7 +1895,7 @@ function ProfileTab({ sessions, clients, finance, setFinance, pricePlans, setPri
           <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:10,marginBottom:16}}>
             {[['Сьогодні',todayCount,'#00F5FF'],['Тиждень',weekCount,'#47d4ff'],['Місяць',monthCount,'#00FF88']].map(([l,v,cl])=>(
               <div key={l} style={{background:'#111118',border:'1px solid #1A2E4A',borderRadius:14,padding:16,textAlign:'center'}}>
-                <div style={{fontFamily:'Clash Display',fontSize:42,color:cl,lineHeight:1}}>{v}</div>
+                <div style={{fontFamily:'Oswald',fontSize:42,color:cl,lineHeight:1}}>{v}</div>
                 <div style={{fontSize:12,color:'#4A90B8',marginTop:6}}>{l}</div>
               </div>
             ))}
@@ -1928,14 +1928,14 @@ function ProfileTab({ sessions, clients, finance, setFinance, pricePlans, setPri
           <div style={{marginBottom:16}}>
             <div style={{background:'#111118',border:'1px solid #1A2E4A',borderRadius:14,padding:16}}>
               <div style={{fontSize:11,color:'#4A90B8',marginBottom:4}}>Дохід</div>
-              <div style={{fontFamily:'Clash Display',fontSize:32,color:'#00FF88'}}>{income.toLocaleString('uk')} ₴</div>
+              <div style={{fontFamily:'Oswald',fontSize:32,color:'#00FF88'}}>{income.toLocaleString('uk')} ₴</div>
             </div>
           </div>
           {/* Модал редагування транзакції */}
           {editFinance && (
             <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.75)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:300}} onClick={()=>setEditFinance(null)}>
               <div style={{background:'#111118',border:'1px solid #1A2E4A',borderRadius:16,padding:24,width:300}} onClick={e=>e.stopPropagation()}>
-                <div style={{fontFamily:'Clash Display',fontSize:20,marginBottom:16,color:'#E8EAF0'}}>Редагувати транзакцію</div>
+                <div style={{fontFamily:'Oswald',fontSize:20,marginBottom:16,color:'#E8EAF0'}}>Редагувати транзакцію</div>
                 <div style={{display:'flex',flexDirection:'column',gap:10,marginBottom:16}}>
                   <input value={ef.name} onChange={e=>setEf(p=>({...p,name:e.target.value}))} placeholder="Назва"
                     style={{padding:'9px 12px',borderRadius:10,border:'1px solid #1A2E4A',background:'#08080F',color:'#E8EAF0',fontSize:13}}/>
@@ -1977,7 +1977,7 @@ function ProfileTab({ sessions, clients, finance, setFinance, pricePlans, setPri
                   <div style={{fontSize:11,color:'#4A90B8',marginTop:2}}>{f.date}</div>
                 </div>
                 <div style={{display:'flex',alignItems:'center',gap:10}}>
-                  <div style={{fontFamily:'Clash Display',fontSize:20,color:f.type==='in'?'#00FF88':'#FF4466'}}>
+                  <div style={{fontFamily:'Oswald',fontSize:20,color:f.type==='in'?'#00FF88':'#FF4466'}}>
                     {f.type==='in'?'+':'-'}{Math.abs(Number(f.amount)).toLocaleString('uk')} ₴
                   </div>
                   <span style={{color:'#4A90B8',fontSize:16}}>✎</span>
@@ -2007,7 +2007,7 @@ function ProfileTab({ sessions, clients, finance, setFinance, pricePlans, setPri
                     <div style={{fontSize:13,fontWeight:600,color:'#E8EAF0'}}>{p.name}</div>
                     <div style={{fontSize:11,color:'#4A90B8',marginTop:2}}>{p.sessions} {p.sessions===1?'тренування':'тренувань'}</div>
                   </div>
-                  <div style={{fontFamily:'Clash Display',fontSize:18,color:'#00F5FF'}}>{Number(p.price).toLocaleString('uk')} ₴</div>
+                  <div style={{fontFamily:'Oswald',fontSize:18,color:'#00F5FF'}}>{Number(p.price).toLocaleString('uk')} ₴</div>
                   <button onClick={()=>{setEditPlan(p);setNp({name:p.name,sessions:p.sessions,price:p.price});setShowAddPlan(true)}}
                     style={{background:'none',border:'1px solid #1A2E4A',borderRadius:7,color:'#4A90B8',fontSize:12,padding:'4px 8px',cursor:'pointer'}}>✏️</button>
                   <button onClick={()=>deletePlan(p.id)}
@@ -2030,7 +2030,7 @@ function ProfileTab({ sessions, clients, finance, setFinance, pricePlans, setPri
         <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.75)',display:'flex',alignItems:'flex-end',justifyContent:'center',zIndex:200}} onClick={()=>setShowAddPlan(false)}>
           <div style={{background:'#111118',border:'1px solid #1A2E4A',borderRadius:'20px 20px 0 0',width:'100%',maxWidth:480,padding:'20px 20px 36px'}} onClick={e=>e.stopPropagation()}>
             <div style={{width:40,height:4,background:'#1E2A3A',borderRadius:2,margin:'0 auto 18px'}}/>
-            <div style={{fontFamily:'Clash Display',fontSize:22,marginBottom:16}}>{editPlan?'Редагувати план':'Новий план'}</div>
+            <div style={{fontFamily:'Oswald',fontSize:22,marginBottom:16}}>{editPlan?'Редагувати план':'Новий план'}</div>
             <label style={lbl}>Назва</label>
             <input value={np.name} onChange={e=>setNp({...np,name:e.target.value})} placeholder="Спліт 2026 · 12 тренувань…" style={{...inp,marginBottom:12}}/>
             <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:20}}>
@@ -2086,22 +2086,22 @@ export default function App() {
   const TABS = [['schedule','📅','Графік'],['clients','👥','Клієнти'],['profile','⚡','Профіль']]
 
   return (
-    <div style={{display:'flex',height:'100dvh',background:'#0A0A12',color:'#E8EAF0',fontFamily:'Cabinet Grotesk'}}>
+    <div style={{display:'flex',height:'100dvh',background:'#0A0A12',color:'#E8EAF0',fontFamily:'DM Sans'}}>
       <div className="desktop-sidebar" style={{width:220,background:'#111118',borderRight:'1px solid #1A2E4A',display:'flex',flexDirection:'column',flexShrink:0,position:'sticky',top:0,height:'100dvh'}}>
         <div style={{padding:'24px 20px 20px',borderBottom:'1px solid #162038'}}>
-          <div style={{fontFamily:'Clash Display',fontSize:26,letterSpacing:0.5,color:'#00F5FF'}}>COACH<span style={{color:'#E8EAF0'}}>PRO</span></div>
+          <div style={{fontFamily:'Oswald',fontSize:26,letterSpacing:0.5,color:'#00F5FF'}}>COACH<span style={{color:'#E8EAF0'}}>PRO</span></div>
           <div style={{fontSize:12,color:'#3A7A9A',marginTop:4}}>{dateStr}</div>
         </div>
         <nav style={{flex:1,padding:'12px 0'}}>
           {TABS.map(([id,icon,label])=>(
-            <button key={id} onClick={()=>setTab(id)} style={{display:'flex',alignItems:'center',gap:12,width:'100%',padding:'12px 20px',cursor:'pointer',border:'none',fontFamily:'Cabinet Grotesk',fontSize:14,fontWeight:500,textAlign:'left',borderLeft:tab===id?'3px solid #00F5FF':'3px solid transparent',background:tab===id?'rgba(0,245,255,.06)':'none',color:tab===id?'#00F5FF':'#3A4A5A',transition:'all .18s'}}>
+            <button key={id} onClick={()=>setTab(id)} style={{display:'flex',alignItems:'center',gap:12,width:'100%',padding:'12px 20px',cursor:'pointer',border:'none',fontFamily:'DM Sans',fontSize:14,fontWeight:500,textAlign:'left',borderLeft:tab===id?'3px solid #00F5FF':'3px solid transparent',background:tab===id?'rgba(0,245,255,.06)':'none',color:tab===id?'#00F5FF':'#3A4A5A',transition:'all .18s'}}>
               <span style={{fontSize:18}}>{icon}</span>{label}
             </button>
           ))}
         </nav>
         <div style={{padding:'16px 20px',borderTop:'1px solid #162038'}}>
           <div style={{display:'flex',alignItems:'center',gap:10}}>
-            <div style={{width:36,height:36,borderRadius:'50%',background:'linear-gradient(135deg,#00F5FF,#0080CC)',display:'flex',alignItems:'center',justifyContent:'center',fontFamily:'Clash Display',fontSize:16,color:'#111'}}>Т</div>
+            <div style={{width:36,height:36,borderRadius:'50%',background:'linear-gradient(135deg,#00F5FF,#0080CC)',display:'flex',alignItems:'center',justifyContent:'center',fontFamily:'Oswald',fontSize:16,color:'#111'}}>Т</div>
             <div>
               <div style={{fontSize:13,fontWeight:600}}>Тренер</div>
               <div style={{fontSize:11,color:'#4A90B8'}}>CoachPro</div>
@@ -2118,7 +2118,7 @@ export default function App() {
         </div>
         <div className="mobile-tabs" style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',background:'#111118',borderTop:'1px solid #162038',flexShrink:0}}>
           {TABS.map(([id,icon,label])=>(
-            <button key={id} onClick={()=>setTab(id)} style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'10px 4px 12px',cursor:'pointer',border:'none',background:'none',color:tab===id?'#00F5FF':'#3A4A5A',fontFamily:'Cabinet Grotesk',fontSize:11,fontWeight:500,gap:4,borderTop:tab===id?'2px solid #00F5FF':'2px solid transparent'}}>
+            <button key={id} onClick={()=>setTab(id)} style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'10px 4px 12px',cursor:'pointer',border:'none',background:'none',color:tab===id?'#00F5FF':'#3A4A5A',fontFamily:'DM Sans',fontSize:11,fontWeight:500,gap:4,borderTop:tab===id?'2px solid #00F5FF':'2px solid transparent'}}>
               <span style={{fontSize:20}}>{icon}</span>{label}
             </button>
           ))}
