@@ -1772,7 +1772,7 @@ function ProfileTab({ sessions, clients, finance, setFinance, pricePlans, setPri
   const [np, setNp] = useState({name:'',sessions:1,price:''})
   const [expanded, setExpanded] = useState(false)
   const [editFinance, setEditFinance] = useState(null) // транзакція для редагування
-  const [ef, setEf] = useState({name:'',amount:'',type:'in',date:''}) // форма редагування
+  const [ef, setEf] = useState({name:'',amount:'',date:''}) // форма редагування
 
   const today = todayStr()
   const now = new Date()
@@ -1787,7 +1787,6 @@ function ProfileTab({ sessions, clients, finance, setFinance, pricePlans, setPri
   const counts = days.map(d=>sessions.filter(s=>s.date===d.ds).length)
   const maxC = Math.max(...counts,1)
   const income  = finance.filter(f=>f.type==='in').reduce((a,f)=>a+Number(f.amount),0)
-  const expense = finance.filter(f=>f.type==='out').reduce((a,f)=>a+Math.abs(Number(f.amount)),0)
 
   // Sort plans by usage count
   const planUsage = pricePlans.map(p=>({
@@ -1873,14 +1872,10 @@ function ProfileTab({ sessions, clients, finance, setFinance, pricePlans, setPri
       {/* ── FINANCE ── */}
       {section==='finance' && (
         <div>
-          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginBottom:16}}>
+          <div style={{marginBottom:16}}>
             <div style={{background:'#162032',border:'1px solid #2a4a7f',borderRadius:14,padding:16}}>
               <div style={{fontSize:11,color:'#9CA3AF',marginBottom:4}}>Дохід</div>
               <div style={{fontFamily:'Bebas Neue',fontSize:32,color:'#3de87a'}}>{income.toLocaleString('uk')} ₴</div>
-            </div>
-            <div style={{background:'#162032',border:'1px solid #2a4a7f',borderRadius:14,padding:16}}>
-              <div style={{fontSize:11,color:'#9CA3AF',marginBottom:4}}>Витрати</div>
-              <div style={{fontFamily:'Bebas Neue',fontSize:32,color:'#ff4f4f'}}>{expense.toLocaleString('uk')} ₴</div>
             </div>
           </div>
           {/* Модал редагування транзакції */}
@@ -1895,16 +1890,7 @@ function ProfileTab({ sessions, clients, finance, setFinance, pricePlans, setPri
                     style={{padding:'9px 12px',borderRadius:10,border:'1px solid #2a4a7f',background:'#1e3054',color:'#F3F4F6',fontSize:13}}/>
                   <input type="date" value={ef.date} onChange={e=>setEf(p=>({...p,date:e.target.value}))}
                     style={{padding:'9px 12px',borderRadius:10,border:'1px solid #2a4a7f',background:'#1e3054',color:'#F3F4F6',fontSize:13}}/>
-                  <div style={{display:'flex',gap:8}}>
-                    <button onClick={()=>setEf(p=>({...p,type:'in'}))}
-                      style={{flex:1,padding:'8px',borderRadius:9,border:`1.5px solid ${ef.type==='in'?'#3de87a':'#2a4a7f'}`,background:ef.type==='in'?'rgba(61,232,122,.12)':'transparent',color:ef.type==='in'?'#3de87a':'#9CA3AF',fontSize:12,cursor:'pointer'}}>
-                      Дохід
-                    </button>
-                    <button onClick={()=>setEf(p=>({...p,type:'out'}))}
-                      style={{flex:1,padding:'8px',borderRadius:9,border:`1.5px solid ${ef.type==='out'?'#ff4f4f':'#2a4a7f'}`,background:ef.type==='out'?'rgba(255,79,79,.12)':'transparent',color:ef.type==='out'?'#ff4f4f':'#9CA3AF',fontSize:12,cursor:'pointer'}}>
-                      Витрата
-                    </button>
-                  </div>
+
                 </div>
                 <div style={{display:'flex',gap:8}}>
                   <button onClick={async()=>{
