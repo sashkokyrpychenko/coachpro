@@ -2099,7 +2099,12 @@ export default function App() {
       <img
         src="/splash.jpg"
         alt=""
-        style={{width:'100%',height:'100%',objectFit:'contain'}}
+        onError={e=>{
+          const formats=['/splash.JPG','/splash.jpeg','/splash.JPEG','/splash.png','/splash.PNG']
+          const idx = formats.indexOf(e.target.src.replace(window.location.origin,''))
+          if(idx < formats.length-1) e.target.src = formats[idx+1]
+        }}
+        style={{width:'100%',height:'100%',objectFit:'contain',display:'block'}}
       />
     </div>
   )
