@@ -11,7 +11,7 @@ document.head.appendChild(_fontLink)
 
 const _darkStyle = document.createElement('style')
 _darkStyle.textContent = `
-  body { background: #0A0A12 !important; color: #E8EAF0 !important; }
+  body { background: #0A0A12 !important; color: #E8EAF0 !important; font-variant-emoji: text; }
   input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1) brightness(0.6) sepia(1) hue-rotate(150deg); }
   select option { background: #0D0D16; color: #E8EAF0; }
   ::-webkit-scrollbar { width: 4px; height: 4px; }
@@ -853,7 +853,7 @@ function ScheduleTab({ clients, sessions, setSessions, onClientClick }) {
               return (
                 <div key={i} onClick={()=>setSelDs(ds)} style={{display:'flex',flexDirection:'column',alignItems:'center',gap:3,padding:'8px 2px',borderRadius:10,cursor:'pointer',border:`1px solid ${isSel?'#00F5FF':isToday?'#00F5FF44':'#1E2A3A'}`,background:isSel?'#00F5FF':isToday?'rgba(0,245,255,.08)':'#0D0D16',color:isSel?'#111':'#E8EAF0',transition:'all .18s'}}>
                   <span style={{fontSize:10,fontWeight:600,color:isSel?'#111':'#4A5A6A'}}>{DAYS_SHORT[i]}</span>
-                  <span style={{fontSize:18,fontWeight:700,fontStyle:'normal',lineHeight:1}}>{d.getDate()}</span>
+                  <span style={{fontSize:19,fontWeight:800,lineHeight:1,fontFamily:'Arial,Helvetica,sans-serif',display:'block',textAlign:'center',WebkitFontSmoothing:'antialiased'}}>{d.getDate()}</span>
                   {has && <span style={{width:4,height:4,borderRadius:'50%',background:isSel?'#111':'#47d4ff',display:'block'}}/>}
                 </div>
               )
