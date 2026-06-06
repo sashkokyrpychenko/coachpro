@@ -2058,7 +2058,6 @@ export default function App() {
   const [records, setRecords] = useState([])
   const [pricePlans, setPricePlans] = useState([])
   const [loading, setLoading] = useState(true)
-  const [splashDone, setSplashDone] = useState(false)
   const [dataDone, setDataDone] = useState(false)
 
   // Завантаження даних у фоні
@@ -2084,39 +2083,24 @@ export default function App() {
     load()
   }, [])
 
-  // Показуємо додаток тільки коли і відео закінчилось і дані завантажились
+  // Показуємо додаток: 0.8 сек сплеш + дані завантажені
   useEffect(() => {
-    if (splashDone && dataDone) setLoading(false)
-  }, [splashDone, dataDone])
+    if (dataDone) {
+      const timer = setTimeout(() => setLoading(false), 800)
+      return () => clearTimeout(timer)
+    }
+  }, [dataDone])
 
   const now = new Date()
   const dateStr = `${DAYS_FULL[now.getDay()]}, ${now.getDate()} ${MONTHS_UK2[now.getMonth()]}`
 
   if (loading) return (
-    <div style={{position:'fixed',inset:0,background:'#000',zIndex:9999,overflow:'hidden'}}>
-      <video
-        autoPlay
-        muted
-        playsInline
-        onEnded={()=>setSplashDone(true)}
-        onError={()=>setSplashDone(true)}
-        style={{width:'100%',height:'100%',objectFit:'cover',position:'absolute',top:0,left:0}}
-      >
-        <source src="/splash.webm" type="video/webm"/>
-        <source src="/splash.mp4" type="video/mp4"/>
-      </video>
-      {/* Якщо відео не грається — кнопка пропустити після 3 сек */}
-      <div style={{position:'absolute',bottom:40,left:0,right:0,display:'flex',flexDirection:'column',alignItems:'center',gap:12}}>
-        <div style={{width:200,height:3,background:'rgba(255,255,255,.2)',borderRadius:2,overflow:'hidden'}}>
-          <div style={{height:'100%',background:'#00F5FF',borderRadius:2,animation:'splashProgress 3s linear forwards'}}/>
-        </div>
-      </div>
-      <style>{`
-        @keyframes splashProgress {
-          from { width: 0% }
-          to { width: 100% }
-        }
-      `}</style>
+    <div style={{position:'fixed',inset:0,background:'#000',zIndex:9999,display:'flex',alignItems:'center',justifyContent:'center'}}>
+      <img
+        src="/splash.jpg"
+        alt=""
+        style={{width:'100%',height:'100%',objectFit:'contain'}}
+      />
     </div>
   )
 
