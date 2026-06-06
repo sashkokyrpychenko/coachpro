@@ -360,25 +360,44 @@ function ClipTab({ c, clients, setClients, sessions, pricePlans }) {
   const isExhausted = c.clip_used >= c.clip_total
   const progress = c.clip_total ? Math.round((c.clip_used/c.clip_total)*100) : 0
 
+  const addFinanceRecord = async (planName, amount) => {
+    const lastName = c.name ? c.name.split(' ')[1] || c.name.split(' ')[0] : c.name
+    const finName = `${lastName} - ${planName} - ${Number(amount).toLocaleString('uk')} грн`
+    await supabase.from('finance').insert({name:finName, amount:Number(amount), type:'in', date:todayStr()})
+  }
+
   const useClip = async () => {
     if (c.clip_used >= c.clip_total) return
     const newUsed = c.clip_used + 1
     const newDates = [...(c.clip_dates||[]), todayStr()]
     await supabase.from('clients').update({clip_used:newUsed, clip_dates:newDates}).eq('id',c.id)
     setClients(prev => prev.map(x => x.id===c.id ? {...x,clip_used:newUsed,clip_dates:newDates} : x))
+    // Разове тренування — оплата після кожного відвідування
+    if (activePlan && activePlan.sessions === 1) {
+      await addFinanceRecord(activePlan.name, activePlan.price)
+    }
   }
 
   const renewClip = async () => {
     const renewDate = todayStr()
     await supabase.from('clients').update({clip_used:0,clip_renewed_at:renewDate,clip_dates:[]}).eq('id',c.id)
     setClients(prev => prev.map(x => x.id===c.id ? {...x,clip_used:0,clip_renewed_at:renewDate,clip_dates:[]} : x))
+    // Пакет — оплата при поновленні
+    if (activePlan && activePlan.sessions > 1) {
+      await addFinanceRecord(activePlan.name, activePlan.price)
+    }
   }
 
   const selectPlan = async (p) => {
     const renewDate = todayStr()
+    const isFirstTime = !c.active_plan_id
     await supabase.from('clients').update({active_plan_id:p.id,clip_total:p.sessions,clip_used:0,clip_renewed_at:renewDate,clip_dates:[]}).eq('id',c.id)
     setClients(prev => prev.map(x => x.id===c.id ? {...x,active_plan_id:p.id,clip_total:p.sessions,clip_used:0,clip_renewed_at:renewDate,clip_dates:[]} : x))
     setShowAllPlans(false)
+    // Пакет — оплата при першому виборі або зміні тарифу
+    if (p.sessions > 1) {
+      await addFinanceRecord(p.name, p.price)
+    }
   }
 
   const openEditDate = (i) => {
