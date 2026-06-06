@@ -1765,12 +1765,14 @@ function StatsTab({ sessions, clients, finance, pricePlans, setPricePlans }) {
 }
 
 // ─── Profile Tab ──────────────────────────────────────────────────────────────
-function ProfileTab({ sessions, clients, finance, pricePlans, setPricePlans }) {
+function ProfileTab({ sessions, clients, finance, setFinance, pricePlans, setPricePlans }) {
   const [section, setSection] = useState('stats')
   const [showAddPlan, setShowAddPlan] = useState(false)
   const [editPlan, setEditPlan] = useState(null)
   const [np, setNp] = useState({name:'',sessions:1,price:''})
   const [expanded, setExpanded] = useState(false)
+  const [editFinance, setEditFinance] = useState(null) // транзакція для редагування
+  const [ef, setEf] = useState({name:'',amount:'',type:'in',date:''}) // форма редагування
 
   const today = todayStr()
   const now = new Date()
@@ -1881,17 +1883,65 @@ function ProfileTab({ sessions, clients, finance, pricePlans, setPricePlans }) {
               <div style={{fontFamily:'Bebas Neue',fontSize:32,color:'#ff4f4f'}}>{expense.toLocaleString('uk')} ₴</div>
             </div>
           </div>
+          {/* Модал редагування транзакції */}
+          {editFinance && (
+            <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.75)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:300}} onClick={()=>setEditFinance(null)}>
+              <div style={{background:'#162032',border:'1px solid #2a4a7f',borderRadius:16,padding:24,width:300}} onClick={e=>e.stopPropagation()}>
+                <div style={{fontFamily:'Bebas Neue',fontSize:20,marginBottom:16,color:'#F3F4F6'}}>Редагувати транзакцію</div>
+                <div style={{display:'flex',flexDirection:'column',gap:10,marginBottom:16}}>
+                  <input value={ef.name} onChange={e=>setEf(p=>({...p,name:e.target.value}))} placeholder="Назва"
+                    style={{padding:'9px 12px',borderRadius:10,border:'1px solid #2a4a7f',background:'#1e3054',color:'#F3F4F6',fontSize:13}}/>
+                  <input type="number" value={ef.amount} onChange={e=>setEf(p=>({...p,amount:e.target.value}))} placeholder="Сума"
+                    style={{padding:'9px 12px',borderRadius:10,border:'1px solid #2a4a7f',background:'#1e3054',color:'#F3F4F6',fontSize:13}}/>
+                  <input type="date" value={ef.date} onChange={e=>setEf(p=>({...p,date:e.target.value}))}
+                    style={{padding:'9px 12px',borderRadius:10,border:'1px solid #2a4a7f',background:'#1e3054',color:'#F3F4F6',fontSize:13}}/>
+                  <div style={{display:'flex',gap:8}}>
+                    <button onClick={()=>setEf(p=>({...p,type:'in'}))}
+                      style={{flex:1,padding:'8px',borderRadius:9,border:`1.5px solid ${ef.type==='in'?'#3de87a':'#2a4a7f'}`,background:ef.type==='in'?'rgba(61,232,122,.12)':'transparent',color:ef.type==='in'?'#3de87a':'#9CA3AF',fontSize:12,cursor:'pointer'}}>
+                      Дохід
+                    </button>
+                    <button onClick={()=>setEf(p=>({...p,type:'out'}))}
+                      style={{flex:1,padding:'8px',borderRadius:9,border:`1.5px solid ${ef.type==='out'?'#ff4f4f':'#2a4a7f'}`,background:ef.type==='out'?'rgba(255,79,79,.12)':'transparent',color:ef.type==='out'?'#ff4f4f':'#9CA3AF',fontSize:12,cursor:'pointer'}}>
+                      Витрата
+                    </button>
+                  </div>
+                </div>
+                <div style={{display:'flex',gap:8}}>
+                  <button onClick={async()=>{
+                    await supabase.from('finance').delete().eq('id',editFinance.id)
+                    setFinance(prev=>prev.filter(x=>x.id!==editFinance.id))
+                    setEditFinance(null)
+                  }} style={{flex:1,padding:'9px',borderRadius:10,border:'1px solid #ff4f4f',background:'transparent',color:'#ff4f4f',fontSize:12,fontWeight:600,cursor:'pointer'}}>
+                    Видалити
+                  </button>
+                  <button onClick={async()=>{
+                    const upd={name:ef.name,amount:Number(ef.amount),type:ef.type,date:ef.date}
+                    await supabase.from('finance').update(upd).eq('id',editFinance.id)
+                    setFinance(prev=>prev.map(x=>x.id===editFinance.id?{...x,...upd}:x))
+                    setEditFinance(null)
+                  }} style={{flex:1,padding:'9px',borderRadius:10,border:'none',background:'#C4ED00',color:'#111',fontSize:12,fontWeight:700,cursor:'pointer'}}>
+                    Зберегти
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div style={{background:'#162032',border:'1px solid #2a4a7f',borderRadius:14,padding:16}}>
             <div style={{fontWeight:700,fontSize:15,marginBottom:12}}>Транзакції</div>
             {finance.length===0&&<div style={{color:'#6B7280',textAlign:'center',padding:'20px 0'}}>Фінансів ще немає</div>}
             {finance.map((f,i)=>(
-              <div key={f.id||i} style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'10px 0',borderBottom:i<finance.length-1?'1px solid #2a4a7f':'none'}}>
+              <div key={f.id||i} onClick={()=>{setEditFinance(f);setEf({name:f.name,amount:f.amount,type:f.type,date:f.date})}}
+                style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'10px 0',borderBottom:i<finance.length-1?'1px solid #2a4a7f':'none',cursor:'pointer'}}>
                 <div>
                   <div style={{fontSize:13,fontWeight:500}}>{f.name}</div>
                   <div style={{fontSize:11,color:'#9CA3AF',marginTop:2}}>{f.date}</div>
                 </div>
-                <div style={{fontFamily:'Bebas Neue',fontSize:20,color:f.type==='in'?'#3de87a':'#ff4f4f'}}>
-                  {f.type==='in'?'+':'-'}{Math.abs(Number(f.amount)).toLocaleString('uk')} ₴
+                <div style={{display:'flex',alignItems:'center',gap:10}}>
+                  <div style={{fontFamily:'Bebas Neue',fontSize:20,color:f.type==='in'?'#3de87a':'#ff4f4f'}}>
+                    {f.type==='in'?'+':'-'}{Math.abs(Number(f.amount)).toLocaleString('uk')} ₴
+                  </div>
+                  <span style={{color:'#6B7280',fontSize:16}}>✎</span>
                 </div>
               </div>
             ))}
@@ -2028,7 +2078,7 @@ export default function App() {
         <div style={{flex:1,overflowY:'auto',padding:24}}>
           {tab==='schedule'&&<ScheduleTab clients={clients} sessions={sessions} setSessions={setSessions}/>}
           {tab==='clients'&&<ClientsTab clients={clients} setClients={setClients} sessions={sessions} setSessions={setSessions} records={records} setRecords={setRecords} pricePlans={pricePlans} setFinance={setFinance}/>}
-          {tab==='profile'&&<ProfileTab sessions={sessions} clients={clients} finance={finance} pricePlans={pricePlans} setPricePlans={setPricePlans}/>}
+          {tab==='profile'&&<ProfileTab sessions={sessions} clients={clients} finance={finance} setFinance={setFinance} pricePlans={pricePlans} setPricePlans={setPricePlans}/>}
         </div>
         <div className="mobile-tabs" style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',background:'#162032',borderTop:'1px solid #2a4a7f',flexShrink:0}}>
           {TABS.map(([id,icon,label])=>(
