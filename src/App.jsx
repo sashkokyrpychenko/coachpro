@@ -175,7 +175,7 @@ function SplitCard({ sessions, clients, onEdit, onToggle }) {
 }
 
 // ─── Day Timeline (duration-aware) ───────────────────────────────────────────
-function DayTimeline({ sessions, clients }) {
+function DayTimeline({ sessions, clients, onClientClick }) {
   const SLOT_H = 48       // px per 60 min
   const START_H = 6       // 06:00
   const END_H = 23        // 23:00
@@ -249,13 +249,14 @@ function DayTimeline({ sessions, clients }) {
             const left = isplit && idx > 0 ? 'calc(50% + 3px)' : '0'
 
             return (
-              <div key={s.id} style={{
+              <div key={s.id} onClick={()=>onClientClick&&c&&onClientClick(c.id)} style={{
                 position:'absolute', top, left, width:w, height,
                 borderRadius:10,
                 background: (c?.color||'#888')+'18',
                 border:`1.5px solid ${(c?.color||'#888')}50`,
                 display:'flex', flexDirection:'column', justifyContent:'center',
                 padding:'4px 8px', overflow:'hidden', zIndex:2,
+                cursor: onClientClick ? 'pointer' : 'default',
               }}>
                 <div style={{display:'flex', alignItems:'center', gap:5}}>
                   <div style={{width:20,height:20,borderRadius:'50%',background:c?.color||'#888',
@@ -676,7 +677,7 @@ function EditSessionModal({ session, clients, onClose, onSave, onDelete }) {
 }
 
 // ─── Schedule Tab ─────────────────────────────────────────────────────────────
-function ScheduleTab({ clients, sessions, setSessions }) {
+function ScheduleTab({ clients, sessions, setSessions, onClientClick }) {
   const today = new Date()
   const todayDs = todayStr()
   const [viewMode, setViewMode] = useState('week')
@@ -857,7 +858,7 @@ function ScheduleTab({ clients, sessions, setSessions }) {
           <div onClick={()=>{setFClient(clients[0]?.id||'');setShowModal(true)}} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 14px',borderRadius:12,border:'1px dashed #2a4a7f',cursor:'pointer',color:'#6B7280',fontSize:13,marginTop:4}}>＋ Додати сесію</div>
 
           {/* Timeline */}
-          <DayTimeline sessions={daySessions} clients={clients}/>
+          <DayTimeline sessions={daySessions} clients={clients} onClientClick={onClientClick}/>
         </div>
       )}
 
@@ -895,7 +896,7 @@ function ScheduleTab({ clients, sessions, setSessions }) {
 
             <div onClick={()=>{setFClient(clients[0]?.id||'');setShowModal(true)}} style={{display:'flex',alignItems:'center',gap:10,padding:'8px 12px',borderRadius:10,border:'1px dashed #2a4a7f',cursor:'pointer',color:'#6B7280',fontSize:12,marginTop:4}}>＋ Додати сесію</div>
 
-            <DayTimeline sessions={daySessions} clients={clients}/>
+            <DayTimeline sessions={daySessions} clients={clients} onClientClick={onClientClick}/>
           </div>
         </div>
       )}
@@ -968,9 +969,15 @@ function ScheduleTab({ clients, sessions, setSessions }) {
 }
 
 // ─── Clients Tab (unchanged) ──────────────────────────────────────────────────
-function ClientsTab({ clients, setClients, sessions, setSessions, records, setRecords, pricePlans, setFinance }) {
+function ClientsTab({ clients, setClients, sessions, setSessions, records, setRecords, pricePlans, setFinance, openClientId, clearOpenClientId }) {
   const [search, setSearch] = useState('')
   const [openId, setOpenId] = useState(null)
+  useEffect(() => {
+    if (openClientId) {
+      setOpenId(openClientId)
+      clearOpenClientId&&clearOpenClientId()
+    }
+  }, [openClientId])
   const [tabMap, setTabMap] = useState({})
   const [showAdd, setShowAdd] = useState(false)
   const [showAddRecord, setShowAddRecord] = useState(null)
@@ -2002,6 +2009,7 @@ function ProfileTab({ sessions, clients, finance, setFinance, pricePlans, setPri
 // ─── Root ─────────────────────────────────────────────────────────────────────
 export default function App() {
   const [tab, setTab] = useState('schedule')
+  const [openClientId, setOpenClientId] = useState(null)
   const [clients, setClients] = useState([])
   const [sessions, setSessions] = useState([])
   const [finance, setFinance] = useState([])
@@ -2066,8 +2074,8 @@ export default function App() {
 
       <div style={{flex:1,display:'flex',flexDirection:'column',overflow:'hidden'}}>
         <div style={{flex:1,overflowY:'auto',padding:24}}>
-          {tab==='schedule'&&<ScheduleTab clients={clients} sessions={sessions} setSessions={setSessions}/>}
-          {tab==='clients'&&<ClientsTab clients={clients} setClients={setClients} sessions={sessions} setSessions={setSessions} records={records} setRecords={setRecords} pricePlans={pricePlans} setFinance={setFinance}/>}
+          {tab==='schedule'&&<ScheduleTab clients={clients} sessions={sessions} setSessions={setSessions} onClientClick={id=>{setOpenClientId(id);setTab('clients')}}/>}
+          {tab==='clients'&&<ClientsTab clients={clients} setClients={setClients} sessions={sessions} setSessions={setSessions} records={records} setRecords={setRecords} pricePlans={pricePlans} setFinance={setFinance} openClientId={openClientId} clearOpenClientId={()=>setOpenClientId(null)}/>}
           {tab==='profile'&&<ProfileTab sessions={sessions} clients={clients} finance={finance} setFinance={setFinance} pricePlans={pricePlans} setPricePlans={setPricePlans}/>}
         </div>
         <div className="mobile-tabs" style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',background:'#162032',borderTop:'1px solid #2a4a7f',flexShrink:0}}>
