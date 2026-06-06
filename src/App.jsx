@@ -2080,7 +2080,7 @@ export default function App() {
         playsInline
         onEnded={()=>setSplashDone(true)}
         onError={()=>setSplashDone(true)}
-        style={{width:'100%',height:'100%',objectFit:'cover'}}
+        style={{width:'100%',height:'100%',objectFit:'cover',position:'absolute',top:0,left:0}}
       >
         <source src="/splash.webm" type="video/webm"/>
         <source src="/splash.mp4" type="video/mp4"/>
