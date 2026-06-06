@@ -2038,7 +2038,10 @@ export default function App() {
   const [records, setRecords] = useState([])
   const [pricePlans, setPricePlans] = useState([])
   const [loading, setLoading] = useState(true)
+  const [splashDone, setSplashDone] = useState(false)
+  const [dataDone, setDataDone] = useState(false)
 
+  // Завантаження даних у фоні
   useEffect(() => {
     const load = async () => {
       const [c,s,f,r,pp] = await Promise.all([
@@ -2056,17 +2059,44 @@ export default function App() {
       if (f.data) setFinance(f.data)
       if (r.data) setRecords(r.data)
       if (pp.data) setPricePlans(pp.data)
-      setLoading(false)
+      setDataDone(true)
     }
     load()
   }, [])
+
+  // Показуємо додаток тільки коли і відео закінчилось і дані завантажились
+  useEffect(() => {
+    if (splashDone && dataDone) setLoading(false)
+  }, [splashDone, dataDone])
 
   const now = new Date()
   const dateStr = `${DAYS_FULL[now.getDay()]}, ${now.getDate()} ${MONTHS_UK2[now.getMonth()]}`
 
   if (loading) return (
-    <div style={{display:'flex',alignItems:'center',justifyContent:'center',height:'100dvh',background:'#1E3A8A',color:'#C4ED00',fontFamily:'Bebas Neue',fontSize:32,letterSpacing:2}}>
-      ЗАВАНТАЖЕННЯ…
+    <div style={{position:'fixed',inset:0,background:'#000',zIndex:9999,overflow:'hidden'}}>
+      <video
+        autoPlay
+        muted
+        playsInline
+        onEnded={()=>setSplashDone(true)}
+        onError={()=>setSplashDone(true)}
+        style={{width:'100%',height:'100%',objectFit:'cover'}}
+      >
+        <source src="/splash.webm" type="video/webm"/>
+        <source src="/splash.mp4" type="video/mp4"/>
+      </video>
+      {/* Якщо відео не грається — кнопка пропустити після 3 сек */}
+      <div style={{position:'absolute',bottom:40,left:0,right:0,display:'flex',flexDirection:'column',alignItems:'center',gap:12}}>
+        <div style={{width:200,height:3,background:'rgba(255,255,255,.2)',borderRadius:2,overflow:'hidden'}}>
+          <div style={{height:'100%',background:'#C4ED00',borderRadius:2,animation:'splashProgress 3s linear forwards'}}/>
+        </div>
+      </div>
+      <style>{`
+        @keyframes splashProgress {
+          from { width: 0% }
+          to { width: 100% }
+        }
+      `}</style>
     </div>
   )
 
