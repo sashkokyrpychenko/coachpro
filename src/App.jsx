@@ -350,7 +350,7 @@ function DurationPicker({ value, onChange }) {
 }
 
 // ─── Clip Tab Component ───────────────────────────────────────────────────────
-function ClipTab({ c, clients, setClients, sessions, pricePlans }) {
+function ClipTab({ c, clients, setClients, sessions, pricePlans, setFinance }) {
   const [showAllPlans, setShowAllPlans] = useState(false)
   const [editDateIdx, setEditDateIdx] = useState(null) // індекс кружечка для редагування дати
   const [editDateVal, setEditDateVal] = useState('')
@@ -363,7 +363,8 @@ function ClipTab({ c, clients, setClients, sessions, pricePlans }) {
   const addFinanceRecord = async (planName, amount) => {
     const lastName = c.name ? c.name.split(' ')[1] || c.name.split(' ')[0] : c.name
     const finName = `${lastName} - ${planName} - ${Number(amount).toLocaleString('uk')} грн`
-    await supabase.from('finance').insert({name:finName, amount:Number(amount), type:'in', date:todayStr()})
+    const {data} = await supabase.from('finance').insert({name:finName, amount:Number(amount), type:'in', date:todayStr()}).select().single()
+    if (data && setFinance) setFinance(prev => [data, ...prev])
   }
 
   const useClip = async () => {
@@ -967,7 +968,7 @@ function ScheduleTab({ clients, sessions, setSessions }) {
 }
 
 // ─── Clients Tab (unchanged) ──────────────────────────────────────────────────
-function ClientsTab({ clients, setClients, sessions, setSessions, records, setRecords, pricePlans }) {
+function ClientsTab({ clients, setClients, sessions, setSessions, records, setRecords, pricePlans, setFinance }) {
   const [search, setSearch] = useState('')
   const [openId, setOpenId] = useState(null)
   const [tabMap, setTabMap] = useState({})
@@ -1338,7 +1339,7 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
                     </div>
                   )}
                   {activeTab==='clip' && (
-                    <ClipTab c={c} clients={clients} setClients={setClients} sessions={sessions} pricePlans={pricePlans}/>
+                    <ClipTab c={c} clients={clients} setClients={setClients} sessions={sessions} pricePlans={pricePlans} setFinance={setFinance}/>
                   )}
                   {activeTab==='history' && (
                     <div>
@@ -2026,7 +2027,7 @@ export default function App() {
       <div style={{flex:1,display:'flex',flexDirection:'column',overflow:'hidden'}}>
         <div style={{flex:1,overflowY:'auto',padding:24}}>
           {tab==='schedule'&&<ScheduleTab clients={clients} sessions={sessions} setSessions={setSessions}/>}
-          {tab==='clients'&&<ClientsTab clients={clients} setClients={setClients} sessions={sessions} setSessions={setSessions} records={records} setRecords={setRecords} pricePlans={pricePlans}/>}
+          {tab==='clients'&&<ClientsTab clients={clients} setClients={setClients} sessions={sessions} setSessions={setSessions} records={records} setRecords={setRecords} pricePlans={pricePlans} setFinance={setFinance}/>}
           {tab==='profile'&&<ProfileTab sessions={sessions} clients={clients} finance={finance} pricePlans={pricePlans} setPricePlans={setPricePlans}/>}
         </div>
         <div className="mobile-tabs" style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',background:'#162032',borderTop:'1px solid #2a4a7f',flexShrink:0}}>
