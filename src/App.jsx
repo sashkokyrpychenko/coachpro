@@ -975,7 +975,7 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
   const [showAdd, setShowAdd] = useState(false)
   const [showAddRecord, setShowAddRecord] = useState(null)
   const [editClient, setEditClient] = useState(null)
-  const [ec, setEc] = useState({name:'',goal:'',w:'',h:''})
+  const [ec, setEc] = useState({name:'',goal:'',w:'',h:'',started:''})
   const [nc, setNc] = useState({name:'',last:'',goal:'',w:'',h:'',clip:10})
   const [nr, setNr] = useState({exercise:'',value:'',unit:'кг'})
   const [saving, setSaving] = useState(false)
@@ -1111,9 +1111,10 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
       weight: Number(ec.w)||editClient.weight,
       height: Number(ec.h)||editClient.height,
       ava: initials || editClient.ava,
+      started_at: ec.started || null,
     }).eq('id', editClient.id)
     if (!error) setClients(prev => prev.map(c => c.id===editClient.id
-      ? {...c, name:ec.name, goal:ec.goal, weight:Number(ec.w)||c.weight, height:Number(ec.h)||c.height, ava:initials||c.ava}
+      ? {...c, name:ec.name, goal:ec.goal, weight:Number(ec.w)||c.weight, height:Number(ec.h)||c.height, ava:initials||c.ava, started_at:ec.started||null}
       : c).sort((a,b) => a.name.localeCompare(b.name,'uk')))
     setEditClient(null)
   }
@@ -1139,7 +1140,8 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
       clip_used:0,
       active_plan_id: nc.planId||null,
       clip_renewed_at: nc.planId ? todayStr() : null,
-      schedule_days:[], schedule_times:{}
+      schedule_days:[], schedule_times:{},
+      started_at: todayStr()
     }).select().single()
     if (!error) setClients(prev => [...prev, data].sort((a,b) => a.name.localeCompare(b.name, 'uk')))
     setSaving(false); setShowAdd(false)
@@ -1188,7 +1190,7 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
                 </div>
                 <div style={{display:'flex',flexDirection:'column',alignItems:'flex-end',gap:4}}>
                   <div style={{display:'flex',gap:6,alignItems:'center'}}>
-                    <button onClick={e=>{e.stopPropagation();setEc({name:c.name,goal:c.goal,w:c.weight,h:c.height});setEditClient(c)}}
+                    <button onClick={e=>{e.stopPropagation();setEc({name:c.name,goal:c.goal,w:c.weight,h:c.height,started:c.started_at||''});setEditClient(c)}}
                       style={{background:'none',border:`1px solid #2a4a7f`,borderRadius:7,color:'#9CA3AF',fontSize:12,padding:'3px 7px',cursor:'pointer'}}>✏️</button>
                     <span style={{fontSize:11,padding:'3px 9px',borderRadius:20,fontWeight:600,background:'rgba(200,255,71,.12)',color:'#C4ED00'}}>{c.clip_used}/{c.clip_total}</span>
                   </div>
@@ -1211,7 +1213,7 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
                   {activeTab==='profile' && (
                     <div>
                       <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:8,marginBottom:12}}>
-                        {[['Вага',`${c.weight} кг`],['Зріст',`${c.height} см`],['Сесій',cSessions.length]].map(([l,v])=>(
+                        {[['Вага',`${c.weight} кг`],['Зріст',`${c.height} см`],['З нами',c.started_at ? c.started_at.slice(0,10).split('-').reverse().join('.') : '—']].map(([l,v])=>(
                           <div key={l} style={{background:'#1a2744',borderRadius:10,padding:10,textAlign:'center'}}>
                             <div style={{fontFamily:'Bebas Neue',fontSize:22}}>{v}</div>
                             <div style={{fontSize:10,color:'#9CA3AF',marginTop:2}}>{l}</div>
@@ -1438,7 +1440,7 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
             <input value={ec.name} onChange={e=>setEc({...ec,name:e.target.value})} style={{...inp,marginBottom:12}}/>
             <label style={lbl}>Мета</label>
             <input value={ec.goal} onChange={e=>setEc({...ec,goal:e.target.value})} style={{...inp,marginBottom:12}}/>
-            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:20}}>
+            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:12}}>
               <div>
                 <label style={lbl}>Вага (кг)</label>
                 <input type="number" value={ec.w} onChange={e=>setEc({...ec,w:e.target.value})} style={inp}/>
@@ -1448,6 +1450,8 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
                 <input type="number" value={ec.h} onChange={e=>setEc({...ec,h:e.target.value})} style={inp}/>
               </div>
             </div>
+            <label style={lbl}>Дата початку співпраці</label>
+            <input type="date" value={ec.started} onChange={e=>setEc({...ec,started:e.target.value})} style={{...inp,marginBottom:20}}/>
             <button onClick={saveEditClient}
               style={{width:'100%',padding:12,borderRadius:12,border:'none',background:'#C4ED00',color:'#111',fontFamily:'DM Sans',fontSize:14,fontWeight:700,cursor:'pointer',marginBottom:8}}>
               Зберегти зміни
