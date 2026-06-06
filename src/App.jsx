@@ -982,7 +982,7 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
   const [showAdd, setShowAdd] = useState(false)
   const [showAddRecord, setShowAddRecord] = useState(null)
   const [editClient, setEditClient] = useState(null)
-  const [ec, setEc] = useState({name:'',goal:'',w:'',h:'',started:''})
+  const [ec, setEc] = useState({name:'',goal:'',w:'',h:'',started:'',phone:'',telegram:''})
   const [nc, setNc] = useState({name:'',last:'',goal:'',w:'',h:'',clip:10})
   const [nr, setNr] = useState({exercise:'',value:'',unit:'кг'})
   const [saving, setSaving] = useState(false)
@@ -1119,9 +1119,11 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
       height: Number(ec.h)||editClient.height,
       ava: initials || editClient.ava,
       started_at: ec.started || null,
+      phone: ec.phone || null,
+      telegram: ec.telegram || null,
     }).eq('id', editClient.id)
     if (!error) setClients(prev => prev.map(c => c.id===editClient.id
-      ? {...c, name:ec.name, goal:ec.goal, weight:Number(ec.w)||c.weight, height:Number(ec.h)||c.height, ava:initials||c.ava, started_at:ec.started||null}
+      ? {...c, name:ec.name, goal:ec.goal, weight:Number(ec.w)||c.weight, height:Number(ec.h)||c.height, ava:initials||c.ava, started_at:ec.started||null, phone:ec.phone||null, telegram:ec.telegram||null}
       : c).sort((a,b) => a.name.localeCompare(b.name,'uk')))
     setEditClient(null)
   }
@@ -1197,7 +1199,7 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
                 </div>
                 <div style={{display:'flex',flexDirection:'column',alignItems:'flex-end',gap:4}}>
                   <div style={{display:'flex',gap:6,alignItems:'center'}}>
-                    <button onClick={e=>{e.stopPropagation();setEc({name:c.name,goal:c.goal,w:c.weight,h:c.height,started:c.started_at||''});setEditClient(c)}}
+                    <button onClick={e=>{e.stopPropagation();setEc({name:c.name,goal:c.goal,w:c.weight,h:c.height,started:c.started_at||'',phone:c.phone||'',telegram:c.telegram||''});setEditClient(c)}}
                       style={{background:'none',border:`1px solid #2a4a7f`,borderRadius:7,color:'#9CA3AF',fontSize:12,padding:'3px 7px',cursor:'pointer'}}>✏️</button>
                     <span style={{fontSize:11,padding:'3px 9px',borderRadius:20,fontWeight:600,background:'rgba(200,255,71,.12)',color:'#C4ED00'}}>{c.clip_used}/{c.clip_total}</span>
                   </div>
@@ -1239,6 +1241,22 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
                       </div>
                       <div style={{fontSize:11,color:'#9CA3AF',textTransform:'uppercase',letterSpacing:.5,marginBottom:6}}>📝 Нотатка</div>
                       <textarea defaultValue={c.note} onBlur={e=>updateNote(c.id,e.target.value)} style={{width:'100%',background:'#1a2744',border:'1px solid #2a4a7f',borderRadius:10,padding:'10px 12px',color:'#F3F4F6',fontFamily:'DM Sans',fontSize:13,resize:'none',outline:'none',minHeight:80,lineHeight:1.5}}/>
+                      {(c.phone||c.telegram) && (
+                        <div style={{display:'flex',gap:8,marginTop:12}}>
+                          {c.phone && (
+                            <button onClick={()=>{navigator.clipboard.writeText(c.phone);alert('Номер скопійовано!')}}
+                              style={{flex:1,padding:'10px 8px',borderRadius:10,border:'1px solid #2a4a7f',background:'#1a2744',color:'#F3F4F6',fontFamily:'DM Sans',fontSize:12,fontWeight:600,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:6}}>
+                              📞 {c.phone}
+                            </button>
+                          )}
+                          {c.telegram && (
+                            <button onClick={()=>window.open(c.telegram.startsWith('http')?c.telegram:`https://t.me/${c.telegram.replace('@','')}`, '_blank')}
+                              style={{flex:1,padding:'10px 8px',borderRadius:10,border:'1px solid #2a4a7f',background:'rgba(36,161,222,.15)',color:'#29b6f6',fontFamily:'DM Sans',fontSize:12,fontWeight:700,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:6}}>
+                              ✈️ Telegram
+                            </button>
+                          )}
+                        </div>
+                      )}
                     </div>
                   )}
                   {activeTab==='metrics' && (() => {
@@ -1458,7 +1476,11 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
               </div>
             </div>
             <label style={lbl}>Дата початку співпраці</label>
-            <input type="date" value={ec.started} onChange={e=>setEc({...ec,started:e.target.value})} style={{...inp,marginBottom:20}}/>
+            <input type="date" value={ec.started} onChange={e=>setEc({...ec,started:e.target.value})} style={{...inp,marginBottom:12}}/>
+            <label style={lbl}>Телефон</label>
+            <input value={ec.phone} onChange={e=>setEc({...ec,phone:e.target.value})} placeholder="+380..." style={{...inp,marginBottom:12}}/>
+            <label style={lbl}>Telegram (посилання або @username)</label>
+            <input value={ec.telegram} onChange={e=>setEc({...ec,telegram:e.target.value})} placeholder="https://t.me/username" style={{...inp,marginBottom:20}}/>
             <button onClick={saveEditClient}
               style={{width:'100%',padding:12,borderRadius:12,border:'none',background:'#C4ED00',color:'#111',fontFamily:'DM Sans',fontSize:14,fontWeight:700,cursor:'pointer',marginBottom:8}}>
               Зберегти зміни
