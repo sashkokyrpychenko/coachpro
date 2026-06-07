@@ -747,32 +747,29 @@ function ScheduleTab({ clients, sessions, setSessions, onClientClick }) {
     )
     const allIds = [id, ...partners.map(s => s.id)]
     await supabase.from('sessions').update({done:!done}).in('id', allIds)
-    setSessions(sessions.map(s => allIds.includes(s.id) ? {...s, done:!done} : s))
+    setSessions(prev => prev.map(s => allIds.includes(s.id) ? {...s, done:!done} : s))
 
-    // Оновлення КК для клієнта
+    // Оновлення КК — беремо свіжі дані з Supabase
     const updateClip = async (clientId) => {
-      const client = clients.find(c => c.id === clientId)
-      if (!client) return
-      const isRazove = client.clip_total === 1 && client.active_plan_id
+      const { data: freshClient } = await supabase.from('clients').select('*').eq('id', clientId).single()
+      if (!freshClient) return
+      const isRazove = freshClient.clip_total === 1 && freshClient.active_plan_id
 
       if (!done) {
-        // Відмічаємо виконано → clip_used + 1 (навіть якщо борг)
         if (isRazove) {
-          // Разове — скидаємо після відмітки
           const renewDate = todayStr()
-          await supabase.from('clients').update({clip_used:0, clip_renewed_at:renewDate}).eq('id', client.id)
-          setClients(prev => prev.map(c => c.id===client.id ? {...c, clip_used:0, clip_renewed_at:renewDate} : c))
+          await supabase.from('clients').update({clip_used:0, clip_renewed_at:renewDate}).eq('id', clientId)
+          setClients(prev => prev.map(c => c.id===clientId ? {...c, clip_used:0, clip_renewed_at:renewDate} : c))
         } else {
-          const newUsed = (client.clip_used || 0) + 1
-          await supabase.from('clients').update({clip_used:newUsed}).eq('id', client.id)
-          setClients(prev => prev.map(c => c.id===client.id ? {...c, clip_used:newUsed} : c))
+          const newUsed = (freshClient.clip_used || 0) + 1
+          await supabase.from('clients').update({clip_used:newUsed}).eq('id', clientId)
+          setClients(prev => prev.map(c => c.id===clientId ? {...c, clip_used:newUsed} : c))
         }
       } else {
-        // Знімаємо галочку → повертаємо заняття (мінімум 0)
         if (!isRazove) {
-          const newUsed = Math.max(0, (client.clip_used || 0) - 1)
-          await supabase.from('clients').update({clip_used:newUsed}).eq('id', client.id)
-          setClients(prev => prev.map(c => c.id===client.id ? {...c, clip_used:newUsed} : c))
+          const newUsed = Math.max(0, (freshClient.clip_used || 0) - 1)
+          await supabase.from('clients').update({clip_used:newUsed}).eq('id', clientId)
+          setClients(prev => prev.map(c => c.id===clientId ? {...c, clip_used:newUsed} : c))
         }
       }
     }
