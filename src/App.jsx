@@ -853,8 +853,8 @@ function ScheduleTab({ clients, sessions, setSessions, onClientClick }) {
               return (
                 <div key={i} onClick={()=>setSelDs(ds)} style={{display:'flex',flexDirection:'column',alignItems:'center',gap:3,padding:'8px 2px',borderRadius:10,cursor:'pointer',border:`1px solid ${isSel?'#00F5FF':'#1E2A3A'}`,background:isSel?'#00F5FF':'#0D0D16',color:isSel?'#111':'#E8EAF0',transition:'all .18s'}}>
                   <span style={{fontSize:10,fontWeight:600,color:isSel?'#111':'#4A5A6A'}}>{DAYS_SHORT[i]}</span>
-                  <span style={{fontSize:19,fontWeight:800,lineHeight:1,fontFamily:'Arial,Helvetica,sans-serif',display:'block',textAlign:'center',WebkitFontSmoothing:'antialiased'}}>{d.getDate()}</span>
-                  {has && !isSel && <span style={{width:4,height:4,borderRadius:'50%',background:'#47d4ff',display:'block'}}/>}
+                  <span style={{fontSize:19,fontWeight:700,lineHeight:1,fontFamily:'"DM Sans",sans-serif',fontVariantNumeric:'tabular-nums',display:'block',textAlign:'center'}}>{d.getDate()}</span>
+                  {has && <span style={{width:4,height:4,borderRadius:'50%',background:isSel?'#11111888':'#47d4ff',display:'block'}}/>}
                 </div>
               )
             })}
