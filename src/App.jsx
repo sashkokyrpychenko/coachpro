@@ -195,7 +195,7 @@ function SplitCard({ sessions, clients, onEdit, onToggle }) {
 }
 
 // ─── Day Timeline (duration-aware) ───────────────────────────────────────────
-function DayTimeline({ sessions, clients, onClientClick, selDs, blockedSlots, setBlockedSlots }) {
+function DayTimeline({ sessions, clients, onClientClick }) {
   const SLOT_H = 48       // px per 60 min
   const START_H = 6       // 06:00
   const END_H = 23        // 23:00
@@ -205,22 +205,6 @@ function DayTimeline({ sessions, clients, onClientClick, selDs, blockedSlots, se
   const currentMin = now.getHours() * 60 + now.getMinutes()
   const nowOffset = ((currentMin - START_H * 60) / 60) * SLOT_H
   const showNow = currentMin >= START_H * 60 && currentMin <= END_H * 60
-
-  // Blocked slots for current day
-  const dayBlocked = (blockedSlots || []).filter(b => b.date === selDs).map(b => b.hour)
-
-  const toggleBlock = async (hour) => {
-    const existing = (blockedSlots || []).find(b => b.date === selDs && b.hour === hour)
-    if (existing) {
-      // Unblock
-      await supabase.from('blocked_slots').delete().eq('id', existing.id)
-      setBlockedSlots(prev => prev.filter(b => b.id !== existing.id))
-    } else {
-      // Block
-      const { data, error } = await supabase.from('blocked_slots').insert({ date: selDs, hour }).select().single()
-      if (!error && data) setBlockedSlots(prev => [...prev, data])
-    }
-  }
 
   // Convert "HH:MM" to minutes from START_H
   const toMin = (t) => {
@@ -237,10 +221,7 @@ function DayTimeline({ sessions, clients, onClientClick, selDs, blockedSlots, se
 
   return (
     <div style={{background:'#111118', border:'1px solid #1A2E4A', borderRadius:14, padding:16, marginTop:12}}>
-      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:12}}>
-        <div style={{fontSize:11,color:'#4A90B8',fontWeight:600,textTransform:'uppercase',letterSpacing:.5}}>Денний графік</div>
-        <div style={{fontSize:10,color:'#2A5070'}}>Клік на годину — заблокувати / розблокувати</div>
-      </div>
+      <div style={{fontSize:11,color:'#4A90B8',fontWeight:600,textTransform:'uppercase',letterSpacing:.5,marginBottom:12}}>Денний графік</div>
       <div style={{display:'flex', gap:8}}>
         {/* Hour labels */}
         <div style={{display:'flex', flexDirection:'column', flexShrink:0}}>
@@ -257,32 +238,14 @@ function DayTimeline({ sessions, clients, onClientClick, selDs, blockedSlots, se
 
         {/* Grid + blocks */}
         <div style={{flex:1, position:'relative', height: HOURS.length * SLOT_H}}>
-          {/* Clickable hour rows */}
-          {HOURS.map((h, i) => {
-            const isBlocked = dayBlocked.includes(h)
-            return (
-              <div key={h} onClick={() => toggleBlock(h)} style={{
-                position:'absolute', left:0, right:0,
-                top: i * SLOT_H, height: SLOT_H,
-                cursor:'pointer',
-                background: isBlocked ? 'rgba(74,90,106,0.18)' : 'transparent',
-                borderTop: `1px solid ${h === now.getHours() ? 'rgba(0,245,255,.25)' : '#1E2A3A'}`,
-                zIndex: 1,
-                transition:'background .15s',
-              }}>
-                {isBlocked && (
-                  <div style={{
-                    position:'absolute', left:4, top:'50%', transform:'translateY(-50%)',
-                    fontSize:10, color:'#4A5A6A', fontWeight:600, letterSpacing:.3,
-                    display:'flex', alignItems:'center', gap:5, pointerEvents:'none',
-                  }}>
-                    <span style={{width:3,height:16,background:'#3A4A5A',borderRadius:2,display:'block'}}/>
-                    Зайнято
-                  </div>
-                )}
-              </div>
-            )
-          })}
+          {/* Hour grid lines */}
+          {HOURS.map((h, i) => (
+            <div key={h} style={{
+              position:'absolute', left:0, right:0,
+              top: i * SLOT_H, height:1,
+              background: h === now.getHours() ? 'rgba(0,245,255,.25)' : '#1E2A3A',
+            }}/>
+          ))}
 
           {/* Current time line */}
           {showNow && (
@@ -306,7 +269,7 @@ function DayTimeline({ sessions, clients, onClientClick, selDs, blockedSlots, se
             const left = isplit && idx > 0 ? 'calc(50% + 3px)' : '0'
 
             return (
-              <div key={s.id} onClick={(e)=>{e.stopPropagation();onClientClick&&c&&onClientClick(c.id)}} style={{
+              <div key={s.id} onClick={()=>onClientClick&&c&&onClientClick(c.id)} style={{
                 position:'absolute', top, left, width:w, height,
                 borderRadius:10,
                 background: (c?.color||'#888')+'18',
@@ -734,7 +697,7 @@ function EditSessionModal({ session, clients, onClose, onSave, onDelete }) {
 }
 
 // ─── Schedule Tab ─────────────────────────────────────────────────────────────
-function ScheduleTab({ clients, sessions, setSessions, blockedSlots, setBlockedSlots, onClientClick }) {
+function ScheduleTab({ clients, sessions, setSessions, onClientClick }) {
   const today = new Date()
   const todayDs = todayStr()
   const [viewMode, setViewMode] = useState('week')
@@ -916,7 +879,7 @@ function ScheduleTab({ clients, sessions, setSessions, blockedSlots, setBlockedS
           <div onClick={()=>{setFClient(clients[0]?.id||'');setShowModal(true)}} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 14px',borderRadius:12,border:'1px dashed #1A2E4A',cursor:'pointer',color:'#4A90B8',fontSize:13,marginTop:4}}>＋ Додати сесію</div>
 
           {/* Timeline */}
-          <DayTimeline sessions={daySessions} clients={clients} onClientClick={onClientClick} selDs={selDs} blockedSlots={blockedSlots} setBlockedSlots={setBlockedSlots}/>
+          <DayTimeline sessions={daySessions} clients={clients} onClientClick={onClientClick}/>
         </div>
       )}
 
@@ -2095,12 +2058,11 @@ export default function App() {
   const [finance, setFinance] = useState([])
   const [records, setRecords] = useState([])
   const [pricePlans, setPricePlans] = useState([])
-  const [blockedSlots, setBlockedSlots] = useState([])
 
   // Завантаження даних у фоні
   useEffect(() => {
     const load = async () => {
-      const [c,s,f,r,pp,bs] = await Promise.all([
+      const [c,s,f,r,pp] = await Promise.all([
         supabase.from('clients').select('*').order('created_at'),
         supabase.from('sessions').select('*')
           .gte('date', '2026-01-01')
@@ -2109,14 +2071,12 @@ export default function App() {
         supabase.from('finance').select('*').order('created_at'),
         supabase.from('records').select('*').order('created_at'),
         supabase.from('price_plans').select('*').order('name'),
-        supabase.from('blocked_slots').select('*'),
       ])
       if (c.data) setClients(c.data.sort((a,b) => a.name.localeCompare(b.name, 'uk')))
       if (s.data) setSessions(s.data)
       if (f.data) setFinance(f.data)
       if (r.data) setRecords(r.data)
       if (pp.data) setPricePlans(pp.data)
-      if (bs.data) setBlockedSlots(bs.data)
     }
     load()
   }, [])
@@ -2153,7 +2113,7 @@ export default function App() {
 
       <div style={{flex:1,display:'flex',flexDirection:'column',overflow:'hidden'}}>
         <div style={{flex:1,overflowY:'auto',padding:24}}>
-          {tab==='schedule'&&<ScheduleTab clients={clients} sessions={sessions} setSessions={setSessions} blockedSlots={blockedSlots} setBlockedSlots={setBlockedSlots} onClientClick={id=>{setOpenClientId(id);setTab('clients')}}/>}
+          {tab==='schedule'&&<ScheduleTab clients={clients} sessions={sessions} setSessions={setSessions} onClientClick={id=>{setOpenClientId(id);setTab('clients')}}/>}
           {tab==='clients'&&<ClientsTab clients={clients} setClients={setClients} sessions={sessions} setSessions={setSessions} records={records} setRecords={setRecords} pricePlans={pricePlans} setFinance={setFinance} openClientId={openClientId} clearOpenClientId={()=>setOpenClientId(null)}/>}
           {tab==='profile'&&<ProfileTab sessions={sessions} clients={clients} finance={finance} setFinance={setFinance} pricePlans={pricePlans} setPricePlans={setPricePlans}/>}
         </div>
