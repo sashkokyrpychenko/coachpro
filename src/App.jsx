@@ -402,8 +402,10 @@ function ClipTab({ c, clients, setClients, sessions, pricePlans, setFinance }) {
 
   const renewClip = async () => {
     const renewDate = todayStr()
-    await supabase.from('clients').update({clip_used:0,clip_renewed_at:renewDate,clip_dates:[]}).eq('id',c.id)
-    setClients(prev => prev.map(x => x.id===c.id ? {...x,clip_used:0,clip_renewed_at:renewDate,clip_dates:[]} : x))
+    // Борг = скільки занять понад пакет
+    const debt = Math.max(0, (c.clip_used || 0) - (c.clip_total || 0))
+    await supabase.from('clients').update({clip_used:debt, clip_renewed_at:renewDate, clip_dates:[]}).eq('id',c.id)
+    setClients(prev => prev.map(x => x.id===c.id ? {...x, clip_used:debt, clip_renewed_at:renewDate, clip_dates:[]} : x))
     // Пакет — оплата при поновленні
     if (activePlan && activePlan.sessions > 1) {
       await addFinanceRecord(activePlan.name, activePlan.price)
@@ -412,9 +414,10 @@ function ClipTab({ c, clients, setClients, sessions, pricePlans, setFinance }) {
 
   const selectPlan = async (p) => {
     const renewDate = todayStr()
-    const isFirstTime = !c.active_plan_id
-    await supabase.from('clients').update({active_plan_id:p.id,clip_total:p.sessions,clip_used:0,clip_renewed_at:renewDate,clip_dates:[]}).eq('id',c.id)
-    setClients(prev => prev.map(x => x.id===c.id ? {...x,active_plan_id:p.id,clip_total:p.sessions,clip_used:0,clip_renewed_at:renewDate,clip_dates:[]} : x))
+    // Борг з попереднього пакету переноситься
+    const debt = Math.max(0, (c.clip_used || 0) - (c.clip_total || 0))
+    await supabase.from('clients').update({active_plan_id:p.id, clip_total:p.sessions, clip_used:debt, clip_renewed_at:renewDate, clip_dates:[]}).eq('id',c.id)
+    setClients(prev => prev.map(x => x.id===c.id ? {...x, active_plan_id:p.id, clip_total:p.sessions, clip_used:debt, clip_renewed_at:renewDate, clip_dates:[]} : x))
     setShowAllPlans(false)
     // Пакет — оплата при першому виборі або зміні тарифу
     if (p.sessions > 1) {
@@ -514,31 +517,34 @@ function ClipTab({ c, clients, setClients, sessions, pricePlans, setFinance }) {
           <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
             <div style={{fontSize:14,fontWeight:700}}>Кліп-карта</div>
             <span style={{fontSize:11,padding:'3px 9px',borderRadius:20,fontWeight:600,
-              background:isExhausted?'rgba(220,38,38,.1)':'rgba(22,163,74,.12)',
-              color:isExhausted?'#FF4466':'#00FF88'}}>
-              {isExhausted?'Вичерпано':`Залишилось: ${c.clip_total-c.clip_used}`}
+              background: c.clip_used > c.clip_total ? 'rgba(255,68,102,.12)' : isExhausted ? 'rgba(220,38,38,.1)' : 'rgba(22,163,74,.12)',
+              color: c.clip_used > c.clip_total ? '#FF4466' : isExhausted ? '#FF4466' : '#00FF88'}}>
+              {c.clip_used > c.clip_total
+                ? `Борг: ${c.clip_used - c.clip_total} зан.`
+                : isExhausted ? 'Вичерпано' : `Залишилось: ${c.clip_total - c.clip_used}`}
             </span>
           </div>
 
           <div style={{height:5,background:'#08080F',borderRadius:3,marginBottom:12,overflow:'hidden'}}>
-            <div style={{height:'100%',borderRadius:3,width:`${progress}%`,background:isExhausted?'#FF4466':'#00F5FF',transition:'width 0.3s'}}/>
+            <div style={{height:'100%',borderRadius:3,width:`${Math.min(progress,100)}%`,background: c.clip_used > c.clip_total ? '#FF4466' : isExhausted ? '#FF4466' : '#00F5FF',transition:'width 0.3s'}}/>
           </div>
 
           <div style={{display:'flex',flexWrap:'wrap',gap:6,marginBottom:14}}>
-            {Array.from({length:c.clip_total},(_,i)=>{
+            {Array.from({length: Math.max(c.clip_total, c.clip_used)},(_,i)=>{
               const isDone = i < c.clip_used
+              const isDebt = i >= c.clip_total
               const dateStr = clipDates[i] || null
               return (
-                <div key={i} onClick={()=>isDone && openEditDate(i)}
-                  style={{display:'flex',flexDirection:'column',alignItems:'center',gap:2,width:'calc(16.66% - 5px)',cursor:isDone?'pointer':'default'}}>
+                <div key={i} onClick={()=>isDone && !isDebt && openEditDate(i)}
+                  style={{display:'flex',flexDirection:'column',alignItems:'center',gap:2,width:'calc(16.66% - 5px)',cursor:isDone&&!isDebt?'pointer':'default'}}>
                   <div style={{width:34,height:34,borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',fontSize:13,fontWeight:700,
-                    background:isDone?'#00F5FF':i===c.clip_used?'rgba(71,212,255,.1)':'#08080F',
-                    border:isDone?'2px solid #00F5FF':i===c.clip_used?'2px solid #47d4ff':'2px solid #1A2E4A',
-                    color:isDone?'#111':'#3A4A5A'}}>
-                    {isDone?'✓':i+1}
+                    background: isDebt && isDone ? 'rgba(255,68,102,.15)' : isDone ? '#00F5FF' : i===c.clip_used ? 'rgba(71,212,255,.1)' : '#08080F',
+                    border: isDebt && isDone ? '2px solid #FF4466' : isDone ? '2px solid #00F5FF' : i===c.clip_used ? '2px solid #47d4ff' : '2px solid #1A2E4A',
+                    color: isDebt && isDone ? '#FF4466' : isDone ? '#111' : '#3A4A5A'}}>
+                    {isDebt && isDone ? '−' : isDone ? '✓' : i+1}
                   </div>
-                  <div style={{fontSize:8,color:isDone?'#00F5FF':'#3A4A5A',textAlign:'center',opacity:isDone?1:0.4}}>
-                    {isDone && dateStr ? dateStr.slice(5).replace('-','/') : '—'}
+                  <div style={{fontSize:8,color: isDebt&&isDone ? '#FF4466' : isDone ? '#00F5FF' : '#3A4A5A',textAlign:'center',opacity:isDone?1:0.4}}>
+                    {isDone && dateStr ? dateStr.slice(5).replace('-','/') : isDebt&&isDone ? 'борг' : '—'}
                   </div>
                 </div>
               )
@@ -743,39 +749,36 @@ function ScheduleTab({ clients, sessions, setSessions, onClientClick }) {
     await supabase.from('sessions').update({done:!done}).in('id', allIds)
     setSessions(sessions.map(s => allIds.includes(s.id) ? {...s, done:!done} : s))
 
-    // Auto clip: якщо відмічаємо як виконано (не скасовуємо)
-    if (!done) {
-      const client = clients.find(c => c.id === session.client_id)
-      if (client && client.active_plan_id && client.clip_used < client.clip_total) {
-        const newUsed = client.clip_used + 1
-        const isRazove = client.clip_total === 1
+    // Оновлення КК для клієнта
+    const updateClip = async (clientId) => {
+      const client = clients.find(c => c.id === clientId)
+      if (!client) return
+      const isRazove = client.clip_total === 1 && client.active_plan_id
+
+      if (!done) {
+        // Відмічаємо виконано → clip_used + 1 (навіть якщо борг)
         if (isRazove) {
-          // Разове — поновлюємо автоматично
+          // Разове — скидаємо після відмітки
           const renewDate = todayStr()
           await supabase.from('clients').update({clip_used:0, clip_renewed_at:renewDate}).eq('id', client.id)
           setClients(prev => prev.map(c => c.id===client.id ? {...c, clip_used:0, clip_renewed_at:renewDate} : c))
         } else {
+          const newUsed = (client.clip_used || 0) + 1
+          await supabase.from('clients').update({clip_used:newUsed}).eq('id', client.id)
+          setClients(prev => prev.map(c => c.id===client.id ? {...c, clip_used:newUsed} : c))
+        }
+      } else {
+        // Знімаємо галочку → повертаємо заняття (мінімум 0)
+        if (!isRazove) {
+          const newUsed = Math.max(0, (client.clip_used || 0) - 1)
           await supabase.from('clients').update({clip_used:newUsed}).eq('id', client.id)
           setClients(prev => prev.map(c => c.id===client.id ? {...c, clip_used:newUsed} : c))
         }
       }
-      // Для спліту — знімаємо у партнера теж
-      if (partners.length > 0) {
-        const partnerClient = clients.find(c => c.id === partners[0].client_id)
-        if (partnerClient && partnerClient.active_plan_id && partnerClient.clip_used < partnerClient.clip_total) {
-          const newUsed = partnerClient.clip_used + 1
-          const isRazove = partnerClient.clip_total === 1
-          if (isRazove) {
-            const renewDate = todayStr()
-            await supabase.from('clients').update({clip_used:0, clip_renewed_at:renewDate}).eq('id', partnerClient.id)
-            setClients(prev => prev.map(c => c.id===partnerClient.id ? {...c, clip_used:0, clip_renewed_at:renewDate} : c))
-          } else {
-            await supabase.from('clients').update({clip_used:newUsed}).eq('id', partnerClient.id)
-            setClients(prev => prev.map(c => c.id===partnerClient.id ? {...c, clip_used:newUsed} : c))
-          }
-        }
-      }
     }
+
+    await updateClip(session.client_id)
+    if (partners.length > 0) await updateClip(partners[0].client_id)
   }
 
   const saveSession = async () => {
