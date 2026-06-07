@@ -756,21 +756,13 @@ function ScheduleTab({ clients, sessions, setSessions, onClientClick }) {
       const isRazove = freshClient.clip_total === 1 && freshClient.active_plan_id
 
       if (!done) {
-        if (isRazove) {
-          const renewDate = todayStr()
-          await supabase.from('clients').update({clip_used:0, clip_renewed_at:renewDate}).eq('id', clientId)
-          setClients(prev => prev.map(c => c.id===clientId ? {...c, clip_used:0, clip_renewed_at:renewDate} : c))
-        } else {
-          const newUsed = (freshClient.clip_used || 0) + 1
-          await supabase.from('clients').update({clip_used:newUsed}).eq('id', clientId)
-          setClients(prev => prev.map(c => c.id===clientId ? {...c, clip_used:newUsed} : c))
-        }
+        const newUsed = (freshClient.clip_used || 0) + 1
+        await supabase.from('clients').update({clip_used:newUsed}).eq('id', clientId)
+        setClients(prev => prev.map(c => c.id===clientId ? {...c, clip_used:newUsed} : c))
       } else {
-        if (!isRazove) {
-          const newUsed = Math.max(0, (freshClient.clip_used || 0) - 1)
-          await supabase.from('clients').update({clip_used:newUsed}).eq('id', clientId)
-          setClients(prev => prev.map(c => c.id===clientId ? {...c, clip_used:newUsed} : c))
-        }
+        const newUsed = Math.max(0, (freshClient.clip_used || 0) - 1)
+        await supabase.from('clients').update({clip_used:newUsed}).eq('id', clientId)
+        setClients(prev => prev.map(c => c.id===clientId ? {...c, clip_used:newUsed} : c))
       }
     }
 
