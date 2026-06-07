@@ -402,27 +402,21 @@ function ClipTab({ c, clients, setClients, sessions, pricePlans, setFinance }) {
 
   const renewClip = async () => {
     const renewDate = todayStr()
-    // Борг = скільки занять понад пакет
     const debt = Math.max(0, (c.clip_used || 0) - (c.clip_total || 0))
     await supabase.from('clients').update({clip_used:debt, clip_renewed_at:renewDate, clip_dates:[]}).eq('id',c.id)
     setClients(prev => prev.map(x => x.id===c.id ? {...x, clip_used:debt, clip_renewed_at:renewDate, clip_dates:[]} : x))
-    // Пакет — оплата при поновленні
-    if (activePlan && activePlan.sessions > 1) {
+    if (activePlan) {
       await addFinanceRecord(activePlan.name, activePlan.price)
     }
   }
 
   const selectPlan = async (p) => {
     const renewDate = todayStr()
-    // Борг з попереднього пакету переноситься
     const debt = Math.max(0, (c.clip_used || 0) - (c.clip_total || 0))
     await supabase.from('clients').update({active_plan_id:p.id, clip_total:p.sessions, clip_used:debt, clip_renewed_at:renewDate, clip_dates:[]}).eq('id',c.id)
     setClients(prev => prev.map(x => x.id===c.id ? {...x, active_plan_id:p.id, clip_total:p.sessions, clip_used:debt, clip_renewed_at:renewDate, clip_dates:[]} : x))
     setShowAllPlans(false)
-    // Пакет — оплата при першому виборі або зміні тарифу
-    if (p.sessions > 1) {
-      await addFinanceRecord(p.name, p.price)
-    }
+    await addFinanceRecord(p.name, p.price)
   }
 
   const openEditDate = (i) => {
