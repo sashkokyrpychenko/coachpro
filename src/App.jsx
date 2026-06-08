@@ -837,11 +837,11 @@ function ScheduleTab({ clients, sessions, setSessions, onClientClick }) {
               const isToday = ds===todayDs
               const isSel = ds===selDs
               return (
-                <div key={i} onClick={()=>setSelDs(ds)} style={{display:'flex',flexDirection:'column',alignItems:'center',gap:3,padding:'8px 2px',borderRadius:10,cursor:'pointer',border:`2px solid ${isSel?'#00F5FF':'#1E2A3A'}`,background:isSel?'rgba(0,245,255,0.15)':'#0D0D16',color:'#E8EAF0',transition:'all .18s'}}>
-                  <span style={{fontSize:10,fontWeight:600,color:isSel?'#00F5FF':'#4A5A6A'}}>{DAYS_SHORT[i]}</span>
-                  <span style={{fontSize:19,fontWeight:700,lineHeight:1,fontFamily:'"DM Sans",sans-serif',display:'block',textAlign:'center',color:isSel?'#00F5FF':'#E8EAF0'}}>{d.getDate()}</span>
+                <div key={i} onClick={()=>setSelDs(ds)} style={{display:'flex',flexDirection:'column',alignItems:'center',gap:3,padding:'8px 2px',borderRadius:10,cursor:'pointer',border:`2px solid ${isSel?'#00F5FF':'#1E2A3A'}`,background:isSel?'#00D4E8':'#0D0D16',color:'#E8EAF0',transition:'all .18s'}}>
+                  <span style={{fontSize:10,fontWeight:600,color:isSel?'#fff':'#4A5A6A'}}>{DAYS_SHORT[i]}</span>
+                  <span style={{fontSize:19,fontWeight:700,lineHeight:1,fontFamily:'"DM Sans",sans-serif',display:'block',textAlign:'center',color:isSel?'#fff':'#E8EAF0'}}>{d.getDate()}</span>
                   {has && !isSel && <span style={{width:5,height:5,borderRadius:'50%',background:'#00FF88',display:'block',marginTop:1}}/>}
-                  {has && isSel && <span style={{width:5,height:5,borderRadius:'50%',background:'#00F5FF',display:'block',marginTop:1}}/>}
+                  {has && isSel && <span style={{width:5,height:5,borderRadius:'50%',background:'rgba(255,255,255,0.6)',display:'block',marginTop:1}}/>}
                 </div>
               )
             })}
