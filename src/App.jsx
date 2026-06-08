@@ -125,7 +125,7 @@ function SwipeSessionCard({ s, clients, onEdit, onToggle }) {
           <div style={{fontSize:12,color:'#4A90B8',marginTop:2}}>{s.type}</div>
         </div>
         <div style={{textAlign:'right', display:'flex', flexDirection:'column', alignItems:'flex-end', gap:6}}>
-          <div style={{fontFamily:'Oswald',fontSize:22,color:'#1eff00'}}>{s.time}</div>
+          <div style={{fontFamily:'Oswald',fontSize:22,color:'#00F5FF'}}>{s.time}</div>
           <span style={{fontSize:11,padding:'2px 10px',borderRadius:20,fontWeight:600,background:s.done?'rgba(22,163,74,.12)':'rgba(0,245,255,.12)',color:s.done?'#00FF88':'#00F5FF'}}>{s.done?'✓ Виконано':'Заплановано'}</span>
         </div>
       </div>
