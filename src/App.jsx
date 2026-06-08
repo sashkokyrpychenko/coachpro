@@ -1828,6 +1828,28 @@ function ProfileTab({ sessions, clients, finance, setFinance, pricePlans, setPri
   const maxC = Math.max(...counts,1)
   const income  = finance.filter(f=>f.type==='in').reduce((a,f)=>a+Number(f.amount),0)
 
+  // Прогноз доходу на поточний місяць
+  const monthEndStr = (() => {
+    const d = new Date(now.getFullYear(), now.getMonth()+1, 0)
+    return dateToStr(d)
+  })()
+  const monthIncomeFactual = finance
+    .filter(f=>f.type==='in' && f.date>=monthStartStr && f.date<=today)
+    .reduce((a,f)=>a+Number(f.amount),0)
+  const futureSessions = sessions.filter(s=>s.date>today && s.date<=monthEndStr)
+  const forecastAmount = futureSessions.reduce((sum, s) => {
+    const client = clients.find(c=>c.id===s.client_id)
+    if (!client || !client.active_plan_id) return sum
+    const plan = pricePlans.find(p=>p.id===client.active_plan_id)
+    if (!plan) return sum
+    const perSession = plan.sessions > 0 ? plan.price / plan.sessions : 0
+    return sum + perSession
+  }, 0)
+  const monthForecastTotal = monthIncomeFactual + forecastAmount
+  const daysInMonth = new Date(now.getFullYear(), now.getMonth()+1, 0).getDate()
+  const daysPassed = now.getDate()
+  const forecastProgress = Math.min(Math.round((monthIncomeFactual / (monthForecastTotal||1)) * 100), 100)
+
   // Sort plans by usage count
   const planUsage = pricePlans.map(p=>({
     ...p,
@@ -1912,9 +1934,37 @@ function ProfileTab({ sessions, clients, finance, setFinance, pricePlans, setPri
       {/* ── FINANCE ── */}
       {section==='finance' && (
         <div>
-          <div style={{marginBottom:16}}>
+          {/* Прогноз місяця */}
+          <div style={{background:'#111118',border:'1px solid #1A2E4A',borderRadius:14,padding:16,marginBottom:12}}>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:12}}>
+              <div>
+                <div style={{fontSize:11,color:'#4A90B8',marginBottom:4,textTransform:'uppercase',letterSpacing:.5}}>Прогноз на {MONTHS_UK2[now.getMonth()]}</div>
+                <div style={{fontFamily:'Oswald',fontSize:30,color:'#00FF88',lineHeight:1}}>{Math.round(monthForecastTotal).toLocaleString('uk')} ₴</div>
+              </div>
+              <div style={{textAlign:'right'}}>
+                <div style={{fontSize:11,color:'#4A90B8',marginBottom:4}}>Вже зароблено</div>
+                <div style={{fontFamily:'Oswald',fontSize:20,color:'#00F5FF'}}>{Math.round(monthIncomeFactual).toLocaleString('uk')} ₴</div>
+              </div>
+            </div>
+            {/* Прогрес-бар */}
+            <div style={{height:6,background:'#08080F',borderRadius:3,overflow:'hidden',marginBottom:8}}>
+              <div style={{height:'100%',borderRadius:3,width:`${forecastProgress}%`,background:'linear-gradient(90deg,#00F5FF,#00FF88)',transition:'width .4s'}}/>
+            </div>
+            <div style={{display:'flex',justifyContent:'space-between',fontSize:10,color:'#3A4A5A'}}>
+              <span>День {daysPassed} з {daysInMonth}</span>
+              <span style={{color:'#4A90B8'}}>+{Math.round(forecastAmount).toLocaleString('uk')} ₴ очікується</span>
+            </div>
+            {futureSessions.length > 0 && (
+              <div style={{marginTop:10,paddingTop:10,borderTop:'1px solid #1A2E4A',fontSize:11,color:'#4A90B8'}}>
+                {futureSessions.length} тренувань заплановано до кінця місяця
+              </div>
+            )}
+          </div>
+
+          {/* Загальний дохід */}
+          <div style={{marginBottom:12}}>
             <div style={{background:'#111118',border:'1px solid #1A2E4A',borderRadius:14,padding:16}}>
-              <div style={{fontSize:11,color:'#4A90B8',marginBottom:4}}>Дохід</div>
+              <div style={{fontSize:11,color:'#4A90B8',marginBottom:4}}>Дохід (всього)</div>
               <div style={{fontFamily:'Oswald',fontSize:32,color:'#00FF88'}}>{income.toLocaleString('uk')} ₴</div>
             </div>
           </div>
