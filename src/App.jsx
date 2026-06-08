@@ -119,7 +119,7 @@ function SwipeSessionCard({ s, clients, onEdit, onToggle }) {
           cursor:'pointer', userSelect:'none', position:'relative', zIndex:1,
         }}
       >
-        <div style={{width:40,height:40,borderRadius:'50%',background:c?.color||'#888',display:'flex',alignItems:'center',justifyContent:'center',fontFamily:'Oswald',fontSize:15,color:'#111',flexShrink:0}}>{c?.ava||'?'}</div>
+        <div style={{width:40,height:40,borderRadius:'50%',background:c?.color||'#888',display:'flex',alignItems:'center',justifyContent:'center',fontFamily:'Oswald',fontSize:14,color:'#111',flexShrink:0}}>{c?.ava||'?'}</div>
         <div style={{flex:1}}>
           <div style={{fontSize:14,fontWeight:600}}>{c?.name||'Гість'}</div>
           <div style={{fontSize:12,color:'#4A90B8',marginTop:2}}>{s.type}</div>
@@ -281,16 +281,16 @@ function DayTimeline({ sessions, clients, onClientClick }) {
                 <div style={{display:'flex', alignItems:'center', gap:5}}>
                   <div style={{width:20,height:20,borderRadius:'50%',background:c?.color||'#888',
                     display:'flex',alignItems:'center',justifyContent:'center',
-                    fontWeight:700,fontSize:9,color:'#111',flexShrink:0}}>
+                    fontWeight:700,fontSize:10,color:'#111',flexShrink:0}}>
                     {c?.ava}
                   </div>
                   <span style={{fontSize:11,fontWeight:600,color:'#E8EAF0',overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis',flex:1}}>
                     {isplit ? c?.name?.split(' ')[0] : c?.name}
                   </span>
-                  {s.done && <span style={{color:'#00FF88',fontSize:9,flexShrink:0}}>✓</span>}
+                  {s.done && <span style={{color:'#00FF88',fontSize:10,flexShrink:0}}>✓</span>}
                 </div>
                 {s.dur >= 45 && (
-                  <div style={{fontSize:9,color:'#4A90B8',marginTop:2,marginLeft:25}}>
+                  <div style={{fontSize:10,color:'#4A90B8',marginTop:2,marginLeft:25}}>
                     {s.time} · {s.dur}хв
                   </div>
                 )}
@@ -444,11 +444,11 @@ function ClipTab({ c, clients, setClients, sessions, pricePlans, setFinance }) {
               style={{width:'100%',padding:'10px 12px',borderRadius:10,border:'1px solid #1A2E4A',background:'#08080F',color:'#E8EAF0',fontSize:14,marginBottom:16,boxSizing:'border-box'}}/>
             <div style={{display:'flex',gap:8}}>
               <button onClick={()=>setEditDateIdx(null)}
-                style={{flex:1,padding:'9px',borderRadius:10,border:'1px solid #1A2E4A',background:'transparent',color:'#4A90B8',fontSize:13,cursor:'pointer'}}>
+                style={{flex:1,padding:'10px',borderRadius:10,border:'1px solid #1A2E4A',background:'transparent',color:'#4A90B8',fontSize:13,cursor:'pointer'}}>
                 Скасувати
               </button>
               <button onClick={saveEditDate}
-                style={{flex:1,padding:'9px',borderRadius:10,border:'none',background:'#00F5FF',color:'#111',fontSize:13,fontWeight:700,cursor:'pointer'}}>
+                style={{flex:1,padding:'10px',borderRadius:10,border:'none',background:'#00F5FF',color:'#111',fontSize:13,fontWeight:700,cursor:'pointer'}}>
                 Зберегти
               </button>
             </div>
@@ -470,13 +470,13 @@ function ClipTab({ c, clients, setClients, sessions, pricePlans, setFinance }) {
                 <div style={{fontFamily:'Oswald',fontSize:18,color:'#00F5FF'}}>{Number(activePlan.price).toLocaleString('uk')} ₴</div>
               </div>
               <button onClick={()=>setShowAllPlans(true)}
-                style={{width:'100%',padding:'8px',borderRadius:9,border:'1px solid #1A2E4A',background:'transparent',color:'#4A90B8',fontSize:12,cursor:'pointer'}}>
+                style={{width:'100%',padding:'8px',borderRadius:8,border:'1px solid #1A2E4A',background:'transparent',color:'#4A90B8',fontSize:12,cursor:'pointer'}}>
                 🔄 Змінити тариф
               </button>
             </>
           ) : (
             <button onClick={()=>setShowAllPlans(true)}
-              style={{width:'100%',padding:'10px',borderRadius:9,border:'1px dashed #1A2E4A',background:'transparent',color:'#4A90B8',fontSize:13,cursor:'pointer'}}>
+              style={{width:'100%',padding:'10px',borderRadius:8,border:'1px dashed #1A2E4A',background:'transparent',color:'#4A90B8',fontSize:13,cursor:'pointer'}}>
               + Обрати тариф
             </button>
           )}
@@ -490,7 +490,7 @@ function ClipTab({ c, clients, setClients, sessions, pricePlans, setFinance }) {
           <div style={{display:'flex',flexDirection:'column',gap:6}}>
             {pricePlans.map(p=>(
               <div key={p.id} onClick={()=>selectPlan(p)}
-                style={{display:'flex',alignItems:'center',gap:10,padding:'11px 14px',borderRadius:11,cursor:'pointer',
+                style={{display:'flex',alignItems:'center',gap:10,padding:'11px 14px',borderRadius:12,cursor:'pointer',
                   border:`1.5px solid ${c.active_plan_id===p.id?'#00F5FF':'#1E2A3A'}`,
                   background:c.active_plan_id===p.id?'rgba(0,245,255,.15)':'#111118'}}>
                 <div style={{flex:1}}>
@@ -537,7 +537,7 @@ function ClipTab({ c, clients, setClients, sessions, pricePlans, setFinance }) {
                     color: isDebt && isDone ? '#FF4466' : isDone ? '#111' : '#3A4A5A'}}>
                     {isDebt && isDone ? '−' : isDone ? '✓' : i+1}
                   </div>
-                  <div style={{fontSize:8,color: isDebt&&isDone ? '#FF4466' : isDone ? '#00F5FF' : '#3A4A5A',textAlign:'center',opacity:isDone?1:0.4}}>
+                  <div style={{fontSize:10,color: isDebt&&isDone ? '#FF4466' : isDone ? '#00F5FF' : '#3A4A5A',textAlign:'center',opacity:isDone?1:0.4}}>
                     {isDone && dateStr ? dateStr.slice(5).replace('-','/') : isDebt&&isDone ? 'борг' : '—'}
                   </div>
                 </div>
@@ -550,7 +550,7 @@ function ClipTab({ c, clients, setClients, sessions, pricePlans, setFinance }) {
               <div style={{fontSize:11,color:'#4A90B8',textTransform:'uppercase',letterSpacing:.5,marginBottom:8}}>Відвідування</div>
               <div style={{display:'flex',flexDirection:'column',gap:5}}>
                 {[...clipDates].reverse().map((date,i)=>(
-                  <div key={i} style={{display:'flex',alignItems:'center',gap:10,background:'#111118',borderRadius:9,padding:'8px 12px'}}>
+                  <div key={i} style={{display:'flex',alignItems:'center',gap:10,background:'#111118',borderRadius:8,padding:'8px 12px'}}>
                     <div style={{width:22,height:22,borderRadius:'50%',background:'#00F5FF',display:'flex',alignItems:'center',justifyContent:'center',fontSize:10,fontWeight:700,color:'#111',flexShrink:0}}>{clipDates.length-i}</div>
                     <div style={{flex:1}}>
                       <div style={{fontSize:12,fontWeight:600,color:'#E8EAF0'}}>{date.slice(8,10)}/{date.slice(5,7)}/{date.slice(0,4)}</div>
@@ -563,8 +563,8 @@ function ClipTab({ c, clients, setClients, sessions, pricePlans, setFinance }) {
           )}
 
           <div style={{display:'flex',gap:8}}>
-            <button onClick={useClip} style={{flex:1,padding:'9px',borderRadius:10,border:'1px solid #1A2E4A',background:'#08080F',color:'#E8EAF0',fontFamily:'DM Sans',fontSize:12,fontWeight:600,cursor:'pointer'}}>Відмітити</button>
-            <button onClick={renewClip} style={{flex:1,padding:'9px',borderRadius:10,border:'none',background:'#00F5FF',color:'#111',fontFamily:'DM Sans',fontSize:12,fontWeight:600,cursor:'pointer'}}>Поновити</button>
+            <button onClick={useClip} style={{flex:1,padding:'10px',borderRadius:10,border:'1px solid #1A2E4A',background:'#08080F',color:'#E8EAF0',fontFamily:'DM Sans',fontSize:12,fontWeight:600,cursor:'pointer'}}>Відмітити</button>
+            <button onClick={renewClip} style={{flex:1,padding:'10px',borderRadius:10,border:'none',background:'#00F5FF',color:'#111',fontFamily:'DM Sans',fontSize:12,fontWeight:600,cursor:'pointer'}}>Поновити</button>
           </div>
         </>
       )}
@@ -582,7 +582,7 @@ function PickClientModal({ sessions, clients, onPick, onClose }) {
           return (
             <div key={s.id} onClick={() => onPick(s)}
               style={{display:'flex',alignItems:'center',gap:12,padding:'13px 14px',background:'#0D0D16',borderRadius:12,marginBottom:8,cursor:'pointer',border:'1px solid #1A2E4A'}}>
-              <div style={{width:40,height:40,borderRadius:'50%',background:c?.color||'#888',display:'flex',alignItems:'center',justifyContent:'center',fontFamily:'Oswald',fontSize:15,color:'#111'}}>{c?.ava||'?'}</div>
+              <div style={{width:40,height:40,borderRadius:'50%',background:c?.color||'#888',display:'flex',alignItems:'center',justifyContent:'center',fontFamily:'Oswald',fontSize:14,color:'#111'}}>{c?.ava||'?'}</div>
               <div style={{flex:1}}>
                 <div style={{fontSize:14,fontWeight:600}}>{c?.name||'Гість'}</div>
                 <div style={{fontSize:12,color:'#4A90B8'}}>{s.time} · {s.type}</div>
@@ -686,8 +686,8 @@ function EditSessionModal({ session, clients, onClose, onSave, onDelete }) {
           <div style={{background:'rgba(255,79,79,.08)',border:'1px solid rgba(255,79,79,.25)',borderRadius:12,padding:14}}>
             <div style={{color:'#E8EAF0',fontSize:13,textAlign:'center',marginBottom:12}}>Видалити цю сесію?</div>
             <div style={{display:'flex',gap:8}}>
-              <button onClick={() => setConfirmDelete(false)} style={{flex:1,padding:'9px',borderRadius:10,border:'1px solid #1A2E4A',background:'#0D0D16',color:'#E8EAF0',fontFamily:'DM Sans',fontSize:13,cursor:'pointer'}}>Скасувати</button>
-              <button onClick={() => onDelete(session.id)} style={{flex:1,padding:'9px',borderRadius:10,border:'none',background:'#FF4466',color:'#fff',fontFamily:'DM Sans',fontSize:13,fontWeight:700,cursor:'pointer'}}>Видалити</button>
+              <button onClick={() => setConfirmDelete(false)} style={{flex:1,padding:'10px',borderRadius:10,border:'1px solid #1A2E4A',background:'#0D0D16',color:'#E8EAF0',fontFamily:'DM Sans',fontSize:13,cursor:'pointer'}}>Скасувати</button>
+              <button onClick={() => onDelete(session.id)} style={{flex:1,padding:'10px',borderRadius:10,border:'none',background:'#FF4466',color:'#fff',fontFamily:'DM Sans',fontSize:13,fontWeight:700,cursor:'pointer'}}>Видалити</button>
             </div>
           </div>
         )}
@@ -1201,7 +1201,7 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
               <div onClick={()=>setOpenId(isOpen?null:c.id)} style={{display:'flex',alignItems:'center',gap:12,padding:14,cursor:'pointer'}}>
                 <div style={{width:46,height:46,borderRadius:'50%',background:c.color,display:'flex',alignItems:'center',justifyContent:'center',fontFamily:'Oswald',fontSize:18,color:'#111',flexShrink:0}}>{c.ava}</div>
                 <div style={{flex:1}}>
-                  <div style={{fontSize:15,fontWeight:600}}>{c.name}</div>
+                  <div style={{fontSize:14,fontWeight:600}}>{c.name}</div>
                   <div style={{fontSize:12,color:'#4A90B8',marginTop:2}}>{c.goal}</div>
                 </div>
                 <div style={{display:'flex',flexDirection:'column',alignItems:'flex-end',gap:4}}>
@@ -1627,7 +1627,7 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
                     <div key={m.id} style={{display:'flex',justifyContent:'space-between',alignItems:'center',background:'#0D0D16',borderRadius:8,padding:'8px 12px'}}>
                       <div style={{color:'#4A90B8',fontSize:12}}>{m.date.slice(5).replace('-','/')}.{m.date.slice(0,4)}</div>
                       <div style={{display:'flex',alignItems:'center',gap:8}}>
-                        <span style={{color:'#E8EAF0',fontWeight:600,fontSize:15}}>{m.value} <span style={{color:'#4A90B8',fontSize:11,fontWeight:400}}>{metric.unit}</span></span>
+                        <span style={{color:'#E8EAF0',fontWeight:600,fontSize:14}}>{m.value} <span style={{color:'#4A90B8',fontSize:11,fontWeight:400}}>{metric.unit}</span></span>
                         <button onClick={()=>deleteMeasurement(m.id)}
                           style={{background:'none',border:'none',color:'#4A90B8',cursor:'pointer',fontSize:13}}>✕</button>
                       </div>
@@ -1715,7 +1715,7 @@ function StatsTab({ sessions, clients, finance, pricePlans, setPricePlans }) {
             {days.map((d,i)=>(
               <div key={i} style={{flex:1,textAlign:'center'}}>
                 <div style={{fontSize:10,color:d.ds===today?'#00F5FF':'#3A4A5A'}}>{d.day}</div>
-                <div style={{fontSize:9,color:'#1A2A3A'}}>{d.lbl}</div>
+                <div style={{fontSize:10,color:'#1A2A3A'}}>{d.lbl}</div>
               </div>
             ))}
           </div>
@@ -1889,7 +1889,7 @@ function ProfileTab({ sessions, clients, finance, setFinance, pricePlans, setPri
       <div style={{display:'flex',gap:4,background:'#0D0D16',borderRadius:12,padding:4,marginBottom:20}}>
         {[['stats','Статистика'],['finance','Фінанси'],['price','Прайс']].map(([id,label])=>(
           <div key={id} onClick={()=>setSection(id)}
-            style={{flex:1,textAlign:'center',padding:'9px 4px',borderRadius:9,
+            style={{flex:1,textAlign:'center',padding:'9px 4px',borderRadius:8,
               fontSize:13,fontWeight:section===id?700:400,
               background:section===id?'#111118':'transparent',
               color:section===id?'#E8EAF0':'#3A4A5A',cursor:'pointer'}}>
@@ -1910,7 +1910,7 @@ function ProfileTab({ sessions, clients, finance, setFinance, pricePlans, setPri
             ))}
           </div>
           <div style={{background:'#111118',border:'1px solid #1A2E4A',borderRadius:14,padding:16}}>
-            <div style={{fontWeight:700,fontSize:15,marginBottom:14}}>Активність — 7 днів</div>
+            <div style={{fontWeight:700,fontSize:14,marginBottom:14}}>Активність — 7 днів</div>
             <div style={{display:'flex',alignItems:'flex-end',gap:8,height:100,marginBottom:8}}>
               {counts.map((c,i)=>(
                 <div key={i} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'flex-end',height:'100%',gap:3}}>
@@ -1923,7 +1923,7 @@ function ProfileTab({ sessions, clients, finance, setFinance, pricePlans, setPri
               {days.map((d,i)=>(
                 <div key={i} style={{flex:1,textAlign:'center'}}>
                   <div style={{fontSize:10,color:d.ds===today?'#00F5FF':'#3A4A5A'}}>{d.day}</div>
-                  <div style={{fontSize:9,color:'#1A2A3A'}}>{d.lbl}</div>
+                  <div style={{fontSize:10,color:'#1A2A3A'}}>{d.lbl}</div>
                 </div>
               ))}
             </div>
@@ -1987,7 +1987,7 @@ function ProfileTab({ sessions, clients, finance, setFinance, pricePlans, setPri
                     await supabase.from('finance').delete().eq('id',editFinance.id)
                     setFinance(prev=>prev.filter(x=>x.id!==editFinance.id))
                     setEditFinance(null)
-                  }} style={{flex:1,padding:'9px',borderRadius:10,border:'1px solid #FF4466',background:'transparent',color:'#FF4466',fontSize:12,fontWeight:600,cursor:'pointer'}}>
+                  }} style={{flex:1,padding:'10px',borderRadius:10,border:'1px solid #FF4466',background:'transparent',color:'#FF4466',fontSize:12,fontWeight:600,cursor:'pointer'}}>
                     Видалити
                   </button>
                   <button onClick={async()=>{
@@ -1995,7 +1995,7 @@ function ProfileTab({ sessions, clients, finance, setFinance, pricePlans, setPri
                     await supabase.from('finance').update(upd).eq('id',editFinance.id)
                     setFinance(prev=>prev.map(x=>x.id===editFinance.id?{...x,...upd}:x))
                     setEditFinance(null)
-                  }} style={{flex:1,padding:'9px',borderRadius:10,border:'none',background:'#00F5FF',color:'#111',fontSize:12,fontWeight:700,cursor:'pointer'}}>
+                  }} style={{flex:1,padding:'10px',borderRadius:10,border:'none',background:'#00F5FF',color:'#111',fontSize:12,fontWeight:700,cursor:'pointer'}}>
                     Зберегти
                   </button>
                 </div>
@@ -2004,7 +2004,7 @@ function ProfileTab({ sessions, clients, finance, setFinance, pricePlans, setPri
           )}
 
           <div style={{background:'#111118',border:'1px solid #1A2E4A',borderRadius:14,padding:16}}>
-            <div style={{fontWeight:700,fontSize:15,marginBottom:12}}>Транзакції</div>
+            <div style={{fontWeight:700,fontSize:14,marginBottom:12}}>Транзакції</div>
             {finance.length===0&&<div style={{color:'#4A90B8',textAlign:'center',padding:'20px 0'}}>Фінансів ще немає</div>}
             {finance.map((f,i)=>(
               <div key={f.id||i} onClick={()=>{setEditFinance(f);setEf({name:f.name,amount:f.amount,type:f.type,date:f.date})}}
@@ -2030,7 +2030,7 @@ function ProfileTab({ sessions, clients, finance, setFinance, pricePlans, setPri
         <div>
           <div style={{background:'#111118',border:'1px solid #1A2E4A',borderRadius:14,padding:16}}>
             <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:14}}>
-              <div style={{fontWeight:700,fontSize:15}}>Прайс-листи</div>
+              <div style={{fontWeight:700,fontSize:14}}>Прайс-листи</div>
               <button onClick={()=>{setEditPlan(null);setNp({name:'',sessions:1,price:''});setShowAddPlan(true)}}
                 style={{background:'#00F5FF',color:'#111',border:'none',borderRadius:8,padding:'6px 14px',fontSize:12,fontWeight:700,cursor:'pointer'}}>
                 + Додати
@@ -2039,7 +2039,7 @@ function ProfileTab({ sessions, clients, finance, setFinance, pricePlans, setPri
             {pricePlans.length===0&&<div style={{color:'#4A90B8',textAlign:'center',padding:'20px 0',fontSize:13}}>Прайс-листів ще немає</div>}
             <div style={{display:'flex',flexDirection:'column',gap:7}}>
               {visiblePlans.map(p=>(
-                <div key={p.id} style={{display:'flex',alignItems:'center',gap:10,padding:'11px 12px',background:'#0D0D16',border:'1px solid #1A2E4A',borderRadius:11}}>
+                <div key={p.id} style={{display:'flex',alignItems:'center',gap:10,padding:'11px 12px',background:'#0D0D16',border:'1px solid #1A2E4A',borderRadius:12}}>
                   <div style={{flex:1}}>
                     <div style={{fontSize:13,fontWeight:600,color:'#E8EAF0'}}>{p.name}</div>
                     <div style={{fontSize:11,color:'#4A90B8',marginTop:2}}>{p.sessions} {p.sessions===1?'тренування':'тренувань'}</div>
@@ -2054,7 +2054,7 @@ function ProfileTab({ sessions, clients, finance, setFinance, pricePlans, setPri
             </div>
             {pricePlans.length > 3 && (
               <button onClick={()=>setExpanded(!expanded)}
-                style={{width:'100%',marginTop:10,padding:'9px',borderRadius:10,border:'1px solid #1A2E4A',background:'transparent',color:'#4A90B8',fontSize:13,cursor:'pointer'}}>
+                style={{width:'100%',marginTop:10,padding:'10px',borderRadius:10,border:'1px solid #1A2E4A',background:'transparent',color:'#4A90B8',fontSize:13,cursor:'pointer'}}>
                 {expanded?'▲ Згорнути':`▼ Показати всі (${pricePlans.length})`}
               </button>
             )}
