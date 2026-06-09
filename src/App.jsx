@@ -1880,13 +1880,18 @@ function ProfileTab({ sessions, clients, finance, setFinance, pricePlans, setPri
     .filter(f=>f.type==='in' && f.date>=monthStartStr && f.date<=today)
     .reduce((a,f)=>a+Number(f.amount),0)
   const futureSessions = sessions.filter(s=>s.date>today && s.date<=monthEndStr)
-  const forecastAmount = futureSessions.reduce((sum, s) => {
-    const client = clients.find(c=>c.id===s.client_id)
-    if (!client || !client.active_plan_id) return sum
+  const forecastAmount = clients.reduce((total, client) => {
+    if (!client.active_plan_id) return total
     const plan = pricePlans.find(p=>p.id===client.active_plan_id)
-    if (!plan) return sum
-    const perSession = plan.sessions > 0 ? plan.price / plan.sessions : 0
-    return sum + perSession
+    if (!plan || plan.sessions < 1) return total
+    const clientFuture = futureSessions.filter(s=>s.client_id===client.id).length
+    if (clientFuture === 0) return total
+    const remaining = Math.max(0, (client.clip_total||0) - (client.clip_used||0))
+    // Якщо майбутніх занять менше ніж залишилось — поновлення не буде
+    if (clientFuture < remaining) return total
+    // Скільки разів поновить пакет
+    const renewals = Math.floor((clientFuture - remaining) / plan.sessions) + 1
+    return total + renewals * plan.price
   }, 0)
   const monthForecastTotal = monthIncomeFactual + forecastAmount
   const daysInMonth = new Date(now.getFullYear(), now.getMonth()+1, 0).getDate()
