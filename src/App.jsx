@@ -1109,6 +1109,44 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
     const {data,error} = await supabase.from('sessions').insert(inserts).select()
     if (!error&&data) { setSessions(prev=>[...prev,...data]); alert(`✅ Додано ${data.length} сесій!`) }
   }
+
+  const updateRange = async (client) => {
+    if (!client.schedule_days?.length) { alert('Оберіть дні тренувань'); return }
+    const fromEl = document.getElementById(`fill-from-${client.id}`)
+    const toEl = document.getElementById(`fill-to-${client.id}`)
+    if (!fromEl||!toEl) return
+    const from = new Date(fromEl.value+'T12:00:00')
+    const to = new Date(toEl.value+'T12:00:00')
+    if (from>to) { alert('Дата "З" має бути раніше ніж "До"'); return }
+    const fromStr = dateToStr(from)
+    const toStr = dateToStr(to)
+    // Видаляємо майбутні невиконані сесії в діапазоні
+    const toDelete = sessions.filter(s =>
+      s.client_id===client.id && s.date>=fromStr && s.date<=toStr && !s.done
+    )
+    if (toDelete.length) {
+      await supabase.from('sessions').delete().in('id', toDelete.map(s=>s.id))
+      setSessions(prev => prev.filter(s => !toDelete.find(d=>d.id===s.id)))
+    }
+    // Створюємо нові за поточним розкладом
+    const inserts = []
+    const cur = new Date(from)
+    while (cur<=to) {
+      const dow = getMondayFirst(cur)
+      if (client.schedule_days.includes(dow)) {
+        const ds = dateToStr(cur)
+        const time = (client.schedule_times||{})[dow] || '10:00'
+        inserts.push({client_id:client.id, time, type:'Тренування', date:ds, done:false})
+      }
+      cur.setDate(cur.getDate()+1)
+    }
+    if (!inserts.length) { alert('Немає сесій для створення'); return }
+    const {data,error} = await supabase.from('sessions').insert(inserts).select()
+    if (!error&&data) {
+      setSessions(prev=>[...prev,...data])
+      alert(`✅ Оновлено! Видалено: ${toDelete.length}, створено: ${data.length} сесій`)
+    }
+  }
   const useClip = async (id) => {
     const c = clients.find(x=>x.id===id)
     if (!c||c.clip_used>=c.clip_total) return
@@ -1354,7 +1392,10 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
                             <input type="date" id={`fill-to-${c.id}`} defaultValue={(() => { const d=new Date(); d.setMonth(d.getMonth()+1); return dateToStr(d) })()} style={{width:'100%',background:'#0D0D16',border:'1px solid #1A2E4A',borderRadius:8,padding:'8px 10px',color:'#E8EAF0',fontFamily:'DM Sans',fontSize:13,outline:'none'}}/>
                           </div>
                         </div>
-                        <button onClick={()=>fillRange(c)} style={{width:'100%',padding:'11px',borderRadius:10,border:'none',background:'#00F5FF',color:'#111',fontFamily:'DM Sans',fontSize:13,fontWeight:700,cursor:'pointer'}}>⚡ Заповнити розклад</button>
+                        <div style={{display:'flex',gap:8}}>
+                          <button onClick={()=>fillRange(c)} style={{flex:1,padding:'11px',borderRadius:10,border:'none',background:'#00F5FF',color:'#111',fontFamily:'DM Sans',fontSize:13,fontWeight:700,cursor:'pointer'}}>⚡ Заповнити</button>
+                          <button onClick={()=>updateRange(c)} style={{flex:1,padding:'11px',borderRadius:10,border:'none',background:'rgba(255,68,102,.15)',color:'#FF4466',border:'1px solid rgba(255,68,102,.3)',fontFamily:'DM Sans',fontSize:13,fontWeight:700,cursor:'pointer'}}>🔄 Оновити</button>
+                        </div>
                       </div>
                     </div>
                   )}
