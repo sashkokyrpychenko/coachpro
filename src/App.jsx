@@ -871,7 +871,7 @@ function ScheduleTab({ clients, sessions, setSessions, onClientClick }) {
           </div>
 
           {/* Sessions */}
-          {daySessions.length===0 && <div style={{color:'#4A90B8',textAlign:'center',padding:'16px 0',fontSize:14}}>Немає сесій</div>}
+          {daySessions.length===0 && <div style={{display:'flex',flexDirection:'column',alignItems:'center',padding:'24px 0',gap:8}}><span style={{fontSize:36}}>🗓️</span><div style={{fontSize:14,fontWeight:600,color:'#E8EAF0'}}>Тренувань немає</div><div style={{fontSize:12,color:'#4A90B8'}}>На цей день нічого не заплановано</div></div>}
 
           {groupedSessions().map(([time, group]) =>
             group.length > 1
@@ -910,7 +910,7 @@ function ScheduleTab({ clients, sessions, setSessions, onClientClick }) {
               <span style={{fontFamily:'Oswald',fontSize:16,color:'#4A90B8'}}>{selDate.getDate()} {MONTHS_UK2[selDate.getMonth()]}</span>
               <small style={{color:'#4A90B8',fontSize:12}}>{daySessions.length} сесій</small>
             </div>
-            {daySessions.length===0 && <div style={{color:'#4A90B8',textAlign:'center',padding:'12px 0',fontSize:13}}>Немає сесій</div>}
+            {daySessions.length===0 && <div style={{display:'flex',flexDirection:'column',alignItems:'center',padding:'24px 0',gap:8}}><span style={{fontSize:36}}>🗓️</span><div style={{fontSize:14,fontWeight:600,color:'#E8EAF0'}}>Тренувань немає</div><div style={{fontSize:12,color:'#4A90B8'}}>На цей день нічого не заплановано</div></div>}
 
             {groupedSessions().map(([time, group]) =>
               group.length > 1
@@ -1244,7 +1244,7 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
         <button onClick={()=>setShowAdd(true)} style={{padding:'10px 16px',borderRadius:10,border:'none',background:'#00F5FF',color:'#111',fontWeight:700,fontSize:14,cursor:'pointer'}}>＋</button>
       </div>
       <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(340px,1fr))',gap:12}}>
-        {filtered.length===0 && <div style={{color:'#4A90B8',textAlign:'center',padding:'40px 0',gridColumn:'1/-1'}}>Клієнтів ще немає</div>}
+        {filtered.length===0 && <div style={{display:'flex',flexDirection:'column',alignItems:'center',padding:'48px 24px',gap:12,gridColumn:'1/-1',textAlign:'center'}}><span style={{fontSize:56}}>👥</span><div style={{fontSize:16,fontWeight:700,color:'#E8EAF0'}}>Клієнтів ще немає</div><div style={{fontSize:13,color:'#4A90B8'}}>Додайте першого клієнта щоб почати роботу</div></div>}
         {filtered.map(c=>{
           const isOpen = openId===c.id
           const progress = c.clip_total?Math.round((c.clip_used/c.clip_total)*100):0
@@ -1326,7 +1326,7 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
                     return (
                       <div>
                         {cMetrics.length === 0 && (
-                          <div style={{color:'#4A90B8',textAlign:'center',padding:'20px 0',fontSize:13}}>Показників ще немає</div>
+                          <div style={{display:'flex',flexDirection:'column',alignItems:'center',padding:'24px',gap:8,textAlign:'center'}}><span style={{fontSize:36}}>📊</span><div style={{fontSize:13,fontWeight:600,color:'#E8EAF0'}}>Метрик ще немає</div><div style={{fontSize:11,color:'#4A90B8'}}>Додайте метрику щоб відстежувати показники</div></div>
                         )}
                         {cMetrics.map(metric => {
                           const meas = measurements.filter(m => m.metric_id === metric.id).sort((a,b) => a.date.localeCompare(b.date))
@@ -1416,7 +1416,7 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
                   )}
                   {activeTab==='records' && (
                     <div>
-                      {cRecords.length===0 && <div style={{color:'#4A90B8',textAlign:'center',padding:'16px 0',fontSize:14}}>Рекордів ще немає</div>}
+                      {cRecords.length===0 && <div style={{display:'flex',flexDirection:'column',alignItems:'center',padding:'24px',gap:8,textAlign:'center'}}><span style={{fontSize:36}}>🏆</span><div style={{fontSize:13,fontWeight:600,color:'#E8EAF0'}}>Рекордів ще немає</div><div style={{fontSize:11,color:'#4A90B8'}}>Додайте перший рекорд клієнта</div></div>}
                       {cRecords.map(r=>(
                         <div key={r.id} style={{display:'flex',alignItems:'center',gap:10,background:'#0D0D16',borderRadius:10,padding:'10px 12px',marginBottom:6}}>
                           <div style={{flex:1}}>
@@ -1444,7 +1444,7 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
                           </div>
                         </div>
                       ))}
-                      {cSessions.filter(s=>s.done).length===0&&<div style={{color:'#4A90B8',textAlign:'center',padding:'20px 0'}}>Історії ще немає</div>}
+                      {cSessions.filter(s=>s.done).length===0&&<div style={{display:'flex',flexDirection:'column',alignItems:'center',padding:'24px',gap:8,textAlign:'center'}}><span style={{fontSize:36}}>📋</span><div style={{fontSize:13,fontWeight:600,color:'#E8EAF0'}}>Історії ще немає</div><div style={{fontSize:11,color:'#4A90B8'}}>Виконані тренування з'являться тут</div></div>}
                     </div>
                   )}
                 </div>
@@ -1801,7 +1801,7 @@ function StatsTab({ sessions, clients, finance, pricePlans, setPricePlans }) {
               <div style={{fontFamily:'Oswald',fontSize:20,color:f.type==='in'?'#00FF88':'#FF4466'}}>{f.amount>0?'+':''}{Number(f.amount).toLocaleString('uk')} ₴</div>
             </div>
           ))}
-          {finance.length===0&&<div style={{color:'#4A90B8',textAlign:'center',padding:'20px 0'}}>Фінансів ще немає</div>}
+          {finance.length===0&&<div style={{display:'flex',flexDirection:'column',alignItems:'center',padding:'32px',gap:8,textAlign:'center'}}><span style={{fontSize:40}}>💳</span><div style={{fontSize:14,fontWeight:600,color:'#E8EAF0'}}>Транзакцій ще немає</div><div style={{fontSize:12,color:'#4A90B8'}}>Записи з'являться після оплат клієнтів</div></div>}
         </div>
 
         {/* Price plans */}
@@ -1813,7 +1813,7 @@ function StatsTab({ sessions, clients, finance, pricePlans, setPricePlans }) {
               + Додати
             </button>
           </div>
-          {pricePlans.length===0 && <div style={{color:'#4A90B8',textAlign:'center',padding:'20px 0',fontSize:13}}>Прайс-листів ще немає</div>}
+          {pricePlans.length===0 && <div style={{display:'flex',flexDirection:'column',alignItems:'center',padding:'24px',gap:8,textAlign:'center'}}><span style={{fontSize:36}}>📋</span><div style={{fontSize:13,fontWeight:600,color:'#E8EAF0'}}>Прайс-листів ще немає</div><div style={{fontSize:11,color:'#4A90B8'}}>Додайте тарифи для клієнтів</div></div>}
           {pricePlans.map(p=>(
             <div key={p.id} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 12px',background:'#0D0D16',borderRadius:10,marginBottom:6}}>
               <div style={{flex:1}}>
@@ -2068,7 +2068,7 @@ function ProfileTab({ sessions, clients, finance, setFinance, pricePlans, setPri
 
           <div style={{background:'#111118',border:'1px solid #1A2E4A',borderRadius:14,padding:16}}>
             <div style={{fontWeight:700,fontSize:14,marginBottom:12}}>Транзакції</div>
-            {finance.length===0&&<div style={{color:'#4A90B8',textAlign:'center',padding:'20px 0'}}>Фінансів ще немає</div>}
+            {finance.length===0&&<div style={{display:'flex',flexDirection:'column',alignItems:'center',padding:'32px',gap:8,textAlign:'center'}}><span style={{fontSize:40}}>💳</span><div style={{fontSize:14,fontWeight:600,color:'#E8EAF0'}}>Транзакцій ще немає</div><div style={{fontSize:12,color:'#4A90B8'}}>Записи з'являться після оплат клієнтів</div></div>}
             {finance.map((f,i)=>(
               <div key={f.id||i} onClick={()=>{setEditFinance(f);setEf({name:f.name,amount:f.amount,type:f.type,date:f.date})}}
                 style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'10px 0',borderBottom:i<finance.length-1?'1px solid #1A2E4A':'none',cursor:'pointer'}}>
@@ -2099,7 +2099,7 @@ function ProfileTab({ sessions, clients, finance, setFinance, pricePlans, setPri
                 + Додати
               </button>
             </div>
-            {pricePlans.length===0&&<div style={{color:'#4A90B8',textAlign:'center',padding:'20px 0',fontSize:13}}>Прайс-листів ще немає</div>}
+            {pricePlans.length===0&&<div style={{display:'flex',flexDirection:'column',alignItems:'center',padding:'24px',gap:8,textAlign:'center'}}><span style={{fontSize:36}}>📋</span><div style={{fontSize:13,fontWeight:600,color:'#E8EAF0'}}>Прайс-листів ще немає</div><div style={{fontSize:11,color:'#4A90B8'}}>Додайте тарифи для клієнтів</div></div>}
             <div style={{display:'flex',flexDirection:'column',gap:7}}>
               {visiblePlans.map(p=>(
                 <div key={p.id} style={{display:'flex',alignItems:'center',gap:10,padding:'11px 12px',background:'#0D0D16',border:'1px solid #1A2E4A',borderRadius:12}}>
