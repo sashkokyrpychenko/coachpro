@@ -373,13 +373,14 @@ function DurationPicker({ value, onChange }) {
 }
 
 // ─── Clip Tab Component ───────────────────────────────────────────────────────
-function ClipTab({ c: initialC, clients, setClients, sessions, pricePlans, setFinance }) {
+function ClipTab({ clientId, clients, setClients, sessions, pricePlans, setFinance }) {
   const [showAllPlans, setShowAllPlans] = useState(false)
   const [editDateIdx, setEditDateIdx] = useState(null)
   const [editDateVal, setEditDateVal] = useState('')
 
-  // Завжди беремо свіжого клієнта зі стейту
-  const c = clients.find(x => x.id === initialC.id) || initialC
+  // Завжди свіжий клієнт зі стейту
+  const c = clients.find(x => x.id === clientId)
+  if (!c) return null
 
   const activePlan = pricePlans.find(p => p.id === c.active_plan_id)
   const clipDates = Array.isArray(c.clip_dates) ? [...c.clip_dates].sort() : []
@@ -1417,7 +1418,7 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
                     </div>
                   )}
                   {activeTab==='clip' && (
-                    <ClipTab c={c} clients={clients} setClients={setClients} sessions={sessions} pricePlans={pricePlans} setFinance={setFinance}/>
+                    <ClipTab clientId={c.id} clients={clients} setClients={setClients} sessions={sessions} pricePlans={pricePlans} setFinance={setFinance}/>
                   )}
                   {activeTab==='history' && (
                     <div>
