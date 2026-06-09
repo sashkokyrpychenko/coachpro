@@ -373,10 +373,13 @@ function DurationPicker({ value, onChange }) {
 }
 
 // ─── Clip Tab Component ───────────────────────────────────────────────────────
-function ClipTab({ c, clients, setClients, sessions, pricePlans, setFinance }) {
+function ClipTab({ c: initialC, clients, setClients, sessions, pricePlans, setFinance }) {
   const [showAllPlans, setShowAllPlans] = useState(false)
-  const [editDateIdx, setEditDateIdx] = useState(null) // індекс кружечка для редагування дати
+  const [editDateIdx, setEditDateIdx] = useState(null)
   const [editDateVal, setEditDateVal] = useState('')
+
+  // Завжди беремо свіжого клієнта зі стейту
+  const c = clients.find(x => x.id === initialC.id) || initialC
 
   const activePlan = pricePlans.find(p => p.id === c.active_plan_id)
   const clipDates = Array.isArray(c.clip_dates) ? [...c.clip_dates].sort() : []
