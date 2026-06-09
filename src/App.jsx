@@ -1404,9 +1404,10 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
               </div>
               {isOpen && (
                 <div style={{borderTop:'1px solid #162038',padding:14}}>
-                  <div style={{display:'flex',gap:6,marginBottom:14,flexWrap:'wrap'}}>
+                  <div style={{display:'flex',gap:6,marginBottom:14,overflowX:'auto',paddingBottom:4,scrollbarWidth:'none',WebkitOverflowScrolling:'touch'}}>
+                    <style>{`.tabs-scroll::-webkit-scrollbar{display:none}`}</style>
                     {DTABS.map(t=>(
-                      <button key={t.id} onClick={()=>setTab(c.id,t.id)} style={{padding:'6px 12px',borderRadius:20,fontSize:12,fontWeight:600,cursor:'pointer',border:`1px solid ${activeTab===t.id?'#00F5FF':'#1E2A3A'}`,background:activeTab===t.id?'#00F5FF':'none',color:activeTab===t.id?'#111':'#4A5A6A'}}>{t.label}</button>
+                      <button key={t.id} onClick={()=>setTab(c.id,t.id)} style={{flexShrink:0,padding:'6px 14px',borderRadius:20,fontSize:12,fontWeight:600,cursor:'pointer',border:`1px solid ${activeTab===t.id?'#00F5FF':'#1E2A3A'}`,background:activeTab===t.id?'rgba(0,245,255,.1)':'none',color:activeTab===t.id?'#00F5FF':'#4A5A6A',whiteSpace:'nowrap'}}>{t.label}</button>
                     ))}
                   </div>
                   {activeTab==='profile' && (
