@@ -396,10 +396,6 @@ function ClipTab({ c, clients, setClients, sessions, pricePlans, setFinance }) {
     const newDates = [...(c.clip_dates||[]), todayStr()]
     await supabase.from('clients').update({clip_used:newUsed, clip_dates:newDates}).eq('id',c.id)
     setClients(prev => prev.map(x => x.id===c.id ? {...x,clip_used:newUsed,clip_dates:newDates} : x))
-    // Разове тренування — оплата після кожного відвідування
-    if (activePlan && activePlan.sessions === 1) {
-      await addFinanceRecord(activePlan.name, activePlan.price)
-    }
   }
 
   const renewClip = async () => {
