@@ -377,10 +377,18 @@ function ClipTab({ clientId, clients, setClients, sessions, pricePlans, setFinan
   const [showAllPlans, setShowAllPlans] = useState(false)
   const [editDateIdx, setEditDateIdx] = useState(null)
   const [editDateVal, setEditDateVal] = useState('')
+  const [localClipUsed, setLocalClipUsed] = useState(null)
+  const [localClipDates, setLocalClipDates] = useState(null)
 
   // Завжди свіжий клієнт зі стейту
-  const c = clients.find(x => x.id === clientId)
-  if (!c) return null
+  const baseC = clients.find(x => x.id === clientId)
+  if (!baseC) return null
+  // Якщо є локальні дані — використовуємо їх для миттєвого UI
+  const c = {
+    ...baseC,
+    clip_used: localClipUsed !== null ? localClipUsed : baseC.clip_used,
+    clip_dates: localClipDates !== null ? localClipDates : baseC.clip_dates,
+  }
 
   const activePlan = pricePlans.find(p => p.id === c.active_plan_id)
   const clipDates = Array.isArray(c.clip_dates) ? [...c.clip_dates].sort() : []
@@ -398,13 +406,15 @@ function ClipTab({ clientId, clients, setClients, sessions, pricePlans, setFinan
     if (c.clip_used >= c.clip_total) return
     const newUsed = c.clip_used + 1
     const newDates = [...(c.clip_dates||[]), todayStr()]
-    // Оновлюємо UI одразу
-    setClients(prev => prev.map(x => x.id===c.id ? {...x,clip_used:newUsed,clip_dates:newDates} : x))
-    // Зберігаємо в Supabase
+    // Миттєво оновлюємо локальний стейт
+    setLocalClipUsed(newUsed)
+    setLocalClipDates(newDates)
+    // Зберігаємо в Supabase і оновлюємо глобальний стейт
     await supabase.from('clients').update({clip_used:newUsed, clip_dates:newDates}).eq('id',c.id)
-    // Перезавантажуємо свіжі дані
-    const {data} = await supabase.from('clients').select('*').eq('id',c.id).single()
-    if (data) setClients(prev => prev.map(x => x.id===c.id ? data : x))
+    setClients(prev => prev.map(x => x.id===c.id ? {...x,clip_used:newUsed,clip_dates:newDates} : x))
+    // Скидаємо локальний стейт — тепер глобальний актуальний
+    setLocalClipUsed(null)
+    setLocalClipDates(null)
   }
 
   const renewClip = async () => {
