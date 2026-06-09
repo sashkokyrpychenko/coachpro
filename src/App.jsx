@@ -1294,15 +1294,33 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
                       <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:12}}>
                         <div style={{background:'#0D0D16',borderRadius:10,padding:10}}>
                           <div style={{fontSize:11,fontWeight:600,color:'#00FF88',marginBottom:6,textTransform:'uppercase',letterSpacing:.5}}>💪 Сильні</div>
-                          <textarea defaultValue={(c.strengths||[]).join('\n')} onBlur={e=>updateStrengths(c.id,e.target.value)} placeholder="По одному на рядок" style={{width:'100%',background:'#08080F',border:'1px solid #1A2E4A',borderRadius:8,padding:'8px',color:'#E8EAF0',fontFamily:'DM Sans',fontSize:12,resize:'none',outline:'none',minHeight:70,lineHeight:1.5}}/>
+                          {(c.strengths||[]).length===0
+                            ? <div style={{minHeight:70,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:4,background:'#08080F',borderRadius:8,border:'1px dashed #1A2E4A',opacity:.6,cursor:'text'}} onClick={e=>e.currentTarget.nextSibling?.focus()}>
+                                <span style={{fontSize:18}}>💪</span>
+                                <span style={{fontSize:10,color:'#4A90B8'}}>Натисни щоб додати</span>
+                              </div>
+                            : null}
+                          <textarea defaultValue={(c.strengths||[]).join('\n')} onBlur={e=>updateStrengths(c.id,e.target.value)} placeholder="По одному на рядок" style={{width:'100%',background:'#08080F',border:'1px solid #1A2E4A',borderRadius:8,padding:'8px',color:'#E8EAF0',fontFamily:'DM Sans',fontSize:12,resize:'none',outline:'none',lineHeight:1.5,display:(c.strengths||[]).length===0?'none':'block',minHeight:70}}/>
                         </div>
                         <div style={{background:'#0D0D16',borderRadius:10,padding:10}}>
                           <div style={{fontSize:11,fontWeight:600,color:'#FF4466',marginBottom:6,textTransform:'uppercase',letterSpacing:.5}}>⚠️ Слабкі</div>
-                          <textarea defaultValue={(c.weaknesses||[]).join('\n')} onBlur={e=>updateWeaknesses(c.id,e.target.value)} placeholder="По одному на рядок" style={{width:'100%',background:'#08080F',border:'1px solid #1A2E4A',borderRadius:8,padding:'8px',color:'#E8EAF0',fontFamily:'DM Sans',fontSize:12,resize:'none',outline:'none',minHeight:70,lineHeight:1.5}}/>
+                          {(c.weaknesses||[]).length===0
+                            ? <div style={{minHeight:70,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:4,background:'#08080F',borderRadius:8,border:'1px dashed #1A2E4A',opacity:.6,cursor:'text'}} onClick={e=>e.currentTarget.nextSibling?.focus()}>
+                                <span style={{fontSize:18}}>⚠️</span>
+                                <span style={{fontSize:10,color:'#4A90B8'}}>Натисни щоб додати</span>
+                              </div>
+                            : null}
+                          <textarea defaultValue={(c.weaknesses||[]).join('\n')} onBlur={e=>updateWeaknesses(c.id,e.target.value)} placeholder="По одному на рядок" style={{width:'100%',background:'#08080F',border:'1px solid #1A2E4A',borderRadius:8,padding:'8px',color:'#E8EAF0',fontFamily:'DM Sans',fontSize:12,resize:'none',outline:'none',lineHeight:1.5,display:(c.weaknesses||[]).length===0?'none':'block',minHeight:70}}/>
                         </div>
                       </div>
                       <div style={{fontSize:11,color:'#4A90B8',textTransform:'uppercase',letterSpacing:.5,marginBottom:6}}>📝 Нотатка</div>
-                      <textarea defaultValue={c.note} onBlur={e=>updateNote(c.id,e.target.value)} style={{width:'100%',background:'#08080F',border:'1px solid #1A2E4A',borderRadius:10,padding:'10px 12px',color:'#E8EAF0',fontFamily:'DM Sans',fontSize:13,resize:'none',outline:'none',minHeight:80,lineHeight:1.5}}/>
+                      {(!c.note||c.note.trim()==='')
+                        ? <div style={{background:'#08080F',border:'1px dashed #1A2E4A',borderRadius:10,minHeight:80,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:4,opacity:.6,cursor:'text'}} onClick={e=>e.currentTarget.nextSibling?.focus()}>
+                            <span style={{fontSize:22}}>📝</span>
+                            <span style={{fontSize:12,color:'#4A90B8'}}>Натисни щоб додати нотатку</span>
+                          </div>
+                        : null}
+                      <textarea defaultValue={c.note} onBlur={e=>updateNote(c.id,e.target.value)} style={{width:'100%',background:'#08080F',border:'1px solid #1A2E4A',borderRadius:10,padding:'10px 12px',color:'#E8EAF0',fontFamily:'DM Sans',fontSize:13,resize:'none',outline:'none',minHeight:80,lineHeight:1.5,display:(!c.note||c.note.trim()==='') ? 'none' : 'block'}}/>
                       {(c.phone||c.telegram) && (
                         <div style={{display:'flex',gap:8,marginTop:12}}>
                           {c.phone && (
