@@ -394,8 +394,10 @@ function ClipTab({ c, clients, setClients, sessions, pricePlans, setFinance }) {
     if (c.clip_used >= c.clip_total) return
     const newUsed = c.clip_used + 1
     const newDates = [...(c.clip_dates||[]), todayStr()]
-    await supabase.from('clients').update({clip_used:newUsed, clip_dates:newDates}).eq('id',c.id)
+    // Оновлюємо UI одразу (optimistic update)
     setClients(prev => prev.map(x => x.id===c.id ? {...x,clip_used:newUsed,clip_dates:newDates} : x))
+    // Зберігаємо в Supabase у фоні
+    supabase.from('clients').update({clip_used:newUsed, clip_dates:newDates}).eq('id',c.id)
   }
 
   const renewClip = async () => {
