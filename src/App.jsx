@@ -489,7 +489,7 @@ function ClipTab({ c, clients, setClients, sessions, pricePlans, setFinance }) {
             <div style={{fontSize:14,fontWeight:700}}>{activePlan?'Змінити тариф':'Обрати тариф'}</div>
             {activePlan && <button onClick={()=>setShowAllPlans(false)} style={{background:'none',border:'none',color:'#4A90B8',fontSize:20,cursor:'pointer',lineHeight:1}}>✕</button>}
           </div>
-          <div style={{display:'flex',flexDirection:'column',gap:6}}>
+          <div style={{display:'flex',flexDirection:'column',gap:6,maxHeight:360,overflowY:'auto',paddingRight:4}}>
             {pricePlans.map(p=>(
               <div key={p.id} onClick={()=>selectPlan(p)}
                 style={{display:'flex',alignItems:'center',gap:10,padding:'11px 14px',borderRadius:12,cursor:'pointer',
