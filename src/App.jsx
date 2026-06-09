@@ -2001,7 +2001,7 @@ function ProfileTab({ sessions, clients, finance, setFinance, pricePlans, setPri
           <div style={{background:'#111118',border:'1px solid #1A2E4A',borderRadius:14,padding:16,marginBottom:12}}>
             <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:12}}>
               <div>
-                <div style={{fontSize:11,color:'#4A90B8',marginBottom:4,textTransform:'uppercase',letterSpacing:.5}}>Прогноз на {MONTHS_UK2[now.getMonth()]}</div>
+                <div style={{fontSize:11,color:'#4A90B8',marginBottom:4,textTransform:'uppercase',letterSpacing:.5}}>Прогноз на {MONTHS_UK[now.getMonth()]}</div>
                 <div style={{fontFamily:'Oswald',fontSize:30,color:'#00FF88',lineHeight:1}}>{Math.round(monthForecastTotal).toLocaleString('uk')} ₴</div>
               </div>
               <div style={{textAlign:'right'}}>
