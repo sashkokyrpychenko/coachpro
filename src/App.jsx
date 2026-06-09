@@ -1471,7 +1471,7 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
             {pricePlans.length > 0 && (
               <>
                 <label style={lbl}>Тариф (необов'язково)</label>
-                <div style={{display:'flex',flexDirection:'column',gap:6,marginBottom:16}}>
+                <div style={{display:'flex',flexDirection:'column',gap:6,marginBottom:16,maxHeight:300,overflowY:'auto',paddingRight:4}}>
                   {pricePlans.map(p=>(
                     <div key={p.id} onClick={()=>setNc({...nc,planId:p.id,clip:p.sessions})}
                       style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'9px 12px',borderRadius:10,cursor:'pointer',
