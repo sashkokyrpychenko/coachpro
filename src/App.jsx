@@ -1924,8 +1924,8 @@ function StatsTab({ sessions, clients, finance, pricePlans, setPricePlans }) {
               <div style={{fontFamily:'Oswald',fontSize:26,color:'#00F5FF'}}>{clients.length}</div>
             </div>
           </div>
-          {finance.map((f,i)=>(
-            <div key={i} style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'10px 0',borderBottom:i<finance.length-1?'1px solid #1A2E4A':'none'}}>
+          {[...finance].reverse().slice(0,3).map((f,i)=>(
+            <div key={i} style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'10px 0',borderBottom:i<2?'1px solid #1A2E4A':'none'}}>
               <div>
                 <div style={{fontSize:14,fontWeight:500}}>{f.name}</div>
                 <div style={{fontSize:11,color:'#4A90B8',marginTop:2}}>{f.date}</div>
@@ -2001,8 +2001,9 @@ function ProfileTab({ sessions, clients, finance, setFinance, pricePlans, setPri
   const [editPlan, setEditPlan] = useState(null)
   const [np, setNp] = useState({name:'',sessions:1,price:''})
   const [expanded, setExpanded] = useState(false)
-  const [editFinance, setEditFinance] = useState(null) // транзакція для редагування
-  const [ef, setEf] = useState({name:'',amount:'',date:''}) // форма редагування
+  const [editFinance, setEditFinance] = useState(null)
+  const [ef, setEf] = useState({name:'',amount:'',date:''})
+  const [showAllFinance, setShowAllFinance] = useState(false)
 
   const today = todayStr()
   const now = new Date()
@@ -2199,11 +2200,18 @@ function ProfileTab({ sessions, clients, finance, setFinance, pricePlans, setPri
           )}
 
           <div style={{background:'#111118',border:'1px solid #1A2E4A',borderRadius:14,padding:16}}>
-            <div style={{fontWeight:700,fontSize:14,marginBottom:12}}>Транзакції</div>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12}}>
+              <div style={{fontWeight:700,fontSize:14}}>Транзакції</div>
+              {finance.length > 3 && (
+                <button onClick={()=>setShowAllFinance(o=>!o)} style={{background:'none',border:'none',color:'#4A90B8',fontSize:12,cursor:'pointer',fontFamily:'DM Sans'}}>
+                  {showAllFinance ? 'Сховати' : `Всі ${finance.length}`}
+                </button>
+              )}
+            </div>
             {finance.length===0&&<div style={{display:'flex',flexDirection:'column',alignItems:'center',padding:'32px',gap:8,textAlign:'center'}}><span style={{fontSize:40}}>💳</span><div style={{fontSize:14,fontWeight:600,color:'#E8EAF0'}}>Транзакцій ще немає</div><div style={{fontSize:12,color:'#4A90B8'}}>Записи з'являться після оплат клієнтів</div></div>}
-            {finance.map((f,i)=>(
+            {[...finance].reverse().slice(0, showAllFinance ? finance.length : 3).map((f,i,arr)=>(
               <div key={f.id||i} onClick={()=>{setEditFinance(f);setEf({name:f.name,amount:f.amount,type:f.type,date:f.date})}}
-                style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'10px 0',borderBottom:i<finance.length-1?'1px solid #1A2E4A':'none',cursor:'pointer'}}>
+                style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'10px 0',borderBottom:i<arr.length-1?'1px solid #1A2E4A':'none',cursor:'pointer'}}>
                 <div>
                   <div style={{fontSize:13,fontWeight:500}}>{f.name}</div>
                   <div style={{fontSize:11,color:'#4A90B8',marginTop:2}}>{f.date}</div>
