@@ -454,35 +454,35 @@ function ProgramsTab({ clientId, programs, setPrograms }) {
 
           {/* Body */}
           {openId === prog.id && (
-            <div style={{padding:'0 14px 14px'}}>
+            <div style={{padding:'0 10px 14px'}}>
               {/* Column headers */}
-              <div style={{display:'flex',gap:6,padding:'4px 0 8px',borderBottom:'1px solid #1A2E4A',marginBottom:4}}>
+              <div style={{display:'flex',gap:4,padding:'4px 0 8px',borderBottom:'1px solid #1A2E4A',marginBottom:4}}>
                 <div style={{flex:2,fontSize:10,color:'#4A90B8',textTransform:'uppercase',letterSpacing:.4}}>Вправа</div>
-                <div style={{width:42,fontSize:10,color:'#4A90B8',textAlign:'center'}}>Підх.</div>
-                <div style={{width:12}}/>
-                <div style={{width:42,fontSize:10,color:'#4A90B8',textAlign:'center'}}>Повт.</div>
-                <div style={{width:50,fontSize:10,color:'#4A90B8',textAlign:'center'}}>Вага кг</div>
-                <div style={{width:24}}/>
+                <div style={{width:36,fontSize:10,color:'#4A90B8',textAlign:'center'}}>Підх.</div>
+                <div style={{width:10}}/>
+                <div style={{width:36,fontSize:10,color:'#4A90B8',textAlign:'center'}}>Повт.</div>
+                <div style={{width:44,fontSize:10,color:'#4A90B8',textAlign:'center'}}>Вага кг</div>
+                <div style={{width:20}}/>
               </div>
 
               {(prog.exercises||[]).map((ex, i) => (
-                <div key={i} style={{display:'flex',alignItems:'center',gap:6,padding:'7px 0',borderBottom:'1px solid #1A2E4A'}}>
+                <div key={i} style={{display:'flex',alignItems:'center',gap:4,padding:'7px 0',borderBottom:'1px solid #1A2E4A'}}>
                   <input value={ex.name} onChange={e=>{
                     const exs=[...(prog.exercises||[])]; exs[i]={...ex,name:e.target.value}; updateExercises(prog.id,exs)
-                  }} placeholder="Вправа" style={{flex:2,background:'#08080F',border:'1px solid #1A2E4A',borderRadius:8,padding:'6px 8px',color:'#E8EAF0',fontFamily:'DM Sans',fontSize:13,outline:'none'}}/>
+                  }} placeholder="Вправа" style={{flex:2,minWidth:0,background:'#08080F',border:'1px solid #1A2E4A',borderRadius:8,padding:'6px 6px',color:'#E8EAF0',fontFamily:'DM Sans',fontSize:12,outline:'none'}}/>
                   <input value={ex.sets} type="number" onChange={e=>{
                     const exs=[...(prog.exercises||[])]; exs[i]={...ex,sets:Number(e.target.value)}; updateExercises(prog.id,exs)
-                  }} style={{width:42,background:'#08080F',border:'1px solid #1A2E4A',borderRadius:8,padding:'6px 4px',color:'#E8EAF0',fontFamily:'DM Sans',fontSize:13,outline:'none',textAlign:'center'}}/>
-                  <span style={{color:'#4A90B8',fontSize:11,flexShrink:0}}>×</span>
+                  }} style={{width:36,background:'#08080F',border:'1px solid #1A2E4A',borderRadius:8,padding:'6px 2px',color:'#E8EAF0',fontFamily:'DM Sans',fontSize:12,outline:'none',textAlign:'center'}}/>
+                  <span style={{color:'#4A90B8',fontSize:10,flexShrink:0}}>×</span>
                   <input value={ex.reps} type="number" onChange={e=>{
                     const exs=[...(prog.exercises||[])]; exs[i]={...ex,reps:Number(e.target.value)}; updateExercises(prog.id,exs)
-                  }} style={{width:42,background:'#08080F',border:'1px solid #1A2E4A',borderRadius:8,padding:'6px 4px',color:'#E8EAF0',fontFamily:'DM Sans',fontSize:13,outline:'none',textAlign:'center'}}/>
+                  }} style={{width:36,background:'#08080F',border:'1px solid #1A2E4A',borderRadius:8,padding:'6px 2px',color:'#E8EAF0',fontFamily:'DM Sans',fontSize:12,outline:'none',textAlign:'center'}}/>
                   <input value={ex.weight} type="number" onChange={e=>{
                     const exs=[...(prog.exercises||[])]; exs[i]={...ex,weight:Number(e.target.value)}; updateExercises(prog.id,exs)
-                  }} style={{width:50,background:'#08080F',border:'1px solid #1A2E4A',borderRadius:8,padding:'6px 4px',color:'#00F5FF',fontFamily:'DM Sans',fontSize:13,outline:'none',textAlign:'center'}}/>
+                  }} style={{width:44,background:'#08080F',border:'1px solid #1A2E4A',borderRadius:8,padding:'6px 2px',color:'#00F5FF',fontFamily:'DM Sans',fontSize:12,outline:'none',textAlign:'center'}}/>
                   <button onClick={()=>{
                     const exs=(prog.exercises||[]).filter((_,j)=>j!==i); updateExercises(prog.id,exs)
-                  }} style={{background:'none',border:'none',color:'#3A4A5A',fontSize:14,cursor:'pointer',padding:'0 2px',flexShrink:0}}>✕</button>
+                  }} style={{background:'none',border:'none',color:'#3A4A5A',fontSize:13,cursor:'pointer',padding:'0',flexShrink:0}}>✕</button>
                 </div>
               ))}
 
