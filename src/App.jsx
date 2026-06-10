@@ -892,16 +892,21 @@ function ScheduleTab({ clients, sessions, setSessions, onClientClick }) {
     const updateClip = async (clientId) => {
       const { data: freshClient } = await supabase.from('clients').select('*').eq('id', clientId).single()
       if (!freshClient) return
-      const isRazove = freshClient.clip_total === 1 && freshClient.active_plan_id
 
       if (!done) {
+        // Відмічаємо — +1 і додаємо дату сесії
         const newUsed = (freshClient.clip_used || 0) + 1
-        await supabase.from('clients').update({clip_used:newUsed}).eq('id', clientId)
-        setClients(prev => prev.map(c => c.id===clientId ? {...c, clip_used:newUsed} : c))
+        const newDates = [...(freshClient.clip_dates || []), session.date]
+        await supabase.from('clients').update({clip_used:newUsed, clip_dates:newDates}).eq('id', clientId)
+        setClients(prev => prev.map(c => c.id===clientId ? {...c, clip_used:newUsed, clip_dates:newDates} : c))
       } else {
+        // Знімаємо — -1 і прибираємо останню дату
         const newUsed = Math.max(0, (freshClient.clip_used || 0) - 1)
-        await supabase.from('clients').update({clip_used:newUsed}).eq('id', clientId)
-        setClients(prev => prev.map(c => c.id===clientId ? {...c, clip_used:newUsed} : c))
+        const dates = [...(freshClient.clip_dates || [])]
+        dates.splice(dates.lastIndexOf(session.date), 1)
+        const newDates = dates.filter(d => d !== undefined)
+        await supabase.from('clients').update({clip_used:newUsed, clip_dates:newDates}).eq('id', clientId)
+        setClients(prev => prev.map(c => c.id===clientId ? {...c, clip_used:newUsed, clip_dates:newDates} : c))
       }
     }
 
