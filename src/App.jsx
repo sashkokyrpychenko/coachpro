@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, memo, useCallback } from 'react'
 import { supabase } from './supabase'
 import './App.css'
 
@@ -18,6 +18,9 @@ _darkStyle.textContent = `
   ::-webkit-scrollbar-track { background: #08080F; }
   ::-webkit-scrollbar-thumb { background: #1A2E4A; border-radius: 2px; }
   ::-webkit-scrollbar-thumb:hover { background: #00F5FF44; }
+  * { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+  button:active { opacity: 0.75; transform: scale(0.97); }
+  button { transition: opacity 0.1s, transform 0.1s; }
 `
 document.head.appendChild(_darkStyle)
 
@@ -68,7 +71,7 @@ function dateToStr(date) {
 }
 
 // ─── Swipeable single session card ───────────────────────────────────────────
-function SwipeSessionCard({ s, clients, onEdit, onToggle }) {
+const SwipeSessionCard = memo(function SwipeSessionCard({ s, clients, onEdit, onToggle }) {
   const c = clients.find(x => x.id === s.client_id)
   const [offset, setOffset] = useState(0)
   const startX = useRef(null)
@@ -134,7 +137,7 @@ function SwipeSessionCard({ s, clients, onEdit, onToggle }) {
 }
 
 // ─── Split card (whole card swipes → pick modal) ──────────────────────────────
-function SplitCard({ sessions, clients, onEdit, onToggle }) {
+const SplitCard = memo(function SplitCard({ sessions, clients, onEdit, onToggle }) {
   const [offset, setOffset] = useState(0)
   const startX = useRef(null)
   const dragging = useRef(false)
@@ -878,7 +881,7 @@ function ScheduleTab({ clients, sessions, setSessions, onClientClick }) {
     return Object.entries(map).sort((a,b) => a[0].localeCompare(b[0]))
   }
 
-  const toggleDone = async (id, done) => {
+  const toggleDone = useCallback(async (id, done) => {
     const session = sessions.find(s => s.id === id)
     if (!session) return
     const partners = sessions.filter(s =>
@@ -912,7 +915,7 @@ function ScheduleTab({ clients, sessions, setSessions, onClientClick }) {
 
     await updateClip(session.client_id)
     if (partners.length > 0) await updateClip(partners[0].client_id)
-  }
+  }, [sessions, setClients, setSessions])
 
   const saveSession = async () => {
     if (!fClient) return
