@@ -263,7 +263,7 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
           const cSessions = sessions.filter(s=>s.client_id===c.id)
           const cRecords = records.filter(r=>r.client_id===c.id)
           return (
-            <div key={c.id} style={{background:'#111118',border:`1px solid ${isOpen?'#00F5FF':'#1E2A3A'}`,borderRadius:14,overflow:'hidden',alignSelf:'start'}}>
+            <div key={c.id} style={{background:'#111118',border:`1px solid ${isOpen?'#00F5FF':'#1E2A3A'}`,borderRadius:14,overflow:'hidden',alignSelf:'start',willChange:'transform',transform:'translateZ(0)'}}>
               <div onClick={()=>setOpenId(isOpen?null:c.id)} style={{display:'flex',alignItems:'center',gap:12,padding:14,cursor:'pointer'}}>
                 <div style={{width:46,height:46,borderRadius:'50%',background:c.color,display:'flex',alignItems:'center',justifyContent:'center',fontFamily:'Oswald',fontSize:18,color:'#111',flexShrink:0}}>{c.ava}</div>
                 <div style={{flex:1}}>
