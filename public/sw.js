@@ -1,16 +1,7 @@
 const CACHE_NAME = 'coachpro-v1'
 
-// Файли які кешуємо при встановленні
-const STATIC_ASSETS = [
-  '/',
-  '/src/main.jsx',
-]
-
-// Встановлення — кешуємо статику
+// Встановлення
 self.addEventListener('install', (e) => {
-  e.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(STATIC_ASSETS))
-  )
   self.skipWaiting()
 })
 
