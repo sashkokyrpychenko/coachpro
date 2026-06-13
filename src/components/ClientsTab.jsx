@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../supabase'
-import { todayStr, dateToStr, COLORS, MONTHS_UK2, DAYS_SHORT } from '../constants'
+import { todayStr, dateToStr, getMondayFirst, COLORS, MONTHS_UK2, DAYS_SHORT } from '../constants'
 import ClipTab from './ClipTab'
 import ProgramsTab from './ProgramsTab'
 

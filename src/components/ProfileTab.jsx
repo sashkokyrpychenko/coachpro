@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../supabase'
-import { todayStr, dateToStr, getMondayFirst, MONTHS_UK, MONTHS_UK2 } from '../constants'
+import { todayStr, dateToStr, getMondayFirst, MONTHS_UK, MONTHS_UK2, DAYS_SHORT, DAYS_FULL } from '../constants'
 import StatsTab from './StatsTab'
 function ProfileTab({ sessions, clients, finance, setFinance, pricePlans, setPricePlans }) {
   const [section, setSection] = useState('stats')

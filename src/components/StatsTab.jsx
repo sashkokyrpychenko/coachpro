@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../supabase'
-import { todayStr, dateToStr, MONTHS_UK, MONTHS_UK2 } from '../constants'
+import { todayStr, dateToStr, getMondayFirst, MONTHS_UK, MONTHS_UK2, DAYS_SHORT } from '../constants'
 function StatsTab({ sessions, clients, finance, pricePlans, setPricePlans }) {
   const today = todayStr()
   const now = new Date()
