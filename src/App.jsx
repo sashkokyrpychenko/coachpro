@@ -27,7 +27,6 @@ _darkStyle.textContent = `
   button { transition: opacity 0.1s, transform 0.1s; }
   #root {
     padding-top: env(safe-area-inset-top);
-    padding-bottom: env(safe-area-inset-bottom);
     box-sizing: border-box;
     height: 100dvh;
   }
@@ -108,7 +107,7 @@ export default function App() {
             </>
           )}
         </div>
-        <div className="mobile-tabs" style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',background:'#111118',borderTop:'1px solid #162038',position:'fixed',bottom:0,left:0,right:0,zIndex:100,paddingBottom:'max(env(safe-area-inset-bottom), 20px)'}}>
+        <div className="mobile-tabs" style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',background:'#111118',borderTop:'1px solid #162038',position:'fixed',bottom:0,left:0,right:0,zIndex:100,paddingBottom:'max(env(safe-area-inset-bottom), 28px)'}}>
           {TABS.map(([id,icon,label])=>(
             <button key={id} onClick={()=>setTab(id)} style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'10px 4px 12px',cursor:'pointer',border:'none',background:'none',color:tab===id?'#00F5FF':'#3A4A5A',fontFamily:'DM Sans',fontSize:11,fontWeight:500,gap:4,borderTop:tab===id?'2px solid #00F5FF':'2px solid transparent'}}>
               <span style={{fontSize:20}}>{icon}</span>{label}
