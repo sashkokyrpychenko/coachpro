@@ -1,71 +1,32 @@
-const CACHE_NAME = 'coachpro-v1'
+// CoachPro Service Worker — network-first
+// Завжди тягне свіже з мережі, кеш — лише як офлайн-резерв
+const CACHE = 'coachpro-v3'
 
-// Встановлення
-self.addEventListener('install', (e) => {
+self.addEventListener('install', (event) => {
+  // Новий SW активується одразу, не чекаючи закриття вкладок
   self.skipWaiting()
 })
 
-// Активація — видаляємо старі кеші
-self.addEventListener('activate', (e) => {
-  e.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
-    )
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    caches.keys()
+      .then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))))
+      .then(() => self.clients.claim())
   )
-  self.clients.claim()
 })
 
-// Fetch — стратегія: Network First для API, Cache First для статики
-self.addEventListener('fetch', (e) => {
-  const url = new URL(e.request.url)
+self.addEventListener('fetch', (event) => {
+  const { request } = event
+  if (request.method !== 'GET') return
 
-  // Supabase запити — тільки мережа (не кешуємо дані)
-  if (url.hostname.includes('supabase.co')) {
-    e.respondWith(fetch(e.request))
-    return
-  }
-
-  // Google Fonts — Cache First
-  if (url.hostname.includes('fonts.googleapis.com') || url.hostname.includes('fonts.gstatic.com')) {
-    e.respondWith(
-      caches.match(e.request).then(cached => {
-        if (cached) return cached
-        return fetch(e.request).then(res => {
-          const clone = res.clone()
-          caches.open(CACHE_NAME).then(cache => cache.put(e.request, clone))
-          return res
-        })
+  event.respondWith(
+    fetch(request)
+      .then((response) => {
+        // Зберігаємо свіжу копію у кеш (для офлайну)
+        const copy = response.clone()
+        caches.open(CACHE).then((cache) => cache.put(request, copy)).catch(() => {})
+        return response
       })
-    )
-    return
-  }
-
-  // JS/CSS/assets — Cache First, fallback to network
-  if (
-    url.pathname.match(/\.(js|css|png|svg|ico|webp|jpg|jpeg|woff2?)$/) ||
-    url.pathname.startsWith('/assets/')
-  ) {
-    e.respondWith(
-      caches.match(e.request).then(cached => {
-        if (cached) return cached
-        return fetch(e.request).then(res => {
-          const clone = res.clone()
-          caches.open(CACHE_NAME).then(cache => cache.put(e.request, clone))
-          return res
-        })
-      })
-    )
-    return
-  }
-
-  // HTML — Network First, fallback to cache (офлайн підтримка)
-  e.respondWith(
-    fetch(e.request)
-      .then(res => {
-        const clone = res.clone()
-        caches.open(CACHE_NAME).then(cache => cache.put(e.request, clone))
-        return res
-      })
-      .catch(() => caches.match(e.request))
+      .catch(() => caches.match(request)) // немає мережі → віддаємо з кешу
   )
 })
