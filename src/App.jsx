@@ -15,7 +15,7 @@ document.head.appendChild(_fontLink)
 
 const _darkStyle = document.createElement('style')
 _darkStyle.textContent = `
-  html { background: #0A0A12; }
+  html { background: #111118 !important; }
   body { background: #0A0A12 !important; color: #E8EAF0 !important; font-variant-emoji: text; }
   input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1) brightness(0.6) sepia(1) hue-rotate(150deg); }
   select option { background: #0D0D16; color: #E8EAF0; }
@@ -30,15 +30,6 @@ _darkStyle.textContent = `
     padding-top: env(safe-area-inset-top);
     box-sizing: border-box;
     height: 100dvh;
-  }
-  /* DIAGNOSTIC: червона смужка для тесту fixed bottom:0 */
-  .safe-bottom-fill {
-    position: fixed;
-    left: 0; right: 0; bottom: 0;
-    height: 40px;
-    background: #FF0000;
-    z-index: 99;
-    pointer-events: none;
   }
   .mobile-tabs {
     padding-bottom: env(safe-area-inset-bottom);
@@ -128,9 +119,6 @@ export default function App() {
           ))}
         </div>
       </div>
-
-      {/* iOS PWA: заповнює зону home indicator кольором меню */}
-      <div className="safe-bottom-fill"/>
     </div>
   )
 }
