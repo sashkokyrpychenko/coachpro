@@ -15,6 +15,7 @@ document.head.appendChild(_fontLink)
 
 const _darkStyle = document.createElement('style')
 _darkStyle.textContent = `
+  html { background: #0A0A12; }
   body { background: #0A0A12 !important; color: #E8EAF0 !important; font-variant-emoji: text; }
   input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1) brightness(0.6) sepia(1) hue-rotate(150deg); }
   select option { background: #0D0D16; color: #E8EAF0; }
@@ -29,6 +30,18 @@ _darkStyle.textContent = `
     padding-top: env(safe-area-inset-top);
     box-sizing: border-box;
     height: 100dvh;
+  }
+  /* iOS PWA: філлер кольору меню за home indicator — закриває чорну смужку */
+  .safe-bottom-fill {
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    height: env(safe-area-inset-bottom);
+    background: #111118;
+    z-index: 99;
+    pointer-events: none;
+  }
+  .mobile-tabs {
+    padding-bottom: env(safe-area-inset-bottom);
   }
 `
 document.head.appendChild(_darkStyle)
@@ -107,7 +120,7 @@ export default function App() {
             </>
           )}
         </div>
-        <div className="mobile-tabs" style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',background:'#111118',borderTop:'1px solid #162038',position:'fixed',bottom:0,left:0,right:0,zIndex:100,paddingBottom:'max(env(safe-area-inset-bottom), 28px)'}}>
+        <div className="mobile-tabs" style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',background:'#111118',borderTop:'1px solid #162038',position:'fixed',bottom:0,left:0,right:0,zIndex:100}}>
           {TABS.map(([id,icon,label])=>(
             <button key={id} onClick={()=>setTab(id)} style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'10px 4px 12px',cursor:'pointer',border:'none',background:'none',color:tab===id?'#00F5FF':'#3A4A5A',fontFamily:'DM Sans',fontSize:11,fontWeight:500,gap:4,borderTop:tab===id?'2px solid #00F5FF':'2px solid transparent'}}>
               <span style={{fontSize:20}}>{icon}</span>{label}
@@ -115,6 +128,9 @@ export default function App() {
           ))}
         </div>
       </div>
+
+      {/* iOS PWA: заповнює зону home indicator кольором меню */}
+      <div className="safe-bottom-fill"/>
     </div>
   )
 }
