@@ -68,7 +68,7 @@ export default function App() {
   const TABS = [['schedule','📅','Графік'],['clients','👥','Клієнти'],['profile','⚡','Профіль']]
 
   return (
-    <div style={{display:'flex',height:'100dvh',background:'#0A0A12',color:'#E8EAF0',fontFamily:'DM Sans',paddingTop:'env(safe-area-inset-top)',paddingBottom:'env(safe-area-inset-bottom)',boxSizing:'border-box'}}>
+    <div style={{display:'flex',height:'100dvh',background:'#0A0A12',color:'#E8EAF0',fontFamily:'DM Sans',paddingTop:'env(safe-area-inset-top)',boxSizing:'border-box'}}>
       <div className="desktop-sidebar" style={{width:220,background:'#111118',borderRight:'1px solid #1A2E4A',display:'flex',flexDirection:'column',flexShrink:0,position:'sticky',top:0,height:'100dvh'}}>
         <div style={{padding:'24px 20px 20px',borderBottom:'1px solid #162038'}}>
           <div style={{fontFamily:'Oswald',fontSize:26,letterSpacing:0.5,color:'#00F5FF'}}>COACH<span style={{color:'#E8EAF0'}}>PRO</span></div>
@@ -102,7 +102,7 @@ export default function App() {
             </>
           )}
         </div>
-        <div className="mobile-tabs" style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',background:'#111118',borderTop:'1px solid #162038',flexShrink:0}}>
+        <div className="mobile-tabs" style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',background:'#111118',borderTop:'1px solid #162038',flexShrink:0,paddingBottom:'env(safe-area-inset-bottom)'}}>
           {TABS.map(([id,icon,label])=>(
             <button key={id} onClick={()=>setTab(id)} style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'10px 4px 12px',cursor:'pointer',border:'none',background:'none',color:tab===id?'#00F5FF':'#3A4A5A',fontFamily:'DM Sans',fontSize:11,fontWeight:500,gap:4,borderTop:tab===id?'2px solid #00F5FF':'2px solid transparent'}}>
               <span style={{fontSize:20}}>{icon}</span>{label}
