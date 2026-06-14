@@ -15,7 +15,7 @@ document.head.appendChild(_fontLink)
 
 const _darkStyle = document.createElement('style')
 _darkStyle.textContent = `
-  body { background: #0A0A12 !important; color: #E8EAF0 !important; font-variant-emoji: text; }
+  body { background: #0A0A12 !important; color: #E8EAF0 !important; font-variant-emoji: text; padding-top: env(safe-area-inset-top); }
   input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1) brightness(0.6) sepia(1) hue-rotate(150deg); }
   select option { background: #0D0D16; color: #E8EAF0; }
   ::-webkit-scrollbar { width: 4px; height: 4px; }
@@ -95,7 +95,6 @@ export default function App() {
       </div>
 
       <div style={{flex:1,display:'flex',flexDirection:'column',overflow:'hidden'}}>
-        <div className="safe-top"/>
         <div style={{flex:1,overflowY:'auto',padding:24}}>
           {loading ? <SkeletonLoader tab={tab}/> : (
             <>
