@@ -31,12 +31,12 @@ _darkStyle.textContent = `
     box-sizing: border-box;
     height: 100dvh;
   }
-  /* iOS PWA: філлер кольору меню за home indicator — закриває чорну смужку */
+  /* DIAGNOSTIC: червона смужка для тесту fixed bottom:0 */
   .safe-bottom-fill {
     position: fixed;
     left: 0; right: 0; bottom: 0;
-    height: env(safe-area-inset-bottom);
-    background: #111118;
+    height: 40px;
+    background: #FF0000;
     z-index: 99;
     pointer-events: none;
   }
