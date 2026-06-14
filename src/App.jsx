@@ -15,7 +15,7 @@ document.head.appendChild(_fontLink)
 
 const _darkStyle = document.createElement('style')
 _darkStyle.textContent = `
-  body { background: #0A0A12 !important; color: #E8EAF0 !important; font-variant-emoji: text; padding-top: env(safe-area-inset-top); }
+  body { background: #0A0A12 !important; color: #E8EAF0 !important; font-variant-emoji: text; margin: 0; padding: 0; }
   input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1) brightness(0.6) sepia(1) hue-rotate(150deg); }
   select option { background: #0D0D16; color: #E8EAF0; }
   ::-webkit-scrollbar { width: 4px; height: 4px; }
@@ -25,8 +25,6 @@ _darkStyle.textContent = `
   * { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
   button:active { opacity: 0.75; transform: scale(0.97); }
   button { transition: opacity 0.1s, transform 0.1s; }
-  .safe-top { padding-top: env(safe-area-inset-top); background: #111118; }
-  .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
 `
 document.head.appendChild(_darkStyle)
 
@@ -70,7 +68,7 @@ export default function App() {
   const TABS = [['schedule','📅','Графік'],['clients','👥','Клієнти'],['profile','⚡','Профіль']]
 
   return (
-    <div style={{display:'flex',height:'100dvh',background:'#0A0A12',color:'#E8EAF0',fontFamily:'DM Sans'}}>
+    <div style={{display:'flex',height:'100dvh',background:'#0A0A12',color:'#E8EAF0',fontFamily:'DM Sans',paddingTop:'env(safe-area-inset-top)',boxSizing:'border-box'}}>
       <div className="desktop-sidebar" style={{width:220,background:'#111118',borderRight:'1px solid #1A2E4A',display:'flex',flexDirection:'column',flexShrink:0,position:'sticky',top:0,height:'100dvh'}}>
         <div style={{padding:'24px 20px 20px',borderBottom:'1px solid #162038'}}>
           <div style={{fontFamily:'Oswald',fontSize:26,letterSpacing:0.5,color:'#00F5FF'}}>COACH<span style={{color:'#E8EAF0'}}>PRO</span></div>
