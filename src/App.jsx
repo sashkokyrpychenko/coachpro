@@ -25,6 +25,12 @@ _darkStyle.textContent = `
   * { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
   button:active { opacity: 0.75; transform: scale(0.97); }
   button { transition: opacity 0.1s, transform 0.1s; }
+  #root {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    box-sizing: border-box;
+    height: 100dvh;
+  }
 `
 document.head.appendChild(_darkStyle)
 
@@ -68,8 +74,8 @@ export default function App() {
   const TABS = [['schedule','📅','Графік'],['clients','👥','Клієнти'],['profile','⚡','Профіль']]
 
   return (
-    <div style={{display:'flex',height:'100dvh',background:'#0A0A12',color:'#E8EAF0',fontFamily:'DM Sans'}}>
-      <div className="desktop-sidebar" style={{width:220,background:'#111118',borderRight:'1px solid #1A2E4A',display:'flex',flexDirection:'column',flexShrink:0,position:'sticky',top:0,height:'100dvh'}}>
+    <div style={{display:'flex',height:'100%',background:'#0A0A12',color:'#E8EAF0',fontFamily:'DM Sans'}}>
+      <div className="desktop-sidebar" style={{width:220,background:'#111118',borderRight:'1px solid #1A2E4A',display:'flex',flexDirection:'column',flexShrink:0,position:'sticky',top:0,height:'100%'}}>
         <div style={{padding:'24px 20px 20px',borderBottom:'1px solid #162038'}}>
           <div style={{fontFamily:'Oswald',fontSize:26,letterSpacing:0.5,color:'#00F5FF'}}>COACH<span style={{color:'#E8EAF0'}}>PRO</span></div>
           <div style={{fontSize:12,color:'#3A7A9A',marginTop:4}}>{dateStr}</div>
@@ -102,7 +108,7 @@ export default function App() {
             </>
           )}
         </div>
-        <div className="mobile-tabs" style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',background:'#111118',borderTop:'1px solid #162038',position:'fixed',bottom:0,left:0,right:0,zIndex:100,paddingBottom:'env(safe-area-inset-bottom)'}}>
+        <div className="mobile-tabs" style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',background:'#111118',borderTop:'1px solid #162038',position:'fixed',bottom:0,left:0,right:0,zIndex:100,paddingBottom:'max(env(safe-area-inset-bottom), 20px)'}}>
           {TABS.map(([id,icon,label])=>(
             <button key={id} onClick={()=>setTab(id)} style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'10px 4px 12px',cursor:'pointer',border:'none',background:'none',color:tab===id?'#00F5FF':'#3A4A5A',fontFamily:'DM Sans',fontSize:11,fontWeight:500,gap:4,borderTop:tab===id?'2px solid #00F5FF':'2px solid transparent'}}>
               <span style={{fontSize:20}}>{icon}</span>{label}
