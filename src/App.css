@@ -15,11 +15,13 @@
 /* Mobile tab bar with safe area */
 .mobile-tabs {
   padding-bottom: env(safe-area-inset-bottom) !important;
+  min-height: calc(60px + env(safe-area-inset-bottom)) !important;
 }
 
-/* Fix for iOS PWA - ensure full screen */
-@supports (-webkit-touch-callout: none) {
+/* Fix for iOS PWA standalone mode */
+@media all and (display-mode: standalone) {
   .mobile-tabs {
-    padding-bottom: max(env(safe-area-inset-bottom), 16px) !important;
+    padding-bottom: max(env(safe-area-inset-bottom), 20px) !important;
+    min-height: calc(60px + max(env(safe-area-inset-bottom), 20px)) !important;
   }
 }
