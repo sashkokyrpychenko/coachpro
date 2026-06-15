@@ -20,13 +20,13 @@
    ─────────────────────────────────────────────── */
 .mobile-tabs {
   padding-bottom: 0px !important;
-  min-height: 36px !important;
+  min-height: 24px !important;
 }
 
 /* iOS PWA (встановлений додаток) — те саме */
 @media all and (display-mode: standalone) {
   .mobile-tabs {
     padding-bottom: 0px !important;
-    min-height: 36px !important;
+    min-height: 24px !important;
   }
 }
