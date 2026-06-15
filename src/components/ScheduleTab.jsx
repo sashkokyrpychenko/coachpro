@@ -117,7 +117,7 @@ export default function ScheduleTab({ clients, sessions, setSessions, setClients
   return (
     <div>
       <div style={{marginBottom:14}}>
-        <div style={{fontFamily:'Oswald',fontSize:24,letterSpacing:0.3,whiteSpace:'nowrap',marginBottom:10}}>
+        <div style={{fontFamily:'Oswald',fontSize:20,letterSpacing:0.3,whiteSpace:'nowrap',marginBottom:10}}>
           {viewMode==='week'
             ? (weekDates[0].getMonth()===weekDates[6].getMonth()
                 ? `${weekDates[0].getDate()}–${weekDates[6].getDate()} ${MONTHS_UK2[weekDates[6].getMonth()]}`
