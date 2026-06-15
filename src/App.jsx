@@ -29,7 +29,7 @@ _darkStyle.textContent = `
   #root {
     padding-top: env(safe-area-inset-top);
     box-sizing: border-box;
-    height: 100dvh;
+    height: 100vh;
   }
   .safe-bottom-fill {
     position: fixed;
@@ -64,7 +64,7 @@ export default function App() {
       window.scrollTo(0, 0)
       window.dispatchEvent(new Event('resize'))
       const root = document.getElementById('root')
-      if (root) { root.style.height = '100dvh'; void root.offsetHeight; root.style.height = '' }
+      if (root) { root.style.height = '100vh'; void root.offsetHeight; root.style.height = '' }
     }
     requestAnimationFrame(settle)
     const t1 = setTimeout(settle, 150)
