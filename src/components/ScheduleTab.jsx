@@ -116,18 +116,23 @@ export default function ScheduleTab({ clients, sessions, setSessions, setClients
 
   return (
     <div>
-      <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:12}}>
-        <button onClick={prevPeriod} style={{padding:'7px 12px',borderRadius:8,border:'1px solid #1A2E4A',background:'#0D0D16',color:'#E8EAF0',cursor:'pointer',fontSize:14}}>‹</button>
-        <button onClick={nextPeriod} style={{padding:'7px 12px',borderRadius:8,border:'1px solid #1A2E4A',background:'#0D0D16',color:'#E8EAF0',cursor:'pointer',fontSize:14}}>›</button>
-        <div style={{fontFamily:'Oswald',fontSize:20,flex:1}}>
+      <div style={{marginBottom:14}}>
+        <div style={{fontFamily:'Oswald',fontSize:24,letterSpacing:0.3,whiteSpace:'nowrap',marginBottom:10}}>
           {viewMode==='week'
-            ? `${weekDates[0].getDate()} — ${weekDates[6].getDate()} ${MONTHS_UK[weekDates[6].getMonth()]}`
+            ? (weekDates[0].getMonth()===weekDates[6].getMonth()
+                ? `${weekDates[0].getDate()}–${weekDates[6].getDate()} ${MONTHS_UK2[weekDates[6].getMonth()]}`
+                : `${weekDates[0].getDate()} ${MONTHS_UK2[weekDates[0].getMonth()]} – ${weekDates[6].getDate()} ${MONTHS_UK2[weekDates[6].getMonth()]}`)
             : `${MONTHS_UK[refDate.getMonth()]} ${refDate.getFullYear()}`}
         </div>
-        <button onClick={goToday} style={{padding:'6px 12px',borderRadius:8,border:'1px solid #1A2E4A',background:'#0D0D16',color:'#4A90B8',cursor:'pointer',fontSize:12,fontWeight:600}}>Сьогодні</button>
-        <div style={{display:'flex',borderRadius:8,overflow:'hidden',border:'1px solid #1A2E4A'}}>
-          <button onClick={()=>setViewMode('week')} style={{width:80,padding:'6px 0',border:'none',background:viewMode==='week'?'#00F5FF':'#0D0D16',color:viewMode==='week'?'#111':'#4A5A6A',cursor:'pointer',fontSize:12,fontWeight:600}}>Тиждень</button>
-          <button onClick={()=>setViewMode('month')} style={{width:80,padding:'6px 0',border:'none',background:viewMode==='month'?'#00F5FF':'#0D0D16',color:viewMode==='month'?'#111':'#4A5A6A',cursor:'pointer',fontSize:12,fontWeight:600}}>Місяць</button>
+        <div style={{display:'flex',alignItems:'center',gap:8}}>
+          <button onClick={prevPeriod} style={{padding:'7px 12px',borderRadius:8,border:'1px solid #1A2E4A',background:'#0D0D16',color:'#E8EAF0',cursor:'pointer',fontSize:14}}>‹</button>
+          <button onClick={nextPeriod} style={{padding:'7px 12px',borderRadius:8,border:'1px solid #1A2E4A',background:'#0D0D16',color:'#E8EAF0',cursor:'pointer',fontSize:14}}>›</button>
+          <button onClick={goToday} style={{padding:'6px 14px',borderRadius:8,border:'1px solid #1A2E4A',background:'#0D0D16',color:'#4A90B8',cursor:'pointer',fontSize:12,fontWeight:600}}>Сьогодні</button>
+          <div style={{flex:1}}/>
+          <div style={{display:'flex',borderRadius:8,overflow:'hidden',border:'1px solid #1A2E4A'}}>
+            <button onClick={()=>setViewMode('week')} style={{padding:'6px 16px',border:'none',background:viewMode==='week'?'#00F5FF':'#0D0D16',color:viewMode==='week'?'#111':'#4A5A6A',cursor:'pointer',fontSize:12,fontWeight:600}}>Тиждень</button>
+            <button onClick={()=>setViewMode('month')} style={{padding:'6px 16px',border:'none',background:viewMode==='month'?'#00F5FF':'#0D0D16',color:viewMode==='month'?'#111':'#4A5A6A',cursor:'pointer',fontSize:12,fontWeight:600}}>Місяць</button>
+          </div>
         </div>
       </div>
 
