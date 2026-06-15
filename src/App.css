@@ -12,16 +12,20 @@
   }
 }
 
-/* Mobile tab bar with safe area */
+/* ───────────────────────────────────────────────
+   Нижнє меню — відступ знизу
+   РЕГУЛЯТОР: міняй 12px нижче.
+   Менше число → меню нижче. Більше → вище.
+   ─────────────────────────────────────────────── */
 .mobile-tabs {
-  padding-bottom: env(safe-area-inset-bottom) !important;
-  min-height: calc(60px + env(safe-area-inset-bottom)) !important;
+  padding-bottom: 12px !important;
+  min-height: 60px !important;
 }
 
-/* Fix for iOS PWA standalone mode */
+/* iOS PWA (встановлений додаток) — той самий відступ */
 @media all and (display-mode: standalone) {
   .mobile-tabs {
-    padding-bottom: max(env(safe-area-inset-bottom), 20px) !important;
-    min-height: calc(60px + max(env(safe-area-inset-bottom), 20px)) !important;
+    padding-bottom: 12px !important;
+    min-height: 60px !important;
   }
 }

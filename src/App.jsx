@@ -31,9 +31,6 @@ _darkStyle.textContent = `
     box-sizing: border-box;
     height: 100dvh;
   }
-  .mobile-tabs {
-    padding-bottom: max(calc(env(safe-area-inset-bottom) - 30px), 4px);
-  }
 `
 document.head.appendChild(_darkStyle)
 
