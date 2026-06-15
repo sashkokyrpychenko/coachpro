@@ -15,8 +15,8 @@ document.head.appendChild(_fontLink)
 
 const _darkStyle = document.createElement('style')
 _darkStyle.textContent = `
-  html { background: #111118 !important; }
-  body { background: #111118 !important; color: #E8EAF0 !important; font-variant-emoji: text; }
+  html { background: #111118 !important; height: 100%; overflow: hidden; }
+  body { background: #111118 !important; color: #E8EAF0 !important; font-variant-emoji: text; position: fixed; top: 0; left: 0; right: 0; bottom: 0; overflow: hidden; }
   input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1) brightness(0.6) sepia(1) hue-rotate(150deg); }
   select option { background: #0D0D16; color: #E8EAF0; }
   ::-webkit-scrollbar { width: 4px; height: 4px; }
@@ -29,7 +29,7 @@ _darkStyle.textContent = `
   #root {
     padding-top: env(safe-area-inset-top);
     box-sizing: border-box;
-    height: 100vh;
+    height: 100%;
   }
   .safe-bottom-fill {
     position: fixed;
@@ -54,23 +54,6 @@ export default function App() {
   const [programs, setPrograms] = useState([])
   const [loading, setLoading] = useState(true)
   const scrollRef = useRef(null)
-
-  // iOS standalone PWA: примусово «осаджуємо» viewport одразу при старті,
-  // щоб нижнє меню стало на місце без свайпу користувача
-  useEffect(() => {
-    const settle = () => {
-      const el = scrollRef.current
-      if (el) { el.scrollTop = 1; el.scrollTop = 0 }
-      window.scrollTo(0, 0)
-      window.dispatchEvent(new Event('resize'))
-      const root = document.getElementById('root')
-      if (root) { root.style.height = '100vh'; void root.offsetHeight; root.style.height = '' }
-    }
-    requestAnimationFrame(settle)
-    const t1 = setTimeout(settle, 150)
-    const t2 = setTimeout(settle, 500)
-    return () => { clearTimeout(t1); clearTimeout(t2) }
-  }, [])
 
   useEffect(() => {
     const load = async () => {
@@ -126,7 +109,7 @@ export default function App() {
       </div>
 
       <div style={{flex:1,display:'flex',flexDirection:'column',overflow:'hidden',minHeight:0}}>
-        <div ref={scrollRef} style={{flex:1,overflowY:'auto',padding:24,minHeight:0}}>
+        <div ref={scrollRef} style={{flex:1,overflowY:'auto',padding:24,minHeight:0,overscrollBehavior:'none'}}>
           {loading ? <SkeletonLoader tab={tab}/> : (
             <>
               {tab==='schedule'&&<ScheduleTab clients={clients} setClients={setClients} sessions={sessions} setSessions={setSessions} onClientClick={id=>{setOpenClientId(id);setTab('clients')}}/>}
