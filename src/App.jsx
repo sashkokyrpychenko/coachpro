@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { supabase } from './supabase'
 import './App.css'
 import ScheduleTab from './components/ScheduleTab'
@@ -53,6 +53,24 @@ export default function App() {
   const [pricePlans, setPricePlans] = useState([])
   const [programs, setPrograms] = useState([])
   const [loading, setLoading] = useState(true)
+  const scrollRef = useRef(null)
+
+  // iOS standalone PWA: примусово «осаджуємо» viewport одразу при старті,
+  // щоб нижнє меню стало на місце без свайпу користувача
+  useEffect(() => {
+    const settle = () => {
+      const el = scrollRef.current
+      if (el) { el.scrollTop = 1; el.scrollTop = 0 }
+      window.scrollTo(0, 0)
+      window.dispatchEvent(new Event('resize'))
+      const root = document.getElementById('root')
+      if (root) { root.style.height = '100dvh'; void root.offsetHeight; root.style.height = '' }
+    }
+    requestAnimationFrame(settle)
+    const t1 = setTimeout(settle, 150)
+    const t2 = setTimeout(settle, 500)
+    return () => { clearTimeout(t1); clearTimeout(t2) }
+  }, [])
 
   useEffect(() => {
     const load = async () => {
@@ -108,7 +126,7 @@ export default function App() {
       </div>
 
       <div style={{flex:1,display:'flex',flexDirection:'column',overflow:'hidden',minHeight:0}}>
-        <div style={{flex:1,overflowY:'auto',padding:24,minHeight:0}}>
+        <div ref={scrollRef} style={{flex:1,overflowY:'auto',padding:24,minHeight:0}}>
           {loading ? <SkeletonLoader tab={tab}/> : (
             <>
               {tab==='schedule'&&<ScheduleTab clients={clients} setClients={setClients} sessions={sessions} setSessions={setSessions} onClientClick={id=>{setOpenClientId(id);setTab('clients')}}/>}
