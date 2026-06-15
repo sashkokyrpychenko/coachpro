@@ -32,7 +32,7 @@ _darkStyle.textContent = `
     height: 100dvh;
   }
   .mobile-tabs {
-    padding-bottom: env(safe-area-inset-bottom);
+    padding-bottom: max(env(safe-area-inset-bottom), 34px);
   }
 `
 document.head.appendChild(_darkStyle)
