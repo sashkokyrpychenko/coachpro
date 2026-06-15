@@ -538,7 +538,7 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
       {/* Edit Client Modal */}
       {editClient && (
         <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.75)',display:'flex',alignItems:'flex-end',justifyContent:'center',zIndex:300}} onClick={()=>setEditClient(null)}>
-          <div style={{background:'#111118',border:'1px solid #1A2E4A',borderRadius:'20px 20px 0 0',width:'100%',maxWidth:480,padding:'20px 20px 36px'}} onClick={e=>e.stopPropagation()}>
+          <div style={{background:'#111118',border:'1px solid #1A2E4A',borderRadius:'20px 20px 0 0',width:'100%',maxWidth:480,padding:'20px 20px max(36px, calc(20px + env(safe-area-inset-bottom)))'}} onClick={e=>e.stopPropagation()}>
             <div style={{width:40,height:4,background:'#1E2A3A',borderRadius:2,margin:'0 auto 18px'}}/>
             <div style={{fontFamily:'Oswald',fontSize:22,marginBottom:16}}>Редагувати клієнта</div>
             <label style={lbl}>Повне ім'я</label>
@@ -576,7 +576,7 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
       {/* Add Metric Modal */}
       {showAddMetric && (
         <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.75)',display:'flex',alignItems:'flex-end',justifyContent:'center',zIndex:300}} onClick={()=>setShowAddMetric(null)}>
-          <div style={{background:'#111118',border:'1px solid #1A2E4A',borderRadius:'20px 20px 0 0',width:'100%',maxWidth:480,padding:'20px 20px 36px'}} onClick={e=>e.stopPropagation()}>
+          <div style={{background:'#111118',border:'1px solid #1A2E4A',borderRadius:'20px 20px 0 0',width:'100%',maxWidth:480,padding:'20px 20px max(36px, calc(20px + env(safe-area-inset-bottom)))'}} onClick={e=>e.stopPropagation()}>
             <div style={{width:40,height:4,background:'#1E2A3A',borderRadius:2,margin:'0 auto 18px'}}/>
             <div style={{fontFamily:'Oswald',fontSize:22,marginBottom:16}}>Новий показник</div>
             <label style={lbl}>Назва</label>
@@ -603,7 +603,7 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
       {/* Add Measurement Modal */}
       {showAddMeasure && (
         <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.85)',display:'flex',alignItems:'flex-end',justifyContent:'center',zIndex:400}} onClick={()=>setShowAddMeasure(null)}>
-          <div style={{background:'#111118',border:'1px solid #1A2E4A',borderRadius:'20px 20px 0 0',width:'100%',maxWidth:480,padding:'20px 20px 36px'}} onClick={e=>e.stopPropagation()}>
+          <div style={{background:'#111118',border:'1px solid #1A2E4A',borderRadius:'20px 20px 0 0',width:'100%',maxWidth:480,padding:'20px 20px max(36px, calc(20px + env(safe-area-inset-bottom)))'}} onClick={e=>e.stopPropagation()}>
             <div style={{width:40,height:4,background:'#1E2A3A',borderRadius:2,margin:'0 auto 18px'}}/>
             <div style={{fontFamily:'Oswald',fontSize:22,marginBottom:16}}>Новий вимір</div>
             <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:20}}>

@@ -14,18 +14,9 @@
 
 /* ───────────────────────────────────────────────
    Нижнє меню — відступ знизу
-   РЕГУЛЯТОР: міняй 12px нижче.
-   Менше число → меню нижче. Більше → вище.
+   Автоматично враховує home indicator на iOS
    ─────────────────────────────────────────────── */
 .mobile-tabs {
-  padding-bottom: 12px !important;
+  padding-bottom: max(12px, env(safe-area-inset-bottom)) !important;
   min-height: 60px !important;
-}
-
-/* iOS PWA (встановлений додаток) — той самий відступ */
-@media all and (display-mode: standalone) {
-  .mobile-tabs {
-    padding-bottom: 12px !important;
-    min-height: 60px !important;
-  }
 }

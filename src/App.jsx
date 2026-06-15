@@ -16,7 +16,8 @@ document.head.appendChild(_fontLink)
 const _darkStyle = document.createElement('style')
 _darkStyle.textContent = `
   html { background: #111118 !important; }
-  body { background: #0A0A12 !important; color: #E8EAF0 !important; font-variant-emoji: text; }
+  body { background: #0A0A12 !important; color: #E8EAF0 !important; font-variant-emoji: text; overscroll-behavior: none; }
+  input, select, textarea { font-size: 16px !important; }
   input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1) brightness(0.6) sepia(1) hue-rotate(150deg); }
   select option { background: #0D0D16; color: #E8EAF0; }
   ::-webkit-scrollbar { width: 4px; height: 4px; }
