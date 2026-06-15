@@ -31,6 +31,15 @@ _darkStyle.textContent = `
     box-sizing: border-box;
     height: 100dvh;
   }
+  .safe-bottom-fill {
+    position: fixed;
+    left: 0; right: 0;
+    bottom: calc(-1 * env(safe-area-inset-bottom));
+    height: calc(env(safe-area-inset-bottom) + 2px);
+    background: #111118;
+    z-index: 90;
+    pointer-events: none;
+  }
 `
 document.head.appendChild(_darkStyle)
 
@@ -116,6 +125,9 @@ export default function App() {
           ))}
         </div>
       </div>
+
+      {/* iOS PWA: замальовує зону home indicator кольором меню */}
+      <div className="safe-bottom-fill"/>
     </div>
   )
 }
