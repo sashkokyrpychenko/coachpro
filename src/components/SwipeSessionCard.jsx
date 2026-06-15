@@ -39,13 +39,12 @@ const SwipeSessionCard = memo(function SwipeSessionCard({ s, clients, onEdit, on
         onMouseUp={onEnd}
         onMouseLeave={onEnd}
         onClick={() => { if (!isDragging.current) onToggle(s.id, s.done) }}
+        className="pg-glass"
         style={{
           transform:`translateX(${offset}px)`,
           transition: offset === 0 ? 'transform 0.25s ease' : 'none',
           display:'flex', alignItems:'center', gap:12,
-          padding:'12px 14px', borderRadius:12,
-          background:'#0D0D16',
-          border:`1px solid ${s.done?'#00FF8833':'#1E2A3A'}`,
+          padding:'14px 16px', borderRadius:16,
           cursor:'pointer', userSelect:'none', position:'relative', zIndex:1,
         }}
       >
@@ -55,8 +54,8 @@ const SwipeSessionCard = memo(function SwipeSessionCard({ s, clients, onEdit, on
           <div style={{fontSize:12,color:'#4A90B8',marginTop:2}}>{s.type}</div>
         </div>
         <div style={{textAlign:'right', display:'flex', flexDirection:'column', alignItems:'flex-end', gap:6}}>
-          <div style={{fontFamily:'Oswald',fontSize:22,color:'#00F5FF'}}>{s.time}</div>
-          <span style={{fontSize:11,padding:'2px 10px',borderRadius:20,fontWeight:600,background:s.done?'rgba(22,163,74,.12)':'rgba(0,245,255,.12)',color:s.done?'#00FF88':'#00F5FF'}}>{s.done?'✓ Виконано':'Заплановано'}</span>
+          <div className="pg-time" style={{fontFamily:'Oswald',fontSize:22}}>{s.time}</div>
+          <span style={{fontSize:11,padding:'3px 11px',borderRadius:20,fontWeight:500,background:s.done?'rgba(70,220,168,.10)':'rgba(127,212,232,.08)',color:s.done?'#46DCA8':'#7FD4E8',border:`1px solid ${s.done?'rgba(70,220,168,.22)':'rgba(127,212,232,.2)'}`}}>{s.done?'✓ Виконано':'Заплановано'}</span>
         </div>
       </div>
     </div>

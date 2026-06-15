@@ -20,24 +20,24 @@ export default function DayTimeline({ sessions, clients, onClientClick }) {
   }))
 
   return (
-    <div style={{background:'#111118', border:'1px solid #1A2E4A', borderRadius:14, padding:16, marginTop:12}}>
-      <div style={{fontSize:11,color:'#4A90B8',fontWeight:600,textTransform:'uppercase',letterSpacing:.5,marginBottom:12}}>Денний графік</div>
+    <div className="pg-glass" style={{borderRadius:16, padding:16, marginTop:12}}>
+      <div style={{fontSize:11,color:'#878F9B',fontWeight:600,textTransform:'uppercase',letterSpacing:.5,marginBottom:12}}>Денний графік</div>
       <div style={{display:'flex', gap:8}}>
         <div style={{display:'flex', flexDirection:'column', flexShrink:0}}>
           {HOURS.map(h => (
-            <div key={h} style={{height: SLOT_H, display:'flex', alignItems:'flex-start', paddingTop:4, color: h === now.getHours() ? '#00F5FF' : '#3A4A5A', fontSize:10, width:36, fontFamily:'DM Sans'}}>
+            <div key={h} style={{height: SLOT_H, display:'flex', alignItems:'flex-start', paddingTop:4, color: h === now.getHours() ? '#5EE0CE' : '#5A616B', fontSize:10, width:36, fontFamily:'DM Sans'}}>
               {String(h).padStart(2,'0')}:00
             </div>
           ))}
         </div>
         <div style={{flex:1, position:'relative', height: HOURS.length * SLOT_H}}>
           {HOURS.map((h, i) => (
-            <div key={h} style={{position:'absolute', left:0, right:0, top: i * SLOT_H, height:1, background: h === now.getHours() ? 'rgba(0,245,255,.25)' : '#1E2A3A'}}/>
+            <div key={h} style={{position:'absolute', left:0, right:0, top: i * SLOT_H, height:1, background: h === now.getHours() ? 'rgba(94,224,206,.25)' : 'rgba(255,255,255,.06)'}}/>
           ))}
           {showNow && (
             <div style={{position:'absolute', left:0, right:0, top: nowOffset, zIndex:10, display:'flex', alignItems:'center', gap:4}}>
-              <div style={{width:8,height:8,borderRadius:'50%',background:'#00F5FF',flexShrink:0,marginLeft:-4}}/>
-              <div style={{flex:1,height:2,background:'#00F5FF',borderRadius:1}}/>
+              <div style={{width:8,height:8,borderRadius:'50%',background:'#5EE0CE',flexShrink:0,marginLeft:-4,boxShadow:'0 0 8px rgba(94,224,206,.7)'}}/>
+              <div style={{flex:1,height:2,background:'linear-gradient(90deg,#5EE0CE,#3FA9F0)',borderRadius:1}}/>
             </div>
           )}
           {sessionBlocks.map(s => {

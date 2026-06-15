@@ -15,8 +15,8 @@ document.head.appendChild(_fontLink)
 
 const _darkStyle = document.createElement('style')
 _darkStyle.textContent = `
-  html { background: #111118 !important; height: 100%; overflow: hidden; }
-  body { background: #111118 !important; color: #E8EAF0 !important; font-variant-emoji: text; position: fixed; top: 0; left: 0; right: 0; bottom: 0; overflow: hidden; }
+  html { background: #0B0C10 !important; height: 100%; overflow: hidden; }
+  body { background: #0B0C10 !important; color: #EAECEF !important; font-variant-emoji: text; position: fixed; top: 0; left: 0; right: 0; bottom: 0; overflow: hidden; }
   input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1) brightness(0.6) sepia(1) hue-rotate(150deg); }
   select option { background: #0D0D16; color: #E8EAF0; }
   ::-webkit-scrollbar { width: 4px; height: 4px; }
@@ -36,9 +36,26 @@ _darkStyle.textContent = `
     left: 0; right: 0;
     bottom: calc(-1 * env(safe-area-inset-bottom));
     height: calc(env(safe-area-inset-bottom) + 2px);
-    background: #111118;
+    background: #0B0C10;
     z-index: 90;
     pointer-events: none;
+  }
+  /* ── Premium Glass ── */
+  .pg-glass {
+    background: linear-gradient(160deg, rgba(255,255,255,.065), rgba(255,255,255,.022)) !important;
+    border: 1px solid rgba(255,255,255,.08) !important;
+    -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+    box-shadow: 0 1px 0 rgba(255,255,255,.05) inset, 0 10px 26px rgba(0,0,0,.28) !important;
+  }
+  .pg-time {
+    background: linear-gradient(135deg,#5EE0CE,#3FA9F0) !important;
+    -webkit-background-clip: text !important; background-clip: text !important;
+    color: transparent !important;
+  }
+  .pg-nav {
+    background: linear-gradient(160deg, rgba(255,255,255,.05), rgba(255,255,255,.018)) !important;
+    -webkit-backdrop-filter: blur(24px); backdrop-filter: blur(24px);
+    border-top: 1px solid rgba(255,255,255,.08) !important;
   }
 `
 document.head.appendChild(_darkStyle)
@@ -84,8 +101,10 @@ export default function App() {
   const TABS = [['schedule','📅','Графік'],['clients','👥','Клієнти'],['profile','⚡','Профіль']]
 
   return (
-    <div style={{display:'flex',height:'100%',background:'#0A0A12',color:'#E8EAF0',fontFamily:'DM Sans'}}>
-      <div className="desktop-sidebar" style={{width:220,background:'#111118',borderRight:'1px solid #1A2E4A',display:'flex',flexDirection:'column',flexShrink:0,position:'sticky',top:0,height:'100%'}}>
+    <div style={{display:'flex',height:'100%',background:'#0A0B0F',color:'#EAECEF',fontFamily:'DM Sans',position:'relative'}}>
+      {/* ambient depth glows */}
+      <div style={{position:'fixed',inset:0,pointerEvents:'none',zIndex:0,background:'radial-gradient(640px 380px at 92% -4%, rgba(78,215,201,.10), transparent 62%), radial-gradient(680px 460px at -8% 58%, rgba(63,150,240,.075), transparent 62%)'}}/>
+      <div className="desktop-sidebar" style={{width:220,background:'#0E1016',borderRight:'1px solid rgba(255,255,255,.06)',display:'flex',flexDirection:'column',flexShrink:0,position:'relative',zIndex:1,top:0,height:'100%'}}>
         <div style={{padding:'24px 20px 20px',borderBottom:'1px solid #162038'}}>
           <div style={{fontFamily:'Oswald',fontSize:26,letterSpacing:0.5,color:'#00F5FF'}}>COACH<span style={{color:'#E8EAF0'}}>PRO</span></div>
           <div style={{fontSize:12,color:'#3A7A9A',marginTop:4}}>{dateStr}</div>
@@ -108,7 +127,7 @@ export default function App() {
         </div>
       </div>
 
-      <div style={{flex:1,display:'flex',flexDirection:'column',overflow:'hidden',minHeight:0}}>
+      <div style={{flex:1,display:'flex',flexDirection:'column',overflow:'hidden',minHeight:0,position:'relative',zIndex:1}}>
         <div ref={scrollRef} style={{flex:1,overflowY:'auto',padding:24,minHeight:0,overscrollBehavior:'none'}}>
           {loading ? <SkeletonLoader tab={tab}/> : (
             <>
@@ -118,16 +137,21 @@ export default function App() {
             </>
           )}
         </div>
-        <div className="mobile-tabs" style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',background:'#111118',borderTop:'1px solid #162038',flexShrink:0,zIndex:100}}>
-          {TABS.map(([id,icon,label])=>(
-            <button key={id} onClick={()=>setTab(id)} style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'4px 4px 0px',cursor:'pointer',border:'none',background:'none',color:tab===id?'#00F5FF':'#3A4A5A',fontFamily:'DM Sans',fontSize:11,fontWeight:500,gap:3,borderTop:tab===id?'2px solid #00F5FF':'2px solid transparent'}}>
-              <span style={{fontSize:20}}>{icon}</span>{label}
-            </button>
-          ))}
+        <div className="mobile-tabs pg-nav" style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',flexShrink:0,zIndex:100}}>
+          {TABS.map(([id,icon,label])=>{
+            const active = tab===id
+            return (
+              <button key={id} onClick={()=>setTab(id)} style={{position:'relative',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'8px 4px 0px',cursor:'pointer',border:'none',background:'none',fontFamily:'DM Sans',fontSize:11,fontWeight:600,gap:3}}>
+                {active && <div style={{position:'absolute',top:0,left:'50%',transform:'translateX(-50%)',width:54,height:3,borderRadius:3,background:'linear-gradient(135deg,#5EE0CE,#3FA9F0)',boxShadow:'0 0 12px rgba(79,200,220,.8)'}}/>}
+                <span style={{fontSize:20,filter:active?'drop-shadow(0 0 8px rgba(79,200,220,.5))':'none'}}>{icon}</span>
+                <span style={active?{background:'linear-gradient(135deg,#5EE0CE,#3FA9F0)',WebkitBackgroundClip:'text',backgroundClip:'text',color:'transparent'}:{color:'#6B7280'}}>{label}</span>
+              </button>
+            )
+          })}
         </div>
       </div>
 
-      {/* iOS PWA: замальовує зону home indicator кольором меню */}
+      {/* iOS PWA: замальовує зону home indicator */}
       <div className="safe-bottom-fill"/>
     </div>
   )

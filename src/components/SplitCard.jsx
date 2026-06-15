@@ -31,26 +31,27 @@ const SplitCard = memo(function SplitCard({ sessions, clients, onEdit, onToggle 
         onMouseDown={e  => onStart(e.clientX)}
         onMouseMove={e  => { if (startX.current !== null) onMove(e.clientX) }}
         onMouseUp={onEnd} onMouseLeave={onEnd}
-        style={{transform:`translateX(${offset}px)`, transition: offset===0 ? 'transform 0.25s ease' : 'none', background:'#0D0D16', borderRadius:12, border:'1px solid #1A2E4A', overflow:'hidden', position:'relative', zIndex:1, userSelect:'none'}}
+        className="pg-glass"
+        style={{transform:`translateX(${offset}px)`, transition: offset===0 ? 'transform 0.25s ease' : 'none', borderRadius:16, overflow:'hidden', position:'relative', zIndex:1, userSelect:'none'}}
       >
         {sessions.map((s, i) => {
           const c = clients.find(x => x.id === s.client_id)
           return (
             <div key={s.id}
               onClick={() => { if (!dragging.current) onToggle(s.id, s.done) }}
-              style={{display:'flex', alignItems:'center', gap:12, padding:'12px 14px', borderBottom: i < sessions.length-1 ? '1px solid #1A2E4A' : 'none', cursor:'pointer'}}
+              style={{display:'flex', alignItems:'center', gap:12, padding:'13px 16px', borderBottom: i < sessions.length-1 ? '1px solid rgba(255,255,255,.06)' : 'none', cursor:'pointer'}}
             >
               <div style={{width:40,height:40,borderRadius:'50%',background:c?.color||'#888',display:'flex',alignItems:'center',justifyContent:'center',fontFamily:'Oswald',fontSize:14,color:'#111',flexShrink:0}}>{c?.ava||'?'}</div>
               <div style={{flex:1}}>
                 <div style={{fontSize:14,fontWeight:600}}>{c?.name||'Гість'}</div>
-                <div style={{fontSize:12,color:'#4A90B8',marginTop:2}}>{s.type}</div>
+                <div style={{fontSize:12,color:'#878F9B',marginTop:2}}>{s.type}</div>
               </div>
               <div style={{textAlign:'right',display:'flex',flexDirection:'column',alignItems:'flex-end',gap:6}}>
                 <div style={{display:'flex',alignItems:'center',gap:6}}>
-                  <span style={{background:'rgba(0,245,255,.15)', color:'#00F5FF', fontSize:10, fontWeight:700, borderRadius:6, padding:'2px 8px', letterSpacing:.5}}>СПЛІТ</span>
-                  <span style={{fontFamily:'Oswald',fontSize:22,color:'#00F5FF'}}>{s.time}</span>
+                  <span style={{background:'rgba(94,224,206,.14)', color:'#5EE0CE', fontSize:10, fontWeight:700, borderRadius:6, padding:'2px 8px', letterSpacing:.5}}>СПЛІТ</span>
+                  <span className="pg-time" style={{fontFamily:'Oswald',fontSize:22}}>{s.time}</span>
                 </div>
-                <span style={{fontSize:11,padding:'2px 10px',borderRadius:20,fontWeight:600,background:s.done?'rgba(22,163,74,.12)':'rgba(0,245,255,.12)',color:s.done?'#00FF88':'#00F5FF'}}>{s.done?'✓ Виконано':'Заплановано'}</span>
+                <span style={{fontSize:11,padding:'3px 11px',borderRadius:20,fontWeight:500,background:s.done?'rgba(70,220,168,.10)':'rgba(127,212,232,.08)',color:s.done?'#46DCA8':'#7FD4E8',border:`1px solid ${s.done?'rgba(70,220,168,.22)':'rgba(127,212,232,.2)'}`}}>{s.done?'✓ Виконано':'Заплановано'}</span>
               </div>
             </div>
           )

@@ -112,7 +112,7 @@ export default function ScheduleTab({ clients, sessions, setSessions, setClients
   }
   const goToday = () => { setRefDate(new Date(today)); setSelDs(todayDs) }
 
-  const card = {background:'#111118',border:'1px solid #1A2E4A',borderRadius:14,padding:16,marginBottom:14}
+  const card = {background:'linear-gradient(160deg, rgba(255,255,255,.05), rgba(255,255,255,.02))',border:'1px solid rgba(255,255,255,.08)',borderRadius:18,padding:16,marginBottom:14,backdropFilter:'blur(14px)',WebkitBackdropFilter:'blur(14px)',boxShadow:'0 1px 0 rgba(255,255,255,.05) inset, 0 10px 26px rgba(0,0,0,.28)'}
 
   return (
     <div>
@@ -125,13 +125,13 @@ export default function ScheduleTab({ clients, sessions, setSessions, setClients
             : `${MONTHS_UK[refDate.getMonth()]} ${refDate.getFullYear()}`}
         </div>
         <div style={{display:'flex',alignItems:'center',gap:8}}>
-          <button onClick={prevPeriod} style={{padding:'7px 12px',borderRadius:8,border:'1px solid #1A2E4A',background:'#0D0D16',color:'#E8EAF0',cursor:'pointer',fontSize:14}}>‹</button>
-          <button onClick={nextPeriod} style={{padding:'7px 12px',borderRadius:8,border:'1px solid #1A2E4A',background:'#0D0D16',color:'#E8EAF0',cursor:'pointer',fontSize:14}}>›</button>
-          <button onClick={goToday} style={{padding:'6px 14px',borderRadius:8,border:'1px solid #1A2E4A',background:'#0D0D16',color:'#4A90B8',cursor:'pointer',fontSize:12,fontWeight:600}}>Сьогодні</button>
+          <button onClick={prevPeriod} style={{padding:'7px 12px',borderRadius:10,border:'1px solid rgba(255,255,255,.08)',background:'rgba(255,255,255,.04)',color:'#EAECEF',cursor:'pointer',fontSize:14}}>‹</button>
+          <button onClick={nextPeriod} style={{padding:'7px 12px',borderRadius:10,border:'1px solid rgba(255,255,255,.08)',background:'rgba(255,255,255,.04)',color:'#EAECEF',cursor:'pointer',fontSize:14}}>›</button>
+          <button onClick={goToday} style={{padding:'6px 14px',borderRadius:10,border:'1px solid rgba(255,255,255,.08)',background:'rgba(255,255,255,.04)',color:'#878F9B',cursor:'pointer',fontSize:12,fontWeight:600}}>Сьогодні</button>
           <div style={{flex:1}}/>
-          <div style={{display:'flex',borderRadius:8,overflow:'hidden',border:'1px solid #1A2E4A'}}>
-            <button onClick={()=>setViewMode('week')} style={{padding:'6px 16px',border:'none',background:viewMode==='week'?'#00F5FF':'#0D0D16',color:viewMode==='week'?'#111':'#4A5A6A',cursor:'pointer',fontSize:12,fontWeight:600}}>Тиждень</button>
-            <button onClick={()=>setViewMode('month')} style={{padding:'6px 16px',border:'none',background:viewMode==='month'?'#00F5FF':'#0D0D16',color:viewMode==='month'?'#111':'#4A5A6A',cursor:'pointer',fontSize:12,fontWeight:600}}>Місяць</button>
+          <div style={{display:'flex',borderRadius:10,overflow:'hidden',border:'1px solid rgba(255,255,255,.08)'}}>
+            <button onClick={()=>setViewMode('week')} style={{padding:'6px 16px',border:'none',background:viewMode==='week'?'linear-gradient(135deg,#5EE0CE,#3FA9F0)':'rgba(255,255,255,.04)',color:viewMode==='week'?'#06181b':'#878F9B',cursor:'pointer',fontSize:12,fontWeight:600}}>Тиждень</button>
+            <button onClick={()=>setViewMode('month')} style={{padding:'6px 16px',border:'none',background:viewMode==='month'?'linear-gradient(135deg,#5EE0CE,#3FA9F0)':'rgba(255,255,255,.04)',color:viewMode==='month'?'#06181b':'#878F9B',cursor:'pointer',fontSize:12,fontWeight:600}}>Місяць</button>
           </div>
         </div>
       </div>
@@ -144,25 +144,25 @@ export default function ScheduleTab({ clients, sessions, setSessions, setClients
               const has = sessions.some(s=>s.date===ds)
               const isSel = ds===selDs
               return (
-                <div key={i} onClick={()=>setSelDs(ds)} style={{display:'flex',flexDirection:'column',alignItems:'center',gap:3,padding:'8px 2px',borderRadius:10,cursor:'pointer',border:`2px solid ${isSel?'#00F5FF':'#1E2A3A'}`,background:isSel?'#00D4E8':'#0D0D16',color:'#E8EAF0',transition:'all .18s'}}>
-                  <span style={{fontSize:10,fontWeight:600,color:isSel?'#fff':'#4A5A6A'}}>{DAYS_SHORT[i]}</span>
-                  <span style={{fontSize:19,fontWeight:700,lineHeight:1,fontFamily:'"DM Sans",sans-serif',display:'block',textAlign:'center',color:isSel?'#fff':'#E8EAF0'}}>{d.getDate()}</span>
-                  {has && !isSel && <span style={{width:5,height:5,borderRadius:'50%',background:'#00FF88',display:'block',marginTop:1}}/>}
+                <div key={i} onClick={()=>setSelDs(ds)} style={{display:'flex',flexDirection:'column',alignItems:'center',gap:3,padding:'8px 2px',borderRadius:12,cursor:'pointer',border:`1px solid ${isSel?'transparent':'rgba(255,255,255,.06)'}`,background:isSel?'linear-gradient(135deg,#5EE0CE,#3FA9F0)':'rgba(255,255,255,.03)',boxShadow:isSel?'0 6px 18px rgba(79,200,220,.35)':'none',transition:'all .18s'}}>
+                  <span style={{fontSize:10,fontWeight:600,color:isSel?'#0a3640':'#878F9B'}}>{DAYS_SHORT[i]}</span>
+                  <span style={{fontSize:19,fontWeight:700,lineHeight:1,fontFamily:'"DM Sans",sans-serif',display:'block',textAlign:'center',color:isSel?'#04161a':'#EAECEF'}}>{d.getDate()}</span>
+                  {has && !isSel && <span style={{width:5,height:5,borderRadius:'50%',background:'#46DCA8',boxShadow:'0 0 6px rgba(70,220,168,.6)',display:'block',marginTop:1}}/>}
                 </div>
               )
             })}
           </div>
           <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12}}>
-            <span style={{fontFamily:'Oswald',fontSize:16,color:'#4A90B8'}}>{DAYS_FULL[selDate.getDay()]}, {selDate.getDate()} {MONTHS_UK2[selDate.getMonth()]}</span>
-            <small style={{color:'#4A90B8',fontSize:12}}>{daySessions.length} сесій</small>
+            <span style={{fontFamily:'Oswald',fontSize:16,color:'#EAECEF',fontWeight:500}}>{DAYS_FULL[selDate.getDay()]}, {selDate.getDate()} {MONTHS_UK2[selDate.getMonth()]}</span>
+            <small style={{color:'#878F9B',fontSize:12}}>{daySessions.length} сесій</small>
           </div>
-          {daySessions.length===0 && <div style={{display:'flex',flexDirection:'column',alignItems:'center',padding:'24px 0',gap:8}}><span style={{fontSize:36}}>🗓️</span><div style={{fontSize:14,fontWeight:600,color:'#E8EAF0'}}>Тренувань немає</div><div style={{fontSize:12,color:'#4A90B8'}}>На цей день нічого не заплановано</div></div>}
+          {daySessions.length===0 && <div style={{display:'flex',flexDirection:'column',alignItems:'center',padding:'24px 0',gap:8}}><span style={{fontSize:36}}>🗓️</span><div style={{fontSize:14,fontWeight:600,color:'#EAECEF'}}>Тренувань немає</div><div style={{fontSize:12,color:'#878F9B'}}>На цей день нічого не заплановано</div></div>}
           {groupedSessions().map(([time, group]) =>
             group.length > 1
               ? <SplitCard key={time} sessions={group} clients={clients} onEdit={handleEdit} onToggle={toggleDone}/>
               : <SwipeSessionCard key={group[0].id} s={group[0]} clients={clients} onEdit={s => handleEdit([s])} onToggle={toggleDone}/>
           )}
-          <div onClick={()=>{setFClient(clients[0]?.id||'');setShowModal(true)}} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 14px',borderRadius:12,border:'1px dashed #1A2E4A',cursor:'pointer',color:'#4A90B8',fontSize:13,marginTop:4}}>＋ Додати сесію</div>
+          <div onClick={()=>{setFClient(clients[0]?.id||'');setShowModal(true)}} style={{display:'flex',alignItems:'center',gap:10,padding:'11px 14px',borderRadius:14,border:'1px dashed rgba(255,255,255,.12)',cursor:'pointer',color:'#878F9B',fontSize:13,marginTop:4}}>＋ Додати сесію</div>
           <DayTimeline sessions={daySessions} clients={clients} onClientClick={onClientClick}/>
         </div>
       )}
@@ -170,7 +170,7 @@ export default function ScheduleTab({ clients, sessions, setSessions, setClients
       {viewMode==='month' && (
         <div style={card}>
           <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:2,marginBottom:4}}>
-            {DAYS_SHORT.map(d=><div key={d} style={{textAlign:'center',fontSize:11,color:'#4A90B8',fontWeight:600,padding:'4px 0'}}>{d}</div>)}
+            {DAYS_SHORT.map(d=><div key={d} style={{textAlign:'center',fontSize:11,color:'#878F9B',fontWeight:600,padding:'4px 0'}}>{d}</div>)}
           </div>
           <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:2,marginBottom:12}}>
             {monthDates.map(({date,current},i)=>{
@@ -179,25 +179,25 @@ export default function ScheduleTab({ clients, sessions, setSessions, setClients
               const isToday = ds===todayStr()
               const isSel = ds===selDs
               return (
-                <div key={i} onClick={()=>setSelDs(ds)} style={{minHeight:40,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'6px 4px',borderRadius:8,cursor:'pointer',fontSize:13,fontWeight:isSel||isToday?700:400,background:isSel?'#00F5FF':isToday?'rgba(0,245,255,.15)':'none',color:isSel?'#111':current?'#E8EAF0':'#1A2A3A',border:isSel?'1px solid #00F5FF':isToday?'1px solid #00F5FF44':'1px solid transparent',transition:'all .15s',gap:2}}>
+                <div key={i} onClick={()=>setSelDs(ds)} style={{minHeight:40,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'6px 4px',borderRadius:10,cursor:'pointer',fontSize:13,fontWeight:isSel||isToday?700:400,background:isSel?'linear-gradient(135deg,#5EE0CE,#3FA9F0)':isToday?'rgba(94,224,206,.12)':'none',color:isSel?'#04161a':current?'#EAECEF':'#3A4250',border:isSel?'1px solid transparent':isToday?'1px solid rgba(94,224,206,.3)':'1px solid transparent',boxShadow:isSel?'0 4px 14px rgba(79,200,220,.3)':'none',transition:'all .15s',gap:2}}>
                   <span>{date.getDate()}</span>
-                  {count>0 && <span style={{width:5,height:5,borderRadius:'50%',background:isSel?'#111':'#00F5FF',display:'block'}}/>}
+                  {count>0 && <span style={{width:5,height:5,borderRadius:'50%',background:isSel?'#04161a':'#5EE0CE',display:'block'}}/>}
                 </div>
               )
             })}
           </div>
-          <div style={{borderTop:'1px solid #162038',paddingTop:12}}>
+          <div style={{borderTop:'1px solid rgba(255,255,255,.06)',paddingTop:12}}>
             <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:10}}>
-              <span style={{fontFamily:'Oswald',fontSize:16,color:'#4A90B8'}}>{selDate.getDate()} {MONTHS_UK2[selDate.getMonth()]}</span>
-              <small style={{color:'#4A90B8',fontSize:12}}>{daySessions.length} сесій</small>
+              <span style={{fontFamily:'Oswald',fontSize:16,color:'#EAECEF',fontWeight:500}}>{selDate.getDate()} {MONTHS_UK2[selDate.getMonth()]}</span>
+              <small style={{color:'#878F9B',fontSize:12}}>{daySessions.length} сесій</small>
             </div>
-            {daySessions.length===0 && <div style={{display:'flex',flexDirection:'column',alignItems:'center',padding:'24px 0',gap:8}}><span style={{fontSize:36}}>🗓️</span><div style={{fontSize:14,fontWeight:600,color:'#E8EAF0'}}>Тренувань немає</div><div style={{fontSize:12,color:'#4A90B8'}}>На цей день нічого не заплановано</div></div>}
+            {daySessions.length===0 && <div style={{display:'flex',flexDirection:'column',alignItems:'center',padding:'24px 0',gap:8}}><span style={{fontSize:36}}>🗓️</span><div style={{fontSize:14,fontWeight:600,color:'#EAECEF'}}>Тренувань немає</div><div style={{fontSize:12,color:'#878F9B'}}>На цей день нічого не заплановано</div></div>}
             {groupedSessions().map(([time, group]) =>
               group.length > 1
                 ? <SplitCard key={time} sessions={group} clients={clients} onEdit={handleEdit} onToggle={toggleDone}/>
                 : <SwipeSessionCard key={group[0].id} s={group[0]} clients={clients} onEdit={s => handleEdit([s])} onToggle={toggleDone}/>
             )}
-            <div onClick={()=>{setFClient(clients[0]?.id||'');setShowModal(true)}} style={{display:'flex',alignItems:'center',gap:10,padding:'8px 12px',borderRadius:10,border:'1px dashed #1A2E4A',cursor:'pointer',color:'#4A90B8',fontSize:12,marginTop:4}}>＋ Додати сесію</div>
+            <div onClick={()=>{setFClient(clients[0]?.id||'');setShowModal(true)}} style={{display:'flex',alignItems:'center',gap:10,padding:'9px 12px',borderRadius:12,border:'1px dashed rgba(255,255,255,.12)',cursor:'pointer',color:'#878F9B',fontSize:12,marginTop:4}}>＋ Додати сесію</div>
             <DayTimeline sessions={daySessions} clients={clients} onClientClick={onClientClick}/>
           </div>
         </div>
