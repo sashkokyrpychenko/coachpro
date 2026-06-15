@@ -19,14 +19,14 @@
    min-height     — висота меню (менше → компактніше)
    ─────────────────────────────────────────────── */
 .mobile-tabs {
-  padding-bottom: 4px !important;
-  min-height: 40px !important;
+  padding-bottom: 0px !important;
+  min-height: 36px !important;
 }
 
 /* iOS PWA (встановлений додаток) — те саме */
 @media all and (display-mode: standalone) {
   .mobile-tabs {
-    padding-bottom: 4px !important;
-    min-height: 40px !important;
+    padding-bottom: 0px !important;
+    min-height: 36px !important;
   }
 }
