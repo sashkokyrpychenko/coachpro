@@ -19,8 +19,8 @@ const SplitCard = memo(function SplitCard({ sessions, clients, onEdit, onToggle 
   }
 
   return (
-    <div style={{position:'relative', overflow:'hidden', borderRadius:12, marginBottom:8}}>
-      <div style={{position:'absolute',right:0,top:0,bottom:0,width:80,background:'#0099FF',display:'flex',alignItems:'center',justifyContent:'center',flexDirection:'column',gap:2,borderRadius:12}}>
+    <div style={{position:'relative', overflow:'hidden', borderRadius:16, marginBottom:8}}>
+      <div style={{position:'absolute',right:0,top:0,bottom:0,width:80,background:'#2E7BD6',display:'flex',alignItems:'center',justifyContent:'center',flexDirection:'column',gap:2,borderRadius:16,opacity: offset < 0 ? 1 : 0, transition:'opacity .15s ease', pointerEvents:'none'}}>
         <span style={{fontSize:18}}>✏️</span>
         <span style={{color:'#fff',fontSize:10,fontWeight:600}}>Редагувати</span>
       </div>
