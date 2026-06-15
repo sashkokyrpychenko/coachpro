@@ -13,20 +13,17 @@
 }
 
 /* ───────────────────────────────────────────────
-   Нижнє меню — компактна висота + кнопки внизу
-   РЕГУЛЯТОРИ:
-   padding-bottom — відступ кнопок від краю (менше → нижче)
-   min-height     — висота меню (менше → компактніше)
+   Нижнє меню — максимально внизу
    ─────────────────────────────────────────────── */
 .mobile-tabs {
   padding-bottom: 0px !important;
-  min-height: 36px !important;
+  min-height: 32px !important;
 }
 
 /* iOS PWA (встановлений додаток) — те саме */
 @media all and (display-mode: standalone) {
   .mobile-tabs {
     padding-bottom: 0px !important;
-    min-height: 36px !important;
+    min-height: 32px !important;
   }
 }
