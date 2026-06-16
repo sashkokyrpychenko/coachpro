@@ -157,11 +157,14 @@ export default function ScheduleTab({ clients, sessions, setSessions, setClients
             <small style={{color:'#878F9B',fontSize:12}}>{daySessions.length} сесій</small>
           </div>
           {daySessions.length===0 && <div style={{display:'flex',flexDirection:'column',alignItems:'center',padding:'24px 0',gap:8}}><span style={{fontSize:36}}>🗓️</span><div style={{fontSize:14,fontWeight:600,color:'#EAECEF'}}>Тренувань немає</div><div style={{fontSize:12,color:'#878F9B'}}>На цей день нічого не заплановано</div></div>}
-          {groupedSessions().map(([time, group]) =>
-            group.length > 1
-              ? <SplitCard key={time} sessions={group} clients={clients} onEdit={handleEdit} onToggle={toggleDone}/>
-              : <SwipeSessionCard key={group[0].id} s={group[0]} clients={clients} onEdit={s => handleEdit([s])} onToggle={toggleDone}/>
-          )}
+          {/* key={selDs} → перемонтовує список при зміні дня → стартує stagger-анімацію */}
+          <div key={selDs}>
+            {groupedSessions().map(([time, group], idx) =>
+              group.length > 1
+                ? <SplitCard key={time} index={idx} sessions={group} clients={clients} onEdit={handleEdit} onToggle={toggleDone}/>
+                : <SwipeSessionCard key={group[0].id} index={idx} s={group[0]} clients={clients} onEdit={s => handleEdit([s])} onToggle={toggleDone}/>
+            )}
+          </div>
           <div onClick={()=>{setFClient(clients[0]?.id||'');setShowModal(true)}} style={{display:'flex',alignItems:'center',gap:10,padding:'11px 14px',borderRadius:14,border:'1px dashed rgba(255,255,255,.12)',cursor:'pointer',color:'#878F9B',fontSize:13,marginTop:4}}>＋ Додати сесію</div>
           <DayTimeline sessions={daySessions} clients={clients} onClientClick={onClientClick}/>
         </div>
@@ -192,11 +195,13 @@ export default function ScheduleTab({ clients, sessions, setSessions, setClients
               <small style={{color:'#878F9B',fontSize:12}}>{daySessions.length} сесій</small>
             </div>
             {daySessions.length===0 && <div style={{display:'flex',flexDirection:'column',alignItems:'center',padding:'24px 0',gap:8}}><span style={{fontSize:36}}>🗓️</span><div style={{fontSize:14,fontWeight:600,color:'#EAECEF'}}>Тренувань немає</div><div style={{fontSize:12,color:'#878F9B'}}>На цей день нічого не заплановано</div></div>}
-            {groupedSessions().map(([time, group]) =>
-              group.length > 1
-                ? <SplitCard key={time} sessions={group} clients={clients} onEdit={handleEdit} onToggle={toggleDone}/>
-                : <SwipeSessionCard key={group[0].id} s={group[0]} clients={clients} onEdit={s => handleEdit([s])} onToggle={toggleDone}/>
-            )}
+            <div key={selDs}>
+              {groupedSessions().map(([time, group], idx) =>
+                group.length > 1
+                  ? <SplitCard key={time} index={idx} sessions={group} clients={clients} onEdit={handleEdit} onToggle={toggleDone}/>
+                  : <SwipeSessionCard key={group[0].id} index={idx} s={group[0]} clients={clients} onEdit={s => handleEdit([s])} onToggle={toggleDone}/>
+              )}
+            </div>
             <div onClick={()=>{setFClient(clients[0]?.id||'');setShowModal(true)}} style={{display:'flex',alignItems:'center',gap:10,padding:'9px 12px',borderRadius:12,border:'1px dashed rgba(255,255,255,.12)',cursor:'pointer',color:'#878F9B',fontSize:12,marginTop:4}}>＋ Додати сесію</div>
             <DayTimeline sessions={daySessions} clients={clients} onClientClick={onClientClick}/>
           </div>

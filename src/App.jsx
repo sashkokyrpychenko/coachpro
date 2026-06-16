@@ -57,8 +57,70 @@ _darkStyle.textContent = `
     border-top: 1px solid rgba(255,255,255,.07) !important;
     box-shadow: 0 -1px 0 rgba(255,255,255,.04) inset;
   }
+  /* ── Анімації ── */
+  @keyframes fadeUp {
+    from { opacity:0; transform:translateY(14px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+  @keyframes tabSlideR {
+    from { opacity:0; transform:translateX(30px); }
+    to   { opacity:1; transform:translateX(0); }
+  }
+  @keyframes tabSlideL {
+    from { opacity:0; transform:translateX(-30px); }
+    to   { opacity:1; transform:translateX(0); }
+  }
+  @keyframes popIn {
+    0%   { transform:scale(0);    opacity:0; }
+    65%  { transform:scale(1.15); opacity:1; }
+    100% { transform:scale(1);    opacity:1; }
+  }
+  @keyframes shimmer {
+    from { background-position:-400px 0; }
+    to   { background-position: 400px 0; }
+  }
+  @keyframes pulseRing {
+    0%   { transform:scale(1);   opacity:.7; }
+    100% { transform:scale(2.6); opacity:0;  }
+  }
+  @keyframes growBar {
+    from { transform:scaleX(0); }
+    to   { transform:scaleX(1); }
+  }
+  @keyframes pulseGlow {
+    0%,100% { box-shadow:0 4px 14px rgba(94,224,206,.35); }
+    50%     { box-shadow:0 4px 22px rgba(94,224,206,.65); }
+  }
 `
 document.head.appendChild(_darkStyle)
+
+// ── SVG іконки нижнього меню ──────────────────────────
+const NAV_ICONS = {
+  schedule: (c) => (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="4" width="18" height="18" rx="2.5"/>
+      <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
+      <line x1="3" y1="10" x2="21" y2="10"/>
+      <rect x="7" y="13" width="2.5" height="2.5" rx=".5" fill={c} stroke="none"/>
+      <rect x="11" y="13" width="2.5" height="2.5" rx=".5" fill={c} stroke="none"/>
+    </svg>
+  ),
+  clients: (c) => (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="9" cy="7" r="3.2"/>
+      <path d="M2.5 21v-1.5A4.5 4.5 0 0 1 7 15h4a4.5 4.5 0 0 1 4.5 4.5V21"/>
+      <circle cx="17.5" cy="7.5" r="2.4" opacity=".55"/>
+      <path d="M21.5 21v-1a3.2 3.2 0 0 0-2-3" opacity=".55"/>
+    </svg>
+  ),
+  profile: (c) => (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill={c} stroke="none">
+      <path d="M13 2 4.5 13.5H11L10 22 19.5 10.5H13Z"/>
+    </svg>
+  ),
+}
+
+const TAB_ORDER = ['schedule','clients','profile']
 
 export default function App() {
   const [tab, setTab] = useState('schedule')
@@ -71,8 +133,14 @@ export default function App() {
   const [programs, setPrograms] = useState([])
   const [loading, setLoading] = useState(true)
   const scrollRef = useRef(null)
+  const prevTabRef = useRef('schedule')
+  const [tabKey, setTabKey] = useState(0)
 
-  useEffect(() => {
+  const switchTab = (id) => {
+    prevTabRef.current = tab
+    setTab(id)
+    setTabKey(k => k + 1)
+  }
     const load = async () => {
       const [c,s,f,r,pp,pr] = await Promise.all([
         supabase.from('clients').select('*').order('created_at'),
@@ -94,11 +162,12 @@ export default function App() {
       setLoading(false)
     }
     load()
-  }, [])
+  } []
 
   const now = new Date()
   const dateStr = `${DAYS_FULL[now.getDay()]}, ${now.getDate()} ${MONTHS_UK2[now.getMonth()]}`
-  const TABS = [['schedule','📅','Графік'],['clients','👥','Клієнти'],['profile','⚡','Профіль']]
+  const TABS = [['schedule','Графік'],['clients','Клієнти'],['profile','Профіль']]
+  const slideDir = TAB_ORDER.indexOf(tab) >= TAB_ORDER.indexOf(prevTabRef.current) ? 'R' : 'L'
 
   return (
     <div style={{display:'flex',height:'100%',background:'#0A0B0F',color:'#EAECEF',fontFamily:'DM Sans',position:'relative'}}>
@@ -110,9 +179,9 @@ export default function App() {
           <div style={{fontSize:12,color:'#3A7A9A',marginTop:4}}>{dateStr}</div>
         </div>
         <nav style={{flex:1,padding:'12px 0'}}>
-          {TABS.map(([id,icon,label])=>(
-            <button key={id} onClick={()=>setTab(id)} style={{display:'flex',alignItems:'center',gap:12,width:'100%',padding:'12px 20px',cursor:'pointer',border:'none',fontFamily:'DM Sans',fontSize:14,fontWeight:500,textAlign:'left',borderLeft:tab===id?'3px solid #00F5FF':'3px solid transparent',background:tab===id?'rgba(0,245,255,.06)':'none',color:tab===id?'#00F5FF':'#3A4A5A',transition:'all .18s'}}>
-              <span style={{fontSize:18}}>{icon}</span>{label}
+          {TABS.map(([id,label])=>(
+            <button key={id} onClick={()=>switchTab(id)} style={{display:'flex',alignItems:'center',gap:12,width:'100%',padding:'12px 20px',cursor:'pointer',border:'none',fontFamily:'DM Sans',fontSize:14,fontWeight:500,textAlign:'left',borderLeft:tab===id?'3px solid #00F5FF':'3px solid transparent',background:tab===id?'rgba(0,245,255,.06)':'none',color:tab===id?'#00F5FF':'#3A4A5A',transition:'all .18s'}}>
+              {NAV_ICONS[id](tab===id?'#00F5FF':'#3A4A5A')}{label}
             </button>
           ))}
         </nav>
@@ -130,20 +199,25 @@ export default function App() {
       <div style={{flex:1,display:'flex',flexDirection:'column',overflow:'hidden',minHeight:0,position:'relative',zIndex:1}}>
         <div ref={scrollRef} style={{flex:1,overflowY:'auto',padding:24,minHeight:0,overscrollBehavior:'none'}}>
           {loading ? <SkeletonLoader tab={tab}/> : (
-            <>
-              {tab==='schedule'&&<ScheduleTab clients={clients} setClients={setClients} sessions={sessions} setSessions={setSessions} onClientClick={id=>{setOpenClientId(id);setTab('clients')}}/>}
+            /* Tab slide: key змінюється при кожному переключенні → перемонтується з анімацією */
+            <div key={tabKey} style={{animation:`tabSlide${slideDir} .28s ease-out both`}}>
+              {tab==='schedule'&&<ScheduleTab clients={clients} setClients={setClients} sessions={sessions} setSessions={setSessions} onClientClick={id=>{setOpenClientId(id);switchTab('clients')}}/>}
               {tab==='clients'&&<ClientsTab clients={clients} setClients={setClients} sessions={sessions} setSessions={setSessions} records={records} setRecords={setRecords} pricePlans={pricePlans} setFinance={setFinance} programs={programs} setPrograms={setPrograms} openClientId={openClientId} clearOpenClientId={()=>setOpenClientId(null)}/>}
               {tab==='profile'&&<ProfileTab sessions={sessions} clients={clients} finance={finance} setFinance={setFinance} pricePlans={pricePlans} setPricePlans={setPricePlans}/>}
-            </>
+            </div>
           )}
         </div>
+        {/* Mobile bottom nav — SVG іконки */}
         <div className="mobile-tabs pg-nav" style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',flexShrink:0,zIndex:100}}>
-          {TABS.map(([id,icon,label])=>{
+          {TABS.map(([id,label])=>{
             const active = tab===id
+            const ic = active ? '#5EE0CE' : '#6B7280'
             return (
-              <button key={id} onClick={()=>setTab(id)} style={{position:'relative',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'8px 4px 0px',cursor:'pointer',border:'none',background:'none',fontFamily:'DM Sans',fontSize:11,fontWeight:600,gap:3}}>
+              <button key={id} onClick={()=>switchTab(id)} style={{position:'relative',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'8px 4px 0px',cursor:'pointer',border:'none',background:'none',fontFamily:'DM Sans',fontSize:11,fontWeight:600,gap:3}}>
                 {active && <div style={{position:'absolute',top:0,left:'50%',transform:'translateX(-50%)',width:54,height:3,borderRadius:3,background:'linear-gradient(135deg,#5EE0CE,#3FA9F0)',boxShadow:'0 0 12px rgba(79,200,220,.8)'}}/>}
-                <span style={{fontSize:20,filter:active?'drop-shadow(0 0 8px rgba(79,200,220,.5))':'none'}}>{icon}</span>
+                <div style={{filter:active?'drop-shadow(0 0 7px rgba(94,224,206,.55))':'none',transition:'filter .25s'}}>
+                  {NAV_ICONS[id](ic)}
+                </div>
                 <span style={active?{background:'linear-gradient(135deg,#5EE0CE,#3FA9F0)',WebkitBackgroundClip:'text',backgroundClip:'text',color:'transparent'}:{color:'#6B7280'}}>{label}</span>
               </button>
             )
@@ -155,4 +229,4 @@ export default function App() {
       <div className="safe-bottom-fill"/>
     </div>
   )
-}
+
