@@ -400,7 +400,6 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
                           <span style={{fontSize:10,color:'#4A90B8',textTransform:'uppercase',letterSpacing:.5,fontWeight:600}}>Нотатки</span>
                           {parseNotes(c).length>0&&<span style={{fontSize:10,color:'#4A5568'}}>{parseNotes(c).length}</span>}
                         </div>
-                        {parseNotes(c).length===0&&<div style={{color:'#3A3F4A',fontSize:12,fontStyle:'italic',padding:'2px 0 6px'}}>Нотатки відсутні</div>}
                         {parseNotes(c).map(n=>(
                           <NoteRow key={n.id} note={n} onDelete={noteId=>deleteNoteItem(c.id,noteId)}/>
                         ))}
