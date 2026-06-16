@@ -162,7 +162,7 @@ export default function App() {
       setLoading(false)
     }
     load()
-  } []
+  }, [])
 
   const now = new Date()
   const dateStr = `${DAYS_FULL[now.getDay()]}, ${now.getDate()} ${MONTHS_UK2[now.getMonth()]}`
@@ -229,4 +229,4 @@ export default function App() {
       <div className="safe-bottom-fill"/>
     </div>
   )
-
+}
