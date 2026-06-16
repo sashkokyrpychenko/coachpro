@@ -15,8 +15,8 @@ document.head.appendChild(_fontLink)
 
 const _darkStyle = document.createElement('style')
 _darkStyle.textContent = `
-  html { background: #0B0C10 !important; height: 100%; overflow: hidden; }
-  body { background: #0B0C10 !important; color: #EAECEF !important; font-variant-emoji: text; position: fixed; top: 0; left: 0; right: 0; bottom: 0; overflow: hidden; }
+  html { background: #101218 !important; height: 100%; overflow: hidden; }
+  body { background: #101218 !important; color: #EAECEF !important; font-variant-emoji: text; position: fixed; top: 0; left: 0; right: 0; bottom: 0; overflow: hidden; }
   input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1) brightness(0.6) sepia(1) hue-rotate(150deg); }
   select option { background: #0D0D16; color: #E8EAF0; }
   ::-webkit-scrollbar { width: 4px; height: 4px; }
@@ -36,7 +36,7 @@ _darkStyle.textContent = `
     left: 0; right: 0;
     bottom: calc(-1 * env(safe-area-inset-bottom));
     height: calc(env(safe-area-inset-bottom) + 2px);
-    background: #0B0C10;
+    background: #101218;
     z-index: 90;
     pointer-events: none;
   }
@@ -53,9 +53,9 @@ _darkStyle.textContent = `
     color: transparent !important;
   }
   .pg-nav {
-    background: linear-gradient(160deg, rgba(255,255,255,.05), rgba(255,255,255,.018)) !important;
-    -webkit-backdrop-filter: blur(24px); backdrop-filter: blur(24px);
-    border-top: 1px solid rgba(255,255,255,.08) !important;
+    background: #101218 !important;
+    border-top: 1px solid rgba(255,255,255,.07) !important;
+    box-shadow: 0 -1px 0 rgba(255,255,255,.04) inset;
   }
 `
 document.head.appendChild(_darkStyle)

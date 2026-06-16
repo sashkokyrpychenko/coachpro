@@ -2,10 +2,10 @@
   "name": "CoachPro",
   "short_name": "CoachPro",
   "description": "Додаток для персональних тренерів",
-  "start_url": "/?v=15062026",
+  "start_url": "/?v=16062026",
   "display": "standalone",
-  "background_color": "#111118",
-  "theme_color": "#00F5FF",
+  "background_color": "#101218",
+  "theme_color": "#0A0B0F",
   "orientation": "portrait",
   "icons": [
     {
