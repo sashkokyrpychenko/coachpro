@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../supabase'
 import { todayStr, dateToStr, getMondayFirst, MONTHS_UK, MONTHS_UK2, DAYS_SHORT, DAYS_FULL } from '../constants'
 import StatsTab from './StatsTab'
+import FreeTimeTab from './FreeTimeTab'
 function ProfileTab({ sessions, clients, finance, setFinance, pricePlans, setPricePlans }) {
   const [section, setSection] = useState('stats')
   const [showAddPlan, setShowAddPlan] = useState(false)
@@ -90,16 +91,21 @@ function ProfileTab({ sessions, clients, finance, setFinance, pricePlans, setPri
 
       {/* Section tabs */}
       <div style={{display:'flex',gap:4,background:'#0D0D16',borderRadius:12,padding:4,marginBottom:20}}>
-        {[['stats','Статистика'],['finance','Фінанси'],['price','Прайс']].map(([id,label])=>(
+        {[['stats','Статистика'],['freetime','Free Time'],['finance','Фінанси'],['price','Прайс']].map(([id,label])=>(
           <div key={id} onClick={()=>setSection(id)}
             style={{flex:1,textAlign:'center',padding:'9px 4px',borderRadius:8,
-              fontSize:13,fontWeight:section===id?700:400,
+              fontSize:12,fontWeight:section===id?700:400,
               background:section===id?'#111118':'transparent',
               color:section===id?'#E8EAF0':'#3A4A5A',cursor:'pointer'}}>
             {label}
           </div>
         ))}
       </div>
+
+      {/* ── FREE TIME ── */}
+      {section==='freetime' && (
+        <FreeTimeTab sessions={sessions} clients={clients}/>
+      )}
 
       {/* ── STATS ── */}
       {section==='stats' && (
