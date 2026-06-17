@@ -89,6 +89,8 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
   const [nv, setNv] = useState({value:'', date: todayStr()})
   const [noteInput, setNoteInput] = useState({})   // clientId → текст
   const [noteOpen,  setNoteOpen]  = useState({})   // clientId → bool
+  const [barsIn, setBarsIn] = useState(false)      // тригер заповнення прогрес-барів
+  useEffect(() => { const t = setTimeout(()=>setBarsIn(true), 80); return ()=>clearTimeout(t) }, [])
 
   useEffect(() => {
     const load = async () => {
@@ -334,7 +336,7 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
     <div>
       <div style={{display:'flex',gap:8,marginBottom:14}}>
         <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="🔍  Пошук клієнта…" style={{...inp,flex:1}}/>
-        <button onClick={()=>setShowAdd(true)} style={{padding:'10px 16px',borderRadius:10,border:'none',background:'#00F5FF',color:'#111',fontWeight:700,fontSize:14,cursor:'pointer'}}>＋</button>
+        <button onClick={()=>setShowAdd(true)} style={{padding:'10px 16px',borderRadius:10,border:'none',background:'linear-gradient(135deg,#5EE0CE,#3FA9F0)',color:'#111',fontWeight:700,fontSize:14,cursor:'pointer',animation:'pulseGlow 2.4s ease-in-out infinite'}}>＋</button>
       </div>
       <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(340px,1fr))',gap:12}}>
         {filtered.length===0 && <div style={{display:'flex',flexDirection:'column',alignItems:'center',padding:'48px 24px',gap:12,gridColumn:'1/-1',textAlign:'center'}}><span style={{fontSize:56}}>👥</span><div style={{fontSize:16,fontWeight:700,color:'#E8EAF0'}}>Клієнтів ще немає</div><div style={{fontSize:13,color:'#4A90B8'}}>Додайте першого клієнта щоб почати роботу</div></div>}
@@ -345,7 +347,7 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
           const cSessions = sessions.filter(s=>s.client_id===c.id)
           const cRecords = records.filter(r=>r.client_id===c.id)
           return (
-            <div key={c.id} style={{background:'#111118',border:`1px solid ${isOpen?'#00F5FF':'#1E2A3A'}`,borderRadius:14,overflow:'hidden',alignSelf:'start'}}>
+            <div key={c.id} style={{background:'linear-gradient(160deg,rgba(255,255,255,.05),rgba(255,255,255,.018))',border:`1px solid ${isOpen?'rgba(94,224,206,.4)':'rgba(255,255,255,.08)'}`,borderRadius:14,overflow:'hidden',alignSelf:'start',animation:'fadeUp .35s ease-out both'}}>
               <div onClick={()=>setOpenId(isOpen?null:c.id)} style={{display:'flex',alignItems:'center',gap:12,padding:14,cursor:'pointer'}}>
                 <div style={{width:46,height:46,borderRadius:'50%',background:c.color,display:'flex',alignItems:'center',justifyContent:'center',fontFamily:'Oswald',fontSize:18,color:'#111',flexShrink:0}}>{c.ava}</div>
                 <div style={{flex:1}}>
@@ -355,17 +357,17 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
                 <div style={{display:'flex',flexDirection:'column',alignItems:'flex-end',gap:4}}>
                   <div style={{display:'flex',gap:6,alignItems:'center'}}>
                     <button onClick={e=>{e.stopPropagation();setEc({name:c.name,goal:c.goal,w:c.weight,h:c.height,started:c.started_at||'',phone:c.phone||'',telegram:c.telegram||''});setEditClient(c)}}
-                      style={{background:'none',border:`1px solid #1A2E4A`,borderRadius:7,color:'#4A90B8',fontSize:12,padding:'3px 7px',cursor:'pointer'}}>✏️</button>
-                    <span style={{fontSize:11,padding:'3px 9px',borderRadius:20,fontWeight:600,background:'rgba(0,245,255,.12)',color:'#00F5FF'}}>{c.clip_used}/{c.clip_total}</span>
+                      style={{background:'none',border:`1px solid rgba(255,255,255,.1)`,borderRadius:7,color:'#4A90B8',fontSize:12,padding:'3px 7px',cursor:'pointer'}}>✏️</button>
+                    <span style={{fontSize:11,padding:'3px 9px',borderRadius:20,fontWeight:600,background:'rgba(94,224,206,.12)',color:'#5EE0CE'}}>{c.clip_used}/{c.clip_total}</span>
                   </div>
                   <span style={{color:'#4A90B8',fontSize:14,transform:isOpen?'rotate(180deg)':'none',transition:'transform .2s'}}>▾</span>
                 </div>
               </div>
               <div style={{display:'flex',alignItems:'center',gap:8,padding:'0 14px 14px'}}>
-                <div style={{flex:1,height:4,background:'#08080F',borderRadius:2}}>
-                  <div style={{height:'100%',borderRadius:2,width:`${progress}%`,background:c.color}}/>
+                <div style={{flex:1,height:4,background:'rgba(255,255,255,.07)',borderRadius:2,overflow:'hidden'}}>
+                  <div style={{height:'100%',borderRadius:2,width: barsIn ? `${progress}%` : '0%',background: progress>=100 ? 'linear-gradient(90deg,#46DCA8,#36C497)' : 'linear-gradient(135deg,#5EE0CE,#3FA9F0)',boxShadow: progress>=100?'0 0 6px rgba(70,220,168,.4)':'0 0 6px rgba(94,224,206,.35)',transition:'width .8s cubic-bezier(.22,.68,0,1.1)'}}/>
                 </div>
-                <span style={{fontSize:12,fontWeight:600,color:c.color,minWidth:30,textAlign:'right'}}>{progress}%</span>
+                <span style={{fontSize:12,fontWeight:600,color: progress>=100?'#46DCA8':'#5EE0CE',minWidth:30,textAlign:'right'}}>{progress}%</span>
               </div>
               {isOpen && (
                 <div style={{borderTop:'1px solid #162038',padding:14}}>
