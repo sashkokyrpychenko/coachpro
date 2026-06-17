@@ -78,7 +78,7 @@ function FreeTimeTab({ sessions, clients }) {
     const dayName = mode === 'week'
       ? `${DAYS_FULL[idx]} (${dateForDay(idx).getDate()}.${String(dateForDay(idx).getMonth()+1).padStart(2,'0')})`
       : DAYS_FULL[idx]
-    return `Привіт! Є вільні вікна на тренування — ${dayName}: ${slots.map(fmt).join(', ')}. Хто хоче — пишіть 💪`
+    return `${dayName}: ${slots.map(fmt).join(', ')}.`
   }
 
   // фактичний текст: ручний (якщо є) або авто
