@@ -141,6 +141,8 @@ export default function App() {
     setTab(id)
     setTabKey(k => k + 1)
   }
+
+  useEffect(() => {
     const load = async () => {
       const [c,s,f,r,pp,pr] = await Promise.all([
         supabase.from('clients').select('*').order('created_at'),
@@ -162,7 +164,7 @@ export default function App() {
       setLoading(false)
     }
     load()
-  } []
+  }, [])
 
   const now = new Date()
   const dateStr = `${DAYS_FULL[now.getDay()]}, ${now.getDate()} ${MONTHS_UK2[now.getMonth()]}`
@@ -229,4 +231,4 @@ export default function App() {
       <div className="safe-bottom-fill"/>
     </div>
   )
-
+}
