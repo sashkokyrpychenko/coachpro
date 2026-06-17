@@ -4,7 +4,7 @@ import { dateToStr, getMondayFirst } from '../constants'
 
 const GRD = 'linear-gradient(135deg,#5EE0CE,#3FA9F0)'
 const DAYS = ['ПН','ВТ','СР','ЧТ','ПТ','СБ','НД']
-const DAYS_FULL = ['Понеділок','Вівторок','Середа','Четвер','П\u02bcятниця','Субота','Неділя']
+const DAYS_FULL = ['Понеділок','Вівторок','Середа','Четвер','Пʼятниця','Субота','Неділя']
 
 // дефолтні робочі години
 const DEFAULT_HOURS = {
@@ -17,6 +17,8 @@ function FreeTimeTab({ sessions, clients }) {
   const [hours, setHours] = useState(DEFAULT_HOURS)
   const [mode, setMode]   = useState('typical')   // typical | week
   const [expanded, setExpanded] = useState(null)   // day idx або null
+  const [editedMsg, setEditedMsg] = useState({})   // idx → ручний текст (поки відкрито)
+  const [toast, setToast] = useState(false)
 
   useEffect(() => {
     const load = async () => {
@@ -31,9 +33,10 @@ function FreeTimeTab({ sessions, clients }) {
     await supabase.from('settings').upsert({ key:'working_hours', value: JSON.stringify(next) }, { onConflict:'key' })
   }
 
-  const toggleDay = (idx) => persist({ ...hours, [idx]: { ...hours[idx], on: !hours[idx].on } })
-  const setFrom = (idx, v) => persist({ ...hours, [idx]: { ...hours[idx], from: Number(v) } })
-  const setTo   = (idx, v) => persist({ ...hours, [idx]: { ...hours[idx], to: Number(v) } })
+  const clearEdit = (idx) => setEditedMsg(p => { const n = {...p}; delete n[idx]; return n })
+  const toggleDay = (idx) => { clearEdit(idx); persist({ ...hours, [idx]: { ...hours[idx], on: !hours[idx].on } }) }
+  const setFrom = (idx, v) => { clearEdit(idx); persist({ ...hours, [idx]: { ...hours[idx], from: Number(v) } }) }
+  const setTo   = (idx, v) => { clearEdit(idx); persist({ ...hours, [idx]: { ...hours[idx], to: Number(v) } }) }
 
   const monday = (() => { const d = new Date(); d.setDate(d.getDate() - getMondayFirst(d)); return d })()
   const dateForDay = (idx) => { const d = new Date(monday); d.setDate(monday.getDate() + idx); return d }
@@ -78,11 +81,19 @@ function FreeTimeTab({ sessions, clients }) {
     return `Привіт! Є вільні вікна на тренування — ${dayName}: ${slots.map(fmt).join(', ')}. Хто хоче — пишіть 💪`
   }
 
+  // фактичний текст: ручний (якщо є) або авто
+  const msgFor = (idx) => editedMsg[idx] !== undefined ? editedMsg[idx] : buildMessage(idx)
+
+  const showToast = () => {
+    setToast(true)
+    setTimeout(() => setToast(false), 2200)
+  }
+
   const copyMessage = (idx) => {
-    const msg = buildMessage(idx)
+    const msg = msgFor(idx)
     if (!msg) return
     navigator.clipboard.writeText(msg)
-    alert('✅ Повідомлення скопійовано!')
+    showToast()
   }
 
   const card = { background:'linear-gradient(160deg,rgba(255,255,255,.05),rgba(255,255,255,.018))', border:'1px solid rgba(255,255,255,.08)', borderRadius:16 }
@@ -127,7 +138,6 @@ function FreeTimeTab({ sessions, clients }) {
           const h = hours[idx]
           const slots = freeSlots(idx)
           const isOpen = expanded === idx
-          const msg = buildMessage(idx)
           return (
             <div key={d} style={{...card,padding:14,opacity:h?.on?1:.55,transition:'opacity .2s'}}>
               {/* верхній рядок — клікабельний для розкриття */}
@@ -187,23 +197,21 @@ function FreeTimeTab({ sessions, clients }) {
                     </select>
                   </div>
 
-                  {/* повідомлення */}
-                  {msg && (
+                  {/* повідомлення — редаговане */}
+                  {buildMessage(idx) && (
                     <>
-                      <div style={{fontSize:10,color:'#4A90B8',textTransform:'uppercase',letterSpacing:.5,marginBottom:8,fontWeight:600}}>Повідомлення</div>
-                      <div style={{background:'rgba(255,255,255,.04)',border:'1px solid rgba(94,224,206,.2)',borderRadius:12,padding:12,marginBottom:10}}>
-                        <div style={{color:'#C8CBD0',fontSize:13,lineHeight:1.6}}>{msg}</div>
+                      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
+                        <span style={{fontSize:10,color:'#4A90B8',textTransform:'uppercase',letterSpacing:.5,fontWeight:600}}>Повідомлення</span>
+                        {editedMsg[idx]!==undefined && (
+                          <span onClick={()=>clearEdit(idx)} style={{fontSize:10,color:'#5EE0CE',cursor:'pointer'}}>↺ Скинути</span>
+                        )}
                       </div>
-                      <div style={{display:'flex',gap:8}}>
-                        <button onClick={()=>copyMessage(idx)}
-                          style={{flex:1,padding:11,borderRadius:10,border:'none',background:GRD,color:'#000',fontSize:13,fontWeight:700,cursor:'pointer',fontFamily:'DM Sans'}}>
-                          📋 Копіювати
-                        </button>
-                        <button onClick={()=>window.open(`https://t.me/share/url?url=${encodeURIComponent(' ')}&text=${encodeURIComponent(msg)}`,'_blank')}
-                          style={{flex:1,padding:11,borderRadius:10,border:'1px solid rgba(36,161,222,.3)',background:'rgba(36,161,222,.12)',color:'#29b6f6',fontSize:13,fontWeight:700,cursor:'pointer',fontFamily:'DM Sans'}}>
-                          Telegram
-                        </button>
-                      </div>
+                      <textarea
+                        value={msgFor(idx)}
+                        onChange={e=>setEditedMsg(p=>({...p,[idx]:e.target.value}))}
+                        rows={3}
+                        style={{width:'100%',background:'rgba(255,255,255,.04)',border:'1px solid rgba(94,224,206,.2)',borderRadius:12,padding:12,color:'#C8CBD0',fontSize:13,lineHeight:1.6,fontFamily:'DM Sans',outline:'none',resize:'vertical',minHeight:72}}
+                      />
                     </>
                   )}
                 </div>
@@ -211,6 +219,16 @@ function FreeTimeTab({ sessions, clients }) {
             </div>
           )
         })}
+      </div>
+
+      {/* Toast */}
+      <div style={{position:'fixed',bottom:88,left:0,right:0,display:'flex',justifyContent:'center',pointerEvents:'none',zIndex:300}}>
+        <div style={{display:'flex',alignItems:'center',gap:8,background:'#101218',border:'1px solid rgba(94,224,206,.3)',borderRadius:30,padding:'10px 18px',boxShadow:'0 8px 24px rgba(0,0,0,.5)',transform:toast?'translateY(0)':'translateY(70px)',opacity:toast?1:0,transition:'transform .3s cubic-bezier(.34,1.3,.64,1), opacity .25s'}}>
+          <div style={{width:18,height:18,borderRadius:'50%',background:'rgba(70,220,168,.15)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+            <span style={{fontSize:10,color:'#46DCA8'}}>✓</span>
+          </div>
+          <span style={{color:'#EAECEF',fontSize:13,fontWeight:600}}>Скопійовано</span>
+        </div>
       </div>
     </div>
   )
