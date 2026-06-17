@@ -89,6 +89,10 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
   const [nv, setNv] = useState({value:'', date: todayStr()})
   const [noteInput, setNoteInput] = useState({})   // clientId → текст
   const [noteOpen,  setNoteOpen]  = useState({})   // clientId → bool
+  const [strInput,  setStrInput]  = useState({})   // clientId → текст (сильні)
+  const [strOpen,   setStrOpen]   = useState({})
+  const [weakInput, setWeakInput] = useState({})   // clientId → текст (слабкі)
+  const [weakOpen,  setWeakOpen]  = useState({})
   const [barsIn, setBarsIn] = useState(false)      // тригер заповнення прогрес-барів
   useEffect(() => { const t = setTimeout(()=>setBarsIn(true), 80); return ()=>clearTimeout(t) }, [])
 
@@ -174,16 +178,19 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
     const cl = clients.find(x=>x.id===clientId)
     await saveNotes(clientId, parseNotes(cl).filter(n=>n.id!==noteId))
   }
-  const updateStrengths = async (id, val) => {
-    const arr = val.split('\n').map(s=>s.trim()).filter(Boolean)
+  // ── Сильні/слабкі як окремі рядки (той самий паттерн що нотатки) ──
+  const setStrengthsArr = async (id, arr) => {
     await supabase.from('clients').update({strengths:arr}).eq('id',id)
     setClients(clients.map(c=>c.id===id?{...c,strengths:arr}:c))
   }
-  const updateWeaknesses = async (id, val) => {
-    const arr = val.split('\n').map(s=>s.trim()).filter(Boolean)
+  const setWeaknessesArr = async (id, arr) => {
     await supabase.from('clients').update({weaknesses:arr}).eq('id',id)
     setClients(clients.map(c=>c.id===id?{...c,weaknesses:arr}:c))
   }
+  const addStrength = (id, text) => setStrengthsArr(id, [...(clients.find(x=>x.id===id)?.strengths||[]), text])
+  const deleteStrengthAt = (id, idx) => setStrengthsArr(id, (clients.find(x=>x.id===id)?.strengths||[]).filter((_,i)=>i!==idx))
+  const addWeakness = (id, text) => setWeaknessesArr(id, [...(clients.find(x=>x.id===id)?.weaknesses||[]), text])
+  const deleteWeaknessAt = (id, idx) => setWeaknessesArr(id, (clients.find(x=>x.id===id)?.weaknesses||[]).filter((_,i)=>i!==idx))
   const toggleScheduleDay = async (client, dayIdx) => {
     const current = client.schedule_days || []
     const updated = current.includes(dayIdx) ? current.filter(d=>d!==dayIdx) : [...current, dayIdx].sort()
@@ -390,11 +397,37 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
                       <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:12}}>
                         <div style={{background:'rgba(255,255,255,.04)',borderRadius:10,padding:10}}>
                           <div style={{fontSize:11,fontWeight:600,color:'#46DCA8',marginBottom:6,textTransform:'uppercase',letterSpacing:.5}}>💪 Сильні</div>
-                          <textarea defaultValue={(c.strengths||[]).join('\n')} onFocus={e=>{e.target.style.minHeight='70px'}} onBlur={e=>{updateStrengths(c.id,e.target.value);if(!e.target.value.trim())e.target.style.minHeight='0'}} placeholder="По одному на рядок&#10;Натисни щоб додати" style={{width:'100%',background:'rgba(255,255,255,.04)',border:'1px dashed rgba(255,255,255,.08)',borderRadius:8,padding:(c.strengths||[]).length>0?'8px':'0',color:'#E8EAF0',fontFamily:'DM Sans',fontSize:12,resize:'none',outline:'none',lineHeight:1.5,minHeight:(c.strengths||[]).length>0?70:40,transition:'min-height .2s',cursor:'text'}}/>
+                          {(c.strengths||[]).map((text,idx)=>(
+                            <NoteRow key={idx} note={{id:idx,text}} onDelete={()=>deleteStrengthAt(c.id,idx)}/>
+                          ))}
+                          <AddNoteRow
+                            open={!!strOpen[c.id]}
+                            text={strInput[c.id]||''}
+                            onOpen={()=>setStrOpen(p=>({...p,[c.id]:true}))}
+                            onClose={()=>setStrOpen(p=>({...p,[c.id]:false}))}
+                            onTextChange={t=>setStrInput(p=>({...p,[c.id]:t}))}
+                            onSave={()=>{
+                              const t=(strInput[c.id]||'').trim()
+                              if(t){addStrength(c.id,t);setStrInput(p=>({...p,[c.id]:''}));setStrOpen(p=>({...p,[c.id]:false}))}
+                            }}
+                          />
                         </div>
                         <div style={{background:'rgba(255,255,255,.04)',borderRadius:10,padding:10}}>
                           <div style={{fontSize:11,fontWeight:600,color:'#FF6B6B',marginBottom:6,textTransform:'uppercase',letterSpacing:.5}}>⚠️ Слабкі</div>
-                          <textarea defaultValue={(c.weaknesses||[]).join('\n')} onFocus={e=>{e.target.style.minHeight='70px'}} onBlur={e=>{updateWeaknesses(c.id,e.target.value);if(!e.target.value.trim())e.target.style.minHeight='0'}} placeholder="По одному на рядок&#10;Натисни щоб додати" style={{width:'100%',background:'rgba(255,255,255,.04)',border:'1px dashed rgba(255,255,255,.08)',borderRadius:8,padding:(c.weaknesses||[]).length>0?'8px':'0',color:'#E8EAF0',fontFamily:'DM Sans',fontSize:12,resize:'none',outline:'none',lineHeight:1.5,minHeight:(c.weaknesses||[]).length>0?70:40,transition:'min-height .2s',cursor:'text'}}/>
+                          {(c.weaknesses||[]).map((text,idx)=>(
+                            <NoteRow key={idx} note={{id:idx,text}} onDelete={()=>deleteWeaknessAt(c.id,idx)}/>
+                          ))}
+                          <AddNoteRow
+                            open={!!weakOpen[c.id]}
+                            text={weakInput[c.id]||''}
+                            onOpen={()=>setWeakOpen(p=>({...p,[c.id]:true}))}
+                            onClose={()=>setWeakOpen(p=>({...p,[c.id]:false}))}
+                            onTextChange={t=>setWeakInput(p=>({...p,[c.id]:t}))}
+                            onSave={()=>{
+                              const t=(weakInput[c.id]||'').trim()
+                              if(t){addWeakness(c.id,t);setWeakInput(p=>({...p,[c.id]:''}));setWeakOpen(p=>({...p,[c.id]:false}))}
+                            }}
+                          />
                         </div>
                       </div>
                       <div style={{marginTop:12,borderTop:'1px solid rgba(255,255,255,.06)',paddingTop:10}}>
