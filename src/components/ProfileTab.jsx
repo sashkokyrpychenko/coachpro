@@ -54,6 +54,36 @@ function ProfileTab({ sessions, clients, finance, setFinance, pricePlans, setPri
   const daysPassed = now.getDate()
   const forecastProgress = Math.min(Math.round((monthIncomeFactual / (monthForecastTotal||1)) * 100), 100)
 
+  // ── Тижневий прогноз (аналогічно місячному) ──
+  const weekEndStr = (() => {
+    const d = new Date(weekStartDate); d.setDate(weekStartDate.getDate()+6); return dateToStr(d)
+  })()
+  const weekIncomeFactual = finance
+    .filter(f=>f.type==='in' && f.date>=weekStartStr && f.date<=today)
+    .reduce((a,f)=>a+Number(f.amount),0)
+  const futureSessionsWeek = sessions.filter(s=>s.date>today && s.date<=weekEndStr)
+  const forecastAmountWeek = clients.reduce((total, client) => {
+    if (!client.active_plan_id) return total
+    const plan = pricePlans.find(p=>p.id===client.active_plan_id)
+    if (!plan || plan.sessions < 1) return total
+    const clientFuture = futureSessionsWeek.filter(s=>s.client_id===client.id).length
+    if (clientFuture === 0) return total
+    const remaining = Math.max(0, (client.clip_total||0) - (client.clip_used||0))
+    if (clientFuture < remaining) return total
+    const renewals = Math.floor((clientFuture - remaining) / plan.sessions) + 1
+    return total + renewals * plan.price
+  }, 0)
+  const weekForecastTotal = weekIncomeFactual + forecastAmountWeek
+  const weekDayNum = getMondayFirst(now) + 1   // 1..7 (Пн=1)
+  const weekProgress = Math.min(Math.round((weekIncomeFactual / (weekForecastTotal||1)) * 100), 100)
+
+  // обрана вкладка прогнозу: false=місяць, true=тиждень
+  const [forecastWeek, setForecastWeek] = useState(false)
+  const F = forecastWeek
+    ? { label:'на тиждень', total:weekForecastTotal, factual:weekIncomeFactual, progress:weekProgress, expect:forecastAmountWeek, future:futureSessionsWeek.length, dayNow:weekDayNum, dayMax:7, dayWord:'День', tailWord:'до кінця тижня' }
+    : { label:`на ${MONTHS_UK[now.getMonth()]}`, total:monthForecastTotal, factual:monthIncomeFactual, progress:forecastProgress, expect:forecastAmount, future:futureSessions.length, dayNow:daysPassed, dayMax:daysInMonth, dayWord:'День', tailWord:'до кінця місяця' }
+
+
   // Sort plans by usage count
   const planUsage = pricePlans.map(p=>({
     ...p,
@@ -143,29 +173,32 @@ function ProfileTab({ sessions, clients, finance, setFinance, pricePlans, setPri
       {/* ── FINANCE ── */}
       {section==='finance' && (
         <div>
-          {/* Прогноз місяця */}
-          <div style={{background:'#111118',border:'1px solid #1A2E4A',borderRadius:14,padding:16,marginBottom:12}}>
+          {/* Прогноз місяця / тижня — клік перемикає */}
+          <div onClick={()=>setForecastWeek(w=>!w)} style={{background:'#111118',border:'1px solid #1A2E4A',borderRadius:14,padding:16,marginBottom:12,cursor:'pointer',userSelect:'none'}}>
             <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:12}}>
               <div>
-                <div style={{fontSize:11,color:'#4A90B8',marginBottom:4,textTransform:'uppercase',letterSpacing:.5}}>Прогноз на {MONTHS_UK[now.getMonth()]}</div>
-                <div style={{fontFamily:'Oswald',fontSize:30,color:'#00FF88',lineHeight:1}}>{Math.round(monthForecastTotal).toLocaleString('uk')} ₴</div>
+                <div style={{fontSize:11,color:'#4A90B8',marginBottom:4,textTransform:'uppercase',letterSpacing:.5,display:'flex',alignItems:'center',gap:6}}>
+                  Прогноз {F.label}
+                  <span style={{fontSize:9,padding:'1px 7px',borderRadius:10,background:'rgba(94,224,206,.12)',color:'#5EE0CE',textTransform:'none',letterSpacing:0}}>{forecastWeek?'тиждень':'місяць'} ⇄</span>
+                </div>
+                <div key={F.label} style={{fontFamily:'Oswald',fontSize:30,color:'#00FF88',lineHeight:1,animation:'fadeUp .25s ease-out both'}}>{Math.round(F.total).toLocaleString('uk')} ₴</div>
               </div>
               <div style={{textAlign:'right'}}>
                 <div style={{fontSize:11,color:'#4A90B8',marginBottom:4}}>Вже зароблено</div>
-                <div style={{fontFamily:'Oswald',fontSize:20,color:'#00F5FF'}}>{Math.round(monthIncomeFactual).toLocaleString('uk')} ₴</div>
+                <div key={F.label+'f'} style={{fontFamily:'Oswald',fontSize:20,color:'#00F5FF',animation:'fadeUp .25s ease-out both'}}>{Math.round(F.factual).toLocaleString('uk')} ₴</div>
               </div>
             </div>
             {/* Прогрес-бар */}
             <div style={{height:6,background:'#08080F',borderRadius:3,overflow:'hidden',marginBottom:8}}>
-              <div style={{height:'100%',borderRadius:3,width:`${forecastProgress}%`,background:'linear-gradient(90deg,#00F5FF,#00FF88)',transition:'width .4s'}}/>
+              <div style={{height:'100%',borderRadius:3,width:`${F.progress}%`,background:'linear-gradient(90deg,#00F5FF,#00FF88)',transition:'width .4s'}}/>
             </div>
             <div style={{display:'flex',justifyContent:'space-between',fontSize:10,color:'#3A4A5A'}}>
-              <span>День {daysPassed} з {daysInMonth}</span>
-              <span style={{color:'#4A90B8'}}>+{Math.round(forecastAmount).toLocaleString('uk')} ₴ очікується</span>
+              <span>{F.dayWord} {F.dayNow} з {F.dayMax}</span>
+              <span style={{color:'#4A90B8'}}>+{Math.round(F.expect).toLocaleString('uk')} ₴ очікується</span>
             </div>
-            {futureSessions.length > 0 && (
+            {F.future > 0 && (
               <div style={{marginTop:10,paddingTop:10,borderTop:'1px solid #1A2E4A',fontSize:11,color:'#4A90B8'}}>
-                {futureSessions.length} тренувань заплановано до кінця місяця
+                {F.future} тренувань заплановано {F.tailWord}
               </div>
             )}
           </div>
