@@ -210,7 +210,7 @@ export default function ScheduleTab({ clients, sessions, setSessions, setClients
 
       {showModal && (
         <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.7)',backdropFilter:'blur(4px)',display:'flex',alignItems:'flex-end',justifyContent:'center',zIndex:200,padding:0}}>
-          <div style={{background:'#111118',border:'1px solid #1A2E4A',borderRadius:'20px 20px 0 0',width:'100%',maxHeight:'85vh',padding:'20px 24px 28px',boxSizing:'border-box',overflowY:'auto',paddingBottom:`calc(28px + env(safe-area-inset-bottom))`}} onClick={e=>e.stopPropagation()}>
+          <div style={{background:'#111118',border:'1px solid #1A2E4A',borderRadius:'20px 20px 0 0',width:'100%',maxHeight:'85vh',padding:'20px 24px',boxSizing:'border-box',overflowY:'auto'}} onClick={e=>e.stopPropagation()}>
             <div style={{fontFamily:'Oswald',fontSize:22,marginBottom:16}}>Нова сесія — {selDate.getDate()} {MONTHS_UK2[selDate.getMonth()]}</div>
             <div style={{display:'flex',gap:8,marginBottom:12}}>
               <button onClick={()=>setSplitMode(false)} style={{flex:1,padding:'8px',borderRadius:10,border:`1px solid ${!splitMode?'#00F5FF':'#1E2A3A'}`,background:!splitMode?'rgba(0,245,255,.1)':'none',color:!splitMode?'#00F5FF':'#4A5A6A',fontFamily:'DM Sans',fontSize:12,fontWeight:600,cursor:'pointer'}}>👤 Один клієнт</button>
