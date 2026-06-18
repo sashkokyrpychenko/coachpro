@@ -6,7 +6,7 @@ import ClientsTab from './components/ClientsTab'
 import ProfileTab from './components/ProfileTab'
 import { SkeletonLoader } from './components/SkeletonLoader'
 import { DAYS_FULL, MONTHS_UK2 } from './constants'
-import { getThemeCSS, getSystemTheme } from './constants-theme'
+import { getThemeCSS } from './constants-theme'
 
 
 // Dark theme global override — now dynamic based on isDark state
@@ -16,8 +16,9 @@ _fontLink.href = 'https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;6
 document.head.appendChild(_fontLink)
 
 const _darkStyle = document.createElement('style')
+// Примусово темна тема (світла ще не дороблена) — уникаємо білого спалаху
+_darkStyle.textContent = getThemeCSS(true)
 document.head.appendChild(_darkStyle)
-// _darkStyle.textContent буде встановлено в компоненті в useEffect
 
 // ── SVG іконки нижнього меню ──────────────────────────
 const NAV_ICONS = {
@@ -57,7 +58,7 @@ export default function App() {
   const [pricePlans, setPricePlans] = useState([])
   const [programs, setPrograms] = useState([])
   const [loading, setLoading] = useState(true)
-  const [isDark, setIsDark] = useState(() => getSystemTheme() === 'dark')
+  const [isDark, setIsDark] = useState(true)  // примусово темна поки світла не дороблена
   const [selectedClientId, setSelectedClientId] = useState(null)
   const scrollRef = useRef(null)
   const prevTabRef = useRef('schedule')
@@ -74,18 +75,7 @@ export default function App() {
     _darkStyle.textContent = getThemeCSS(isDark)
   }, [isDark])
 
-  // ── System theme change listener ──
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
-    const handleChange = (e) => setIsDark(e.matches)
-    try {
-      mediaQuery.addEventListener('change', handleChange)
-      return () => mediaQuery.removeEventListener('change', handleChange)
-    } catch (e) {
-      // older browsers don't support addEventListener on matchMedia
-    }
-  }, [])
+  // Слухач системної теми вимкнено поки світла тема не дороблена
 
   useEffect(() => {
     const load = async () => {
