@@ -63,15 +63,32 @@ function AddNoteRow({ open, text, onOpen, onClose, onTextChange, onSave }) {
   )
 }
 
-function ClientsTab({ clients, setClients, sessions, setSessions, records, setRecords, pricePlans, setFinance, programs, setPrograms, openClientId, clearOpenClientId }) {
+function ClientsTab({ clients, setClients, sessions, setSessions, records, setRecords, pricePlans, setFinance, programs, setPrograms, openClientId, clearOpenClientId, selectedClientId, clearSelectedClientId }) {
   const [search, setSearch] = useState('')
   const [openId, setOpenId] = useState(null)
+  const scrollRef = useRef(null)
+  
   useEffect(() => {
     if (openClientId) {
       setOpenId(openClientId)
       clearOpenClientId&&clearOpenClientId()
     }
   }, [openClientId])
+  
+  // ── Auto-open & scroll to client selected from Schedule ──
+  useEffect(() => {
+    if (selectedClientId) {
+      setOpenId(selectedClientId)
+      clearSelectedClientId?.()
+      setTimeout(() => {
+        const card = document.querySelector(`[data-client-id="${selectedClientId}"]`)
+        if (card) {
+          card.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        }
+      }, 100)
+    }
+  }, [selectedClientId, clearSelectedClientId])
+
   const [tabMap, setTabMap] = useState({})
   const [showAdd, setShowAdd] = useState(false)
   const [showAddRecord, setShowAddRecord] = useState(null)
@@ -354,7 +371,7 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
           const cSessions = sessions.filter(s=>s.client_id===c.id)
           const cRecords = records.filter(r=>r.client_id===c.id)
           return (
-            <div key={c.id} style={{background:'linear-gradient(160deg,rgba(255,255,255,.05),rgba(255,255,255,.018))',border:`1px solid ${isOpen?'rgba(94,224,206,.4)':'rgba(255,255,255,.08)'}`,borderRadius:14,overflow:'hidden',alignSelf:'start',animation:'fadeUp .35s ease-out both'}}>
+            <div key={c.id} data-client-id={c.id} style={{background:'linear-gradient(160deg,rgba(255,255,255,.05),rgba(255,255,255,.018))',border:`1px solid ${isOpen?'rgba(94,224,206,.4)':'rgba(255,255,255,.08)'}`,borderRadius:14,overflow:'hidden',alignSelf:'start',animation:'fadeUp .35s ease-out both'}}>
               <div onClick={()=>setOpenId(isOpen?null:c.id)} style={{display:'flex',alignItems:'center',gap:12,padding:14,cursor:'pointer'}}>
                 <div style={{width:46,height:46,borderRadius:'50%',background:c.color,display:'flex',alignItems:'center',justifyContent:'center',fontFamily:'Oswald',fontSize:18,color:'#111',flexShrink:0}}>{c.ava}</div>
                 <div style={{flex:1}}>

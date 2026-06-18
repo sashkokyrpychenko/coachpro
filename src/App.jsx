@@ -58,6 +58,7 @@ export default function App() {
   const [programs, setPrograms] = useState([])
   const [loading, setLoading] = useState(true)
   const [isDark, setIsDark] = useState(() => getSystemTheme() === 'dark')
+  const [selectedClientId, setSelectedClientId] = useState(null)
   const scrollRef = useRef(null)
   const prevTabRef = useRef('schedule')
   const [tabKey, setTabKey] = useState(0)
@@ -147,8 +148,8 @@ export default function App() {
           {loading ? <SkeletonLoader tab={tab}/> : (
             /* Tab slide: key змінюється при кожному переключенні → перемонтується з анімацією */
             <div key={tabKey} style={{animation:`tabSlide${slideDir} .28s ease-out both`}}>
-              {tab==='schedule'&&<ScheduleTab clients={clients} setClients={setClients} sessions={sessions} setSessions={setSessions} onClientClick={id=>{setOpenClientId(id);switchTab('clients')}}/>}
-              {tab==='clients'&&<ClientsTab clients={clients} setClients={setClients} sessions={sessions} setSessions={setSessions} records={records} setRecords={setRecords} pricePlans={pricePlans} setFinance={setFinance} programs={programs} setPrograms={setPrograms} openClientId={openClientId} clearOpenClientId={()=>setOpenClientId(null)}/>}
+              {tab==='schedule'&&<ScheduleTab clients={clients} setClients={setClients} sessions={sessions} setSessions={setSessions} onClientClick={id=>{setSelectedClientId(id);switchTab('clients')}}/>}
+              {tab==='clients'&&<ClientsTab clients={clients} setClients={setClients} sessions={sessions} setSessions={setSessions} records={records} setRecords={setRecords} pricePlans={pricePlans} setFinance={setFinance} programs={programs} setPrograms={setPrograms} openClientId={openClientId} clearOpenClientId={()=>setOpenClientId(null)} selectedClientId={selectedClientId} clearSelectedClientId={()=>setSelectedClientId(null)}/>}
               {tab==='profile'&&<ProfileTab sessions={sessions} clients={clients} finance={finance} setFinance={setFinance} pricePlans={pricePlans} setPricePlans={setPricePlans}/>}
             </div>
           )}
