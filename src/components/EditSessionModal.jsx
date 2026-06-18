@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { DurationPicker } from './DurationPicker'
+import DurationPicker from './DurationPicker'
 import { MONTHS_UK2 } from '../constants'
 
 export default function EditSessionModal({ session, clients, onClose, onSave, onDelete }) {
