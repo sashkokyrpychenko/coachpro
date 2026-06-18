@@ -6,93 +6,18 @@ import ClientsTab from './components/ClientsTab'
 import ProfileTab from './components/ProfileTab'
 import { SkeletonLoader } from './components/SkeletonLoader'
 import { DAYS_FULL, MONTHS_UK2 } from './constants'
+import { getThemeCSS, getSystemTheme } from './constants-theme'
 
-// Dark theme global override
+
+// Dark theme global override — now dynamic based on isDark state
 const _fontLink = document.createElement('link')
 _fontLink.rel = 'stylesheet'
 _fontLink.href = 'https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=DM+Sans:wght@300;400;500;600;700&display=swap'
 document.head.appendChild(_fontLink)
 
 const _darkStyle = document.createElement('style')
-_darkStyle.textContent = `
-  html { background: #101218 !important; height: 100%; overflow: hidden; }
-  body { background: #101218 !important; color: #EAECEF !important; font-variant-emoji: text; position: fixed; top: 0; left: 0; right: 0; bottom: 0; overflow: hidden; }
-  input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1) brightness(0.6) sepia(1) hue-rotate(150deg); }
-  select option { background: #0D0D16; color: #E8EAF0; }
-  ::-webkit-scrollbar { width: 4px; height: 4px; }
-  ::-webkit-scrollbar-track { background: #08080F; }
-  ::-webkit-scrollbar-thumb { background: #1A2E4A; border-radius: 2px; }
-  ::-webkit-scrollbar-thumb:hover { background: #00F5FF44; }
-  * { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
-  button:active { opacity: 0.75; transform: scale(0.97); }
-  button { transition: opacity 0.1s, transform 0.1s; }
-  #root {
-    padding-top: env(safe-area-inset-top);
-    box-sizing: border-box;
-    height: 100%;
-  }
-  .safe-bottom-fill {
-    position: fixed;
-    left: 0; right: 0;
-    bottom: calc(-1 * env(safe-area-inset-bottom));
-    height: calc(env(safe-area-inset-bottom) + 2px);
-    background: #101218;
-    z-index: 90;
-    pointer-events: none;
-  }
-  /* ── Premium Glass ── */
-  .pg-glass {
-    background: linear-gradient(160deg, rgba(255,255,255,.065), rgba(255,255,255,.022)) !important;
-    border: 1px solid rgba(255,255,255,.08) !important;
-    -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
-    box-shadow: 0 1px 0 rgba(255,255,255,.05) inset, 0 10px 26px rgba(0,0,0,.28) !important;
-  }
-  .pg-time {
-    background: linear-gradient(135deg,#5EE0CE,#3FA9F0) !important;
-    -webkit-background-clip: text !important; background-clip: text !important;
-    color: transparent !important;
-  }
-  .pg-nav {
-    background: #101218 !important;
-    border-top: 1px solid rgba(255,255,255,.07) !important;
-    box-shadow: 0 -1px 0 rgba(255,255,255,.04) inset;
-  }
-  /* ── Анімації ── */
-  @keyframes fadeUp {
-    from { opacity:0; transform:translateY(14px); }
-    to   { opacity:1; transform:translateY(0); }
-  }
-  @keyframes tabSlideR {
-    from { opacity:0; transform:translateX(30px); }
-    to   { opacity:1; transform:translateX(0); }
-  }
-  @keyframes tabSlideL {
-    from { opacity:0; transform:translateX(-30px); }
-    to   { opacity:1; transform:translateX(0); }
-  }
-  @keyframes popIn {
-    0%   { transform:scale(0);    opacity:0; }
-    65%  { transform:scale(1.15); opacity:1; }
-    100% { transform:scale(1);    opacity:1; }
-  }
-  @keyframes shimmer {
-    from { background-position:-400px 0; }
-    to   { background-position: 400px 0; }
-  }
-  @keyframes pulseRing {
-    0%   { transform:scale(1);   opacity:.7; }
-    100% { transform:scale(2.6); opacity:0;  }
-  }
-  @keyframes growBar {
-    from { transform:scaleX(0); }
-    to   { transform:scaleX(1); }
-  }
-  @keyframes pulseGlow {
-    0%,100% { box-shadow:0 4px 14px rgba(94,224,206,.35); }
-    50%     { box-shadow:0 4px 22px rgba(94,224,206,.65); }
-  }
-`
 document.head.appendChild(_darkStyle)
+// _darkStyle.textContent буде встановлено в компоненті в useEffect
 
 // ── SVG іконки нижнього меню ──────────────────────────
 const NAV_ICONS = {
@@ -132,6 +57,7 @@ export default function App() {
   const [pricePlans, setPricePlans] = useState([])
   const [programs, setPrograms] = useState([])
   const [loading, setLoading] = useState(true)
+  const [isDark, setIsDark] = useState(() => getSystemTheme() === 'dark')
   const scrollRef = useRef(null)
   const prevTabRef = useRef('schedule')
   const [tabKey, setTabKey] = useState(0)
@@ -141,6 +67,24 @@ export default function App() {
     setTab(id)
     setTabKey(k => k + 1)
   }
+
+  // ── Dynamic theme CSS update ──
+  useEffect(() => {
+    _darkStyle.textContent = getThemeCSS(isDark)
+  }, [isDark])
+
+  // ── System theme change listener ──
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
+    const handleChange = (e) => setIsDark(e.matches)
+    try {
+      mediaQuery.addEventListener('change', handleChange)
+      return () => mediaQuery.removeEventListener('change', handleChange)
+    } catch (e) {
+      // older browsers don't support addEventListener on matchMedia
+    }
+  }, [])
 
   useEffect(() => {
     const load = async () => {
