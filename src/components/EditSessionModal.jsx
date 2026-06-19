@@ -15,7 +15,22 @@ export default function EditSessionModal({ session, clients, onClose, onSave, on
   const dateStr = `${sessionDate.getDate()} ${MONTHS_UK2[sessionDate.getMonth()]}`
 
   const labelStyle = {fontSize:11,color:'#878F9B',textTransform:'uppercase',letterSpacing:.5,display:'block',marginBottom:6}
-  const inputStyle = {width:'100%',background:'rgba(255,255,255,.05)',border:'1px solid rgba(255,255,255,.1)',borderRadius:10,padding:'10px 12px',color:'#EAECEF',fontFamily:'DM Sans',fontSize:14,outline:'none',boxSizing:'border-box',minWidth:0}
+  const inputStyle = {
+    width:'100%',
+    background:'rgba(255,255,255,.05)',
+    border:'1px solid rgba(255,255,255,.1)',
+    borderRadius:10,
+    padding:'10px 12px',
+    color:'#EAECEF',
+    fontFamily:'DM Sans',
+    fontSize:14,
+    outline:'none',
+    boxSizing:'border-box',
+    minWidth:0,
+    display:'block',
+    appearance:'none',
+    WebkitAppearance:'none'
+  }
 
   return (
     <div
@@ -38,9 +53,10 @@ export default function EditSessionModal({ session, clients, onClose, onSave, on
     >
       <div
         style={{
-          background:'linear-gradient(160deg, rgba(28,32,40,.92), rgba(16,18,24,.92))',
+          background:'#171a21',
           backdropFilter:'blur(20px)',
-          border:'1px solid rgba(255,255,255,.12)',
+          border:'none',
+          outline:'none',
           borderRadius:20,
           width:'100%',
           maxWidth:480,
@@ -61,7 +77,7 @@ export default function EditSessionModal({ session, clients, onClose, onSave, on
         <select
           value={clientId}
           onChange={e => setClientId(e.target.value)}
-          style={{...inputStyle, marginBottom:12, appearance:'none'}}
+          style={{...inputStyle, marginBottom:12, textAlign:'left', textAlignLast:'left'}}
         >
           <option value="">— Оберіть —</option>
           {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
@@ -72,15 +88,20 @@ export default function EditSessionModal({ session, clients, onClose, onSave, on
           type="date"
           value={date}
           onChange={e => setDate(e.target.value)}
-          style={{...inputStyle, marginBottom:12}}
+          style={{...inputStyle, marginBottom:12, colorScheme:'dark'}}
         />
 
         <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:12}}>
-          <div style={{minWidth:0}}>
+          <div style={{minWidth:0, overflow:'hidden'}}>
             <label style={labelStyle}>Час</label>
-            <input type="time" value={time} onChange={e => setTime(e.target.value)} style={inputStyle}/>
+            <input
+              type="time"
+              value={time}
+              onChange={e => setTime(e.target.value)}
+              style={{...inputStyle, colorScheme:'dark'}}
+            />
           </div>
-          <div style={{minWidth:0}}>
+          <div style={{minWidth:0, overflow:'hidden'}}>
             <label style={labelStyle}>Тип</label>
             <input value={type} onChange={e => setType(e.target.value)} placeholder="Силові…" style={inputStyle}/>
           </div>
