@@ -18,7 +18,21 @@ export default function EditSessionModal({ session, clients, onClose, onSave, on
 
   return (
     <div
-      style={{position:'fixed',inset:0,background:'rgba(0,0,0,.7)',backdropFilter:'blur(4px)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:200,padding:20,boxSizing:'border-box'}}
+      style={{
+        position:'fixed',
+        top:0, left:0, right:0, bottom:0,
+        height:'100vh',
+        height:'100dvh', // dvh враховує реальну видиму область Safari (без панелі браузера)
+        background:'rgba(0,0,0,.7)',
+        backdropFilter:'blur(4px)',
+        display:'flex',
+        alignItems:'center',
+        justifyContent:'center',
+        zIndex:200,
+        padding:20,
+        boxSizing:'border-box',
+        overflowY:'auto'
+      }}
       onClick={onClose}
     >
       <div
@@ -29,10 +43,11 @@ export default function EditSessionModal({ session, clients, onClose, onSave, on
           borderRadius:20,
           width:'100%',
           maxWidth:480,
-          maxHeight:'85vh',
+          maxHeight:'min(85vh, 85dvh)',
           padding:'24px',
           boxSizing:'border-box',
-          overflowY:'auto'
+          overflowY:'auto',
+          margin:'auto' // додатковий страхувальний центрувач всередині flex-контейнера
         }}
         onClick={e => e.stopPropagation()}
       >
