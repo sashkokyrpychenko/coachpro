@@ -3,6 +3,7 @@ import DurationPicker from './DurationPicker'
 import { MONTHS_UK2 } from '../constants'
 
 export default function EditSessionModal({ session, clients, onClose, onSave, onDelete }) {
+  const [date, setDate] = useState(session?.date || '')
   const [time, setTime] = useState(session?.time || '')
   const [type, setType] = useState(session?.type || '')
   const [duration, setDuration] = useState(session?.duration || 60)
@@ -10,11 +11,11 @@ export default function EditSessionModal({ session, clients, onClose, onSave, on
 
   if (!session) return null
 
-  const sessionDate = new Date(session.date)
+  const sessionDate = new Date(date || session.date)
   const dateStr = `${sessionDate.getDate()} ${MONTHS_UK2[sessionDate.getMonth()]}`
 
   const labelStyle = {fontSize:11,color:'#878F9B',textTransform:'uppercase',letterSpacing:.5,display:'block',marginBottom:6}
-  const inputStyle = {width:'100%',background:'rgba(255,255,255,.04)',border:'1px solid rgba(255,255,255,.08)',borderRadius:10,padding:'10px 14px',color:'#EAECEF',fontFamily:'DM Sans',fontSize:14,outline:'none',boxSizing:'border-box'}
+  const inputStyle = {width:'100%',background:'rgba(255,255,255,.05)',border:'1px solid rgba(255,255,255,.1)',borderRadius:10,padding:'10px 12px',color:'#EAECEF',fontFamily:'DM Sans',fontSize:14,outline:'none',boxSizing:'border-box',minWidth:0}
 
   return (
     <div
@@ -22,9 +23,9 @@ export default function EditSessionModal({ session, clients, onClose, onSave, on
         position:'fixed',
         top:0, left:0, right:0, bottom:0,
         height:'100vh',
-        height:'100dvh', // dvh враховує реальну видиму область Safari (без панелі браузера)
-        background:'rgba(0,0,0,.7)',
-        backdropFilter:'blur(4px)',
+        height:'100dvh',
+        background:'rgba(0,0,0,.55)',
+        backdropFilter:'blur(8px)',
         display:'flex',
         alignItems:'center',
         justifyContent:'center',
@@ -37,9 +38,9 @@ export default function EditSessionModal({ session, clients, onClose, onSave, on
     >
       <div
         style={{
-          background:'linear-gradient(160deg, rgba(255,255,255,.065), rgba(255,255,255,.022))',
-          backdropFilter:'blur(14px)',
-          border:'1px solid rgba(255,255,255,.08)',
+          background:'linear-gradient(160deg, rgba(28,32,40,.92), rgba(16,18,24,.92))',
+          backdropFilter:'blur(20px)',
+          border:'1px solid rgba(255,255,255,.12)',
           borderRadius:20,
           width:'100%',
           maxWidth:480,
@@ -47,7 +48,8 @@ export default function EditSessionModal({ session, clients, onClose, onSave, on
           padding:'24px',
           boxSizing:'border-box',
           overflowY:'auto',
-          margin:'auto' // додатковий страхувальний центрувач всередині flex-контейнера
+          margin:'auto',
+          boxShadow:'0 20px 60px rgba(0,0,0,.5)'
         }}
         onClick={e => e.stopPropagation()}
       >
@@ -65,12 +67,20 @@ export default function EditSessionModal({ session, clients, onClose, onSave, on
           {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
         </select>
 
+        <label style={labelStyle}>Дата</label>
+        <input
+          type="date"
+          value={date}
+          onChange={e => setDate(e.target.value)}
+          style={{...inputStyle, marginBottom:12}}
+        />
+
         <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:12}}>
-          <div>
+          <div style={{minWidth:0}}>
             <label style={labelStyle}>Час</label>
             <input type="time" value={time} onChange={e => setTime(e.target.value)} style={inputStyle}/>
           </div>
-          <div>
+          <div style={{minWidth:0}}>
             <label style={labelStyle}>Тип</label>
             <input value={type} onChange={e => setType(e.target.value)} placeholder="Силові…" style={inputStyle}/>
           </div>
@@ -89,12 +99,12 @@ export default function EditSessionModal({ session, clients, onClose, onSave, on
           </button>
           <button
             onClick={onClose}
-            style={{flex:1,padding:'12px',borderRadius:12,border:'1px solid rgba(255,255,255,.08)',background:'rgba(255,255,255,.04)',color:'#EAECEF',fontFamily:'DM Sans',fontSize:13,fontWeight:600,cursor:'pointer'}}
+            style={{flex:1,padding:'12px',borderRadius:12,border:'1px solid rgba(255,255,255,.1)',background:'rgba(255,255,255,.05)',color:'#EAECEF',fontFamily:'DM Sans',fontSize:13,fontWeight:600,cursor:'pointer'}}
           >
             Скасувати
           </button>
           <button
-            onClick={() => { onSave({...session, time, type, duration, client_id: clientId}); onClose() }}
+            onClick={() => { onSave({...session, date, time, type, duration, client_id: clientId}); onClose() }}
             style={{flex:1,padding:'12px',borderRadius:12,border:'none',background:'linear-gradient(135deg,#5EE0CE,#3FA9F0)',color:'#0A0B0F',fontFamily:'DM Sans',fontSize:13,fontWeight:700,cursor:'pointer'}}
           >
             Готово
