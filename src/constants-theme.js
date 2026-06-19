@@ -83,8 +83,8 @@ export const getThemeCSS = (isDark) => {
       z-index: 90;
     }
     @keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
-    @keyframes tabSlideR { from{opacity:0;transform:translateX(40px)} to{opacity:1;transform:translateX(0)} }
-    @keyframes tabSlideL { from{opacity:0;transform:translateX(-40px)} to{opacity:1;transform:translateX(0)} }
+    @keyframes tabSlideR { from{transform:translateX(28px)} to{transform:translateX(0)} }
+    @keyframes tabSlideL { from{transform:translateX(-28px)} to{transform:translateX(0)} }
     @keyframes popIn { 0%{transform:scale(0);opacity:0} 65%{transform:scale(1.12)} 100%{transform:scale(1);opacity:1} }
     @keyframes shimmer { 0%{background-position:200% 0}100%{background-position:-200% 0} }
     @keyframes pulseRing { 0%{transform:scale(1);opacity:.7} 100%{transform:scale(2.2);opacity:0} }
