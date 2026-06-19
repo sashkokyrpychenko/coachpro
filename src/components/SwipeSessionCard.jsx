@@ -1,5 +1,11 @@
 import { useState, useRef, memo } from 'react'
 
+// Час завантаження сторінки. fadeUp-stagger грає лише при першому показі списку
+// (одразу після відкриття застосунку), а не при кожному перемиканні вкладок —
+// інакше горизонтальний слайд вкладки + вертикальний fadeUp дають "діагональ".
+const PAGE_LOAD_TS = Date.now()
+const ENTRANCE_WINDOW_MS = 1200
+
 const SwipeSessionCard = memo(function SwipeSessionCard({ s, clients, onEdit, onToggle, index = 0 }) {
   const c = clients.find(x => x.id === s.client_id)
   const [offset, setOffset] = useState(0)
@@ -28,11 +34,13 @@ const SwipeSessionCard = memo(function SwipeSessionCard({ s, clients, onEdit, on
 
   const staggerDelay = `${index * 75}ms`
   const badgeDelay   = `${index * 75 + 140}ms`
+  // Чи це початковий показ застосунку — лише тоді робимо вхідні анімації
+  const isEntrance = (Date.now() - PAGE_LOAD_TS) < ENTRANCE_WINDOW_MS
 
   return (
     <div style={{position:'relative', overflow:'hidden', borderRadius:16, marginBottom:8,
-      /* stagger fadeUp */
-      animation:`fadeUp .32s ease-out ${staggerDelay} both`,
+      /* stagger fadeUp — лише при першому завантаженні, не при перемиканні вкладок */
+      animation: isEntrance ? `fadeUp .32s ease-out ${staggerDelay} both` : 'none',
     }}>
       <div style={{position:'absolute',right:0,top:0,bottom:0,width:80,background:'#2E7BD6',display:'flex',alignItems:'center',justifyContent:'center',flexDirection:'column',gap:2,borderRadius:16,opacity: offset < 0 ? 1 : 0, transition:'opacity .15s ease', pointerEvents:'none'}}>
         <span style={{fontSize:18}}>✏️</span>
@@ -70,7 +78,7 @@ const SwipeSessionCard = memo(function SwipeSessionCard({ s, clients, onEdit, on
             background:s.done?'rgba(70,220,168,.10)':'rgba(127,212,232,.08)',
             color:s.done?'#46DCA8':'#7FD4E8',
             border:`1px solid ${s.done?'rgba(70,220,168,.22)':'rgba(127,212,232,.2)'}`,
-            animation:`popIn .38s cubic-bezier(.36,.07,.19,.97) ${badgeDelay} both`,
+            animation: isEntrance ? `popIn .38s cubic-bezier(.36,.07,.19,.97) ${badgeDelay} both` : 'none',
           }}>{s.done?'✓ Виконано':'Заплановано'}</span>
         </div>
       </div>
