@@ -39,8 +39,7 @@ export default function EditSessionModal({ session, clients, onClose, onSave, on
         top:0, left:0, right:0, bottom:0,
         height:'100vh',
         height:'100dvh',
-        background:'rgba(0,0,0,.55)',
-        backdropFilter:'blur(8px)',
+        background:'#0A0B0F',
         display:'flex',
         alignItems:'center',
         justifyContent:'center',
@@ -54,7 +53,6 @@ export default function EditSessionModal({ session, clients, onClose, onSave, on
       <div
         style={{
           background:'#171a21',
-          backdropFilter:'blur(20px)',
           border:'none',
           outline:'none',
           borderRadius:20,
