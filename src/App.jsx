@@ -134,7 +134,7 @@ export default function App() {
       </div>
 
       <div style={{flex:1,display:'flex',flexDirection:'column',overflow:'hidden',minHeight:0,position:'relative',zIndex:1}}>
-        <div ref={scrollRef} style={{flex:1,overflowY:'auto',padding:24,minHeight:0,overscrollBehavior:'none'}}>
+        <div ref={scrollRef} className="pg-scroll" style={{flex:1,overflowY:'auto',minHeight:0,overscrollBehavior:'none'}}>
           {loading ? <SkeletonLoader tab={tab}/> : (
             /* Tab slide: key змінюється при кожному переключенні → перемонтується з анімацією */
             <div key={tabKey} style={{animation:`tabSlide${slideDir} .28s ease-out both`}}>
@@ -144,26 +144,23 @@ export default function App() {
             </div>
           )}
         </div>
-        {/* Mobile bottom nav — SVG іконки */}
-        <div className="mobile-tabs pg-nav" style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',flexShrink:0,zIndex:100}}>
+        {/* Mobile bottom nav — плаваюча світла капсула (Instagram-стиль) */}
+        <div className="mobile-tabs pg-nav" style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',zIndex:100}}>
           {TABS.map(([id,label])=>{
             const active = tab===id
-            const ic = active ? '#5EE0CE' : '#6B7280'
+            const ic = active ? '#3FA9F0' : '#8A94A6'
             return (
-              <button key={id} onClick={()=>switchTab(id)} style={{position:'relative',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'8px 4px 0px',cursor:'pointer',border:'none',background:'none',fontFamily:'DM Sans',fontSize:11,fontWeight:600,gap:3}}>
-                {active && <div style={{position:'absolute',top:0,left:'50%',transform:'translateX(-50%)',width:54,height:3,borderRadius:3,background:'linear-gradient(135deg,#5EE0CE,#3FA9F0)',boxShadow:'0 0 12px rgba(79,200,220,.8)'}}/>}
-                <div style={{filter:active?'drop-shadow(0 0 7px rgba(94,224,206,.55))':'none',transition:'filter .25s'}}>
+              <button key={id} onClick={()=>switchTab(id)} style={{position:'relative',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',cursor:'pointer',border:'none',background:'none',fontFamily:'DM Sans',fontSize:11,fontWeight:600,gap:3}}>
+                {active && <div style={{position:'absolute',top:8,left:'50%',transform:'translateX(-50%)',width:44,height:3,borderRadius:3,background:'linear-gradient(135deg,#2B9B7A,#0066CC)',boxShadow:'0 0 12px rgba(43,155,122,.5)'}}/>}
+                <div style={{filter:active?'drop-shadow(0 0 6px rgba(63,169,240,.4))':'none',marginTop:active?6:0,transition:'all .25s'}}>
                   {NAV_ICONS[id](ic)}
                 </div>
-                <span style={active?{background:'linear-gradient(135deg,#5EE0CE,#3FA9F0)',WebkitBackgroundClip:'text',backgroundClip:'text',color:'transparent'}:{color:'#6B7280'}}>{label}</span>
+                <span style={active?{background:'linear-gradient(135deg,#2B9B7A,#0066CC)',WebkitBackgroundClip:'text',backgroundClip:'text',color:'transparent'}:{color:'#8A94A6'}}>{label}</span>
               </button>
             )
           })}
         </div>
       </div>
-
-      {/* iOS PWA: замальовує зону home indicator */}
-      <div className="safe-bottom-fill"/>
     </div>
   )
 }
