@@ -70,7 +70,6 @@ export const getThemeCSS = (isDark) => {
     button:active { opacity: 0.75; transform: scale(0.97); }
     button { transition: opacity 0.1s, transform 0.1s; }
     #root {
-      padding-top: env(safe-area-inset-top);
       box-sizing: border-box;
       height: 100%;
     }

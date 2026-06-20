@@ -16,7 +16,8 @@
    Скрол-контент — повноекранний
    ─────────────────────────────────────────────── */
 .pg-scroll {
-  padding: 24px 24px 0;
+  padding: 12px 12px 0;
+  padding-top: calc(env(safe-area-inset-top, 0px) + 12px);
   /* знизу лишаємо місце під плаваючу капсулу + home indicator,
      щоб останні картки не ховались повністю */
   padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 96px);
@@ -26,6 +27,7 @@
 /* На десктопі капсули нема — звичайний відступ */
 @media (min-width: 769px) {
   .pg-scroll {
+    padding: 24px;
     padding-bottom: 24px;
   }
 }
