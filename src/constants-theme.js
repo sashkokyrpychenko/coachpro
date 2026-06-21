@@ -58,7 +58,7 @@ export const getSystemTheme = () => {
 export const getThemeCSS = (isDark) => {
   const theme = isDark ? THEMES.dark : THEMES.light;
   return `
-    html { background: ${theme.surface} !important; height: 100%; overflow: hidden; }
+    html { background: ${theme.surface} !important; height: 100dvh; overflow: hidden; }
     body { background: ${theme.bg} !important; color: ${theme.text} !important; font-variant-emoji: text; position: fixed; top: 0; left: 0; right: 0; bottom: 0; overflow: hidden; }
     input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(${isDark ? 1 : 0}) brightness(${isDark ? 0.6 : 1.2}) sepia(${isDark ? 1 : 0}) hue-rotate(${isDark ? 150 : 0}deg); }
     select option { background: ${isDark ? '#0D0D16' : '#F0F4F8'}; color: ${theme.text}; }
@@ -71,7 +71,7 @@ export const getThemeCSS = (isDark) => {
     button { transition: opacity 0.1s, transform 0.1s; }
     #root {
       box-sizing: border-box;
-      height: 100%;
+      height: 100dvh;
     }
     .safe-bottom-fill {
       position: fixed;

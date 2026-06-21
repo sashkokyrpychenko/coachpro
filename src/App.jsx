@@ -107,7 +107,7 @@ export default function App() {
   const slideDir = TAB_ORDER.indexOf(tab) >= TAB_ORDER.indexOf(prevTabRef.current) ? 'R' : 'L'
 
   return (
-    <div style={{display:'flex',height:'100%',background:'#0A0B0F',color:'#EAECEF',fontFamily:'DM Sans',position:'relative'}}>
+    <div style={{display:'flex',height:'100dvh',background:'#0A0B0F',color:'#EAECEF',fontFamily:'DM Sans',position:'relative'}}>
       {/* ambient depth glows */}
       <div style={{position:'fixed',inset:0,pointerEvents:'none',zIndex:0,background:'radial-gradient(640px 380px at 92% -4%, rgba(78,215,201,.10), transparent 62%), radial-gradient(680px 460px at -8% 58%, rgba(63,150,240,.075), transparent 62%)'}}/>
       <div className="desktop-sidebar" style={{width:220,background:'#0E1016',borderRight:'1px solid rgba(255,255,255,.06)',display:'flex',flexDirection:'column',flexShrink:0,position:'relative',zIndex:1,top:0,height:'100%'}}>
