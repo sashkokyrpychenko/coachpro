@@ -115,7 +115,7 @@ export default function ScheduleTab({ clients, sessions, setSessions, setClients
   const card = {background:'linear-gradient(160deg, rgba(255,255,255,.05), rgba(255,255,255,.02))',border:'1px solid rgba(255,255,255,.08)',borderRadius:18,padding:16,marginBottom:14,backdropFilter:'blur(14px)',WebkitBackdropFilter:'blur(14px)',boxShadow:'0 1px 0 rgba(255,255,255,.05) inset, 0 10px 26px rgba(0,0,0,.28)'}
 
   return (
-    <div>
+    <div style={{display:'flex', flexDirection:'column', minHeight:'100%'}}>
       <div style={{marginBottom:14}}>
         <div style={{fontFamily:'Oswald',fontSize:20,letterSpacing:0.3,whiteSpace:'nowrap',marginBottom:10}}>
           {viewMode==='week'
@@ -137,7 +137,7 @@ export default function ScheduleTab({ clients, sessions, setSessions, setClients
       </div>
 
       {viewMode==='week' && (
-        <div style={card}>
+        <div style={{...card, flex:1, display:'flex', flexDirection:'column'}}>
           <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:4,marginBottom:12}}>
             {weekDates.map((d,i)=>{
               const ds = dateToStr(d)

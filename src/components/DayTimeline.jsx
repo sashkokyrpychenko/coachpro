@@ -20,9 +20,9 @@ export default function DayTimeline({ sessions, clients, onClientClick }) {
   }))
 
   return (
-    <div className="pg-glass" style={{borderRadius:16, padding:16, marginTop:12}}>
+    <div className="pg-glass" style={{borderRadius:16, padding:16, marginTop:12, flex:1, display:'flex', flexDirection:'column', boxSizing:'border-box'}}>
       <div style={{fontSize:11,color:'#878F9B',fontWeight:600,textTransform:'uppercase',letterSpacing:.5,marginBottom:12}}>Денний графік</div>
-      <div style={{display:'flex', gap:8}}>
+      <div style={{display:'flex', gap:8, flex:1}}>
         <div style={{display:'flex', flexDirection:'column', flexShrink:0}}>
           {HOURS.map(h => (
             <div key={h} style={{height: SLOT_H, display:'flex', alignItems:'flex-start', paddingTop:4, color: h === now.getHours() ? '#5EE0CE' : '#5A616B', fontSize:10, width:36, fontFamily:'DM Sans'}}>
@@ -30,9 +30,9 @@ export default function DayTimeline({ sessions, clients, onClientClick }) {
             </div>
           ))}
         </div>
-        <div style={{flex:1, position:'relative', height: HOURS.length * SLOT_H}}>
+        <div style={{flex:1, position:'relative', minHeight: HOURS.length * SLOT_H, backgroundImage:`repeating-linear-gradient(transparent, transparent ${SLOT_H-1}px, rgba(255,255,255,.06) ${SLOT_H-1}px, rgba(255,255,255,.06) ${SLOT_H}px)`}}>
           {HOURS.map((h, i) => (
-            <div key={h} style={{position:'absolute', left:0, right:0, top: i * SLOT_H, height:1, background: h === now.getHours() ? 'rgba(94,224,206,.25)' : 'rgba(255,255,255,.06)'}}/>
+            <div key={h} style={{position:'absolute', left:0, right:0, top: i * SLOT_H, height:1, background: h === now.getHours() ? 'rgba(94,224,206,.25)' : 'transparent'}}/>
           ))}
           {showNow && (
             <div style={{position:'absolute', left:0, right:0, top: nowOffset, zIndex:10, display:'flex', alignItems:'center', gap:4}}>
