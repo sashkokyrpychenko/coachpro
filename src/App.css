@@ -18,9 +18,8 @@
 .pg-scroll {
   padding: 12px 12px 0;
   padding-top: calc(env(safe-area-inset-top, 0px) + 12px);
-  /* знизу лишаємо місце під плаваючу капсулу + home indicator,
-     щоб останні картки не ховались повністю */
-  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 96px);
+  /* мінімальний відступ — контент заходить під капсулу без зайвої порожнечі */
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 12px);
   box-sizing: border-box;
 }
 
