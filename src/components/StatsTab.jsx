@@ -103,7 +103,7 @@ function StatsTab({ sessions, clients, finance, pricePlans, setPricePlans }) {
                   <div style={{
                     width:'100%',borderRadius:'4px 4px 2px 2px',minHeight:4,
                     height: barsIn ? `${targetH}px` : '4px',
-                    background: isToday ? GRD : `rgba(94,224,206,${intensity})`,
+                    background: isToday ? GRD : `rgba(255,221,0,${intensity})`,
                     boxShadow: isToday ? '0 0 14px rgba(94,224,206,.5)' : 'none',
                     transition:`height .7s cubic-bezier(.22,.68,0,1.1) ${i*60}ms`,
                   }}/>
