@@ -39,7 +39,7 @@
   left: 16px;
   right: 16px;
   /* тримаємо капсулу над зоною home indicator */
-  bottom: calc(env(safe-area-inset-bottom, 0px) + 12px);
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 6px);
   height: 62px;
   background: rgba(255, 255, 255, 0.82);
   -webkit-backdrop-filter: blur(24px) saturate(180%);
@@ -52,6 +52,6 @@
 /* iOS PWA (встановлений додаток) — те саме */
 @media all and (display-mode: standalone) {
   .mobile-tabs.pg-nav {
-    bottom: calc(env(safe-area-inset-bottom, 0px) + 12px);
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 6px);
   }
 }
