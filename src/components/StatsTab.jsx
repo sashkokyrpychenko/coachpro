@@ -96,14 +96,14 @@ function StatsTab({ sessions, clients, finance, pricePlans, setPricePlans }) {
             {counts.map((c,i)=>{
               const isToday = days[i].ds===today
               const targetH = Math.max(4,(c/max)*90)
+              const intensity = 0.3 + (c/max)*0.55
               return (
                 <div key={i} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'flex-end',height:'100%',gap:4}}>
                   <span style={{fontSize:10,color:c>0?'#5EE0CE':'#3A4A5A',fontWeight:600}}>{c>0?c:''}</span>
                   <div style={{
                     width:'100%',borderRadius:'4px 4px 2px 2px',minHeight:4,
                     height: barsIn ? `${targetH}px` : '4px',
-                    background: isToday ? GRD : 'linear-gradient(180deg,rgba(94,224,206,.4),rgba(63,169,240,.18))',
-                    border: isToday ? 'none' : '1px solid rgba(255,255,255,.06)',
+                    background: isToday ? GRD : `rgba(94,224,206,${intensity})`,
                     boxShadow: isToday ? '0 0 14px rgba(94,224,206,.5)' : 'none',
                     transition:`height .7s cubic-bezier(.22,.68,0,1.1) ${i*60}ms`,
                   }}/>
@@ -112,12 +112,24 @@ function StatsTab({ sessions, clients, finance, pricePlans, setPricePlans }) {
             })}
           </div>
           <div style={{display:'flex',gap:8}}>
-            {days.map((d,i)=>(
-              <div key={i} style={{flex:1,textAlign:'center'}}>
-                <div style={{fontSize:10,color:d.ds===today?'#5EE0CE':'#3A4A5A'}}>{d.day}</div>
-                <div style={{fontSize:10,color:'#3A4A5A'}}>{d.lbl}</div>
-              </div>
-            ))}
+            {days.map((d,i)=>{
+              const isToday = d.ds===today
+              return (
+                <div key={i} style={{flex:1,display:'flex',justifyContent:'center'}}>
+                  {isToday ? (
+                    <div style={{display:'flex',flexDirection:'column',alignItems:'center',gap:1,background:'rgba(94,224,206,.16)',borderRadius:10,padding:'3px 9px'}}>
+                      <div style={{fontSize:10,fontWeight:700,color:'#5EE0CE'}}>{d.day}</div>
+                      <div style={{fontSize:10,fontWeight:600,color:'#5EE0CE'}}>{d.lbl}</div>
+                    </div>
+                  ) : (
+                    <div style={{textAlign:'center'}}>
+                      <div style={{fontSize:10,color:'#3A4A5A'}}>{d.day}</div>
+                      <div style={{fontSize:10,color:'#3A4A5A'}}>{d.lbl}</div>
+                    </div>
+                  )}
+                </div>
+              )
+            })}
           </div>
         </div>
 
