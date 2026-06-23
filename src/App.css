@@ -41,12 +41,12 @@
   /* капсула опущена ближче до краю (~20px від низу) */
   bottom: calc(env(safe-area-inset-bottom, 0px) - 14px);
   height: 62px;
-  background: rgba(255, 255, 255, 0.7);
+  background: rgba(20, 22, 28, 0.82);
   -webkit-backdrop-filter: blur(24px) saturate(180%);
   backdrop-filter: blur(24px) saturate(180%);
   border-radius: 30px;
-  border: 1px solid rgba(255, 255, 255, 0.6);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 /* iOS PWA (встановлений додаток) — те саме */

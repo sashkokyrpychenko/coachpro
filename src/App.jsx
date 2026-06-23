@@ -148,14 +148,14 @@ export default function App() {
         <div className="mobile-tabs pg-nav" style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',zIndex:100}}>
           {TABS.map(([id,label])=>{
             const active = tab===id
-            const ic = active ? '#3FA9F0' : '#8A94A6'
+            const ic = active ? '#FFD600' : '#6B7280'
             return (
               <button key={id} onClick={()=>switchTab(id)} style={{position:'relative',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',cursor:'pointer',border:'none',background:'none',fontFamily:'DM Sans',fontSize:11,fontWeight:600,gap:3}}>
-                {active && <div style={{position:'absolute',top:8,left:'50%',transform:'translateX(-50%)',width:44,height:3,borderRadius:3,background:'linear-gradient(135deg,#2B9B7A,#0066CC)',boxShadow:'0 0 12px rgba(43,155,122,.5)'}}/>}
-                <div style={{filter:active?'drop-shadow(0 0 6px rgba(63,169,240,.4))':'none',marginTop:active?6:0,transition:'all .25s'}}>
+                {active && <div style={{position:'absolute',top:8,left:'50%',transform:'translateX(-50%)',width:44,height:3,borderRadius:3,background:'linear-gradient(135deg,#FFD600,#FFA000)',boxShadow:'0 0 12px rgba(255,214,0,.6)'}}/>}
+                <div style={{filter:active?'drop-shadow(0 0 6px rgba(255,214,0,.45))':'none',marginTop:active?6:0,transition:'all .25s'}}>
                   {NAV_ICONS[id](ic)}
                 </div>
-                <span style={active?{background:'linear-gradient(135deg,#2B9B7A,#0066CC)',WebkitBackgroundClip:'text',backgroundClip:'text',color:'transparent'}:{color:'#8A94A6'}}>{label}</span>
+                <span style={active?{background:'linear-gradient(135deg,#FFD600,#FFA000)',WebkitBackgroundClip:'text',backgroundClip:'text',color:'transparent'}:{color:'#6B7280'}}>{label}</span>
               </button>
             )
           })}
