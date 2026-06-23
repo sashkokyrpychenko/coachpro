@@ -148,23 +148,44 @@ function ProfileTab({ sessions, clients, finance, setFinance, pricePlans, setPri
               </div>
             ))}
           </div>
-          <div style={{background:'#111118',border:'1px solid #1A2E4A',borderRadius:14,padding:16}}>
-            <div style={{fontWeight:700,fontSize:14,marginBottom:14}}>Активність — 7 днів</div>
+          <div style={{background:'linear-gradient(160deg,rgba(255,255,255,.05),rgba(255,255,255,.018))',border:'1px solid rgba(255,255,255,.08)',borderRadius:14,padding:16}}>
+            <div style={{fontWeight:700,fontSize:14,marginBottom:14,color:'#EAECEF'}}>Активність — 7 днів</div>
             <div style={{display:'flex',alignItems:'flex-end',gap:8,height:100,marginBottom:8}}>
-              {counts.map((c,i)=>(
-                <div key={i} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'flex-end',height:'100%',gap:3}}>
-                  <span style={{fontSize:10,fontWeight:600,color:c>0?'#00F5FF':'#3A4A5A'}}>{c>0?c:''}</span>
-                  <div style={{width:'100%',borderRadius:'4px 4px 0 0',minHeight:4,height:`${Math.max(4,(c/maxC)*85)}px`,background:days[i].ds===today?'#00F5FF':'#08080F',border:`1px solid ${days[i].ds===today?'#00F5FF':'#1E2A3A'}`}}/>
-                </div>
-              ))}
+              {counts.map((c,i)=>{
+                const isToday = days[i].ds===today
+                const intensity = 0.3 + (c/maxC)*0.55
+                return (
+                  <div key={i} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'flex-end',height:'100%',gap:3}}>
+                    <span style={{fontSize:10,fontWeight:600,color:c>0?'#5EE0CE':'#3A4A5A'}}>{c>0?c:''}</span>
+                    <div style={{
+                      width:'100%',borderRadius:'4px 4px 2px 2px',minHeight:4,
+                      height:`${Math.max(4,(c/maxC)*85)}px`,
+                      background: isToday ? 'linear-gradient(135deg,#5EE0CE,#3FA9F0)' : `rgba(94,224,206,${intensity})`,
+                      boxShadow: isToday ? '0 0 14px rgba(94,224,206,.5)' : 'none',
+                    }}/>
+                  </div>
+                )
+              })}
             </div>
             <div style={{display:'flex',gap:8}}>
-              {days.map((d,i)=>(
-                <div key={i} style={{flex:1,textAlign:'center'}}>
-                  <div style={{fontSize:10,color:d.ds===today?'#00F5FF':'#3A4A5A'}}>{d.day}</div>
-                  <div style={{fontSize:10,color:'#1A2A3A'}}>{d.lbl}</div>
-                </div>
-              ))}
+              {days.map((d,i)=>{
+                const isToday = d.ds===today
+                return (
+                  <div key={i} style={{flex:1,display:'flex',justifyContent:'center'}}>
+                    {isToday ? (
+                      <div style={{display:'flex',flexDirection:'column',alignItems:'center',gap:1,background:'rgba(94,224,206,.16)',borderRadius:10,padding:'3px 9px'}}>
+                        <div style={{fontSize:10,fontWeight:700,color:'#5EE0CE'}}>{d.day}</div>
+                        <div style={{fontSize:10,fontWeight:600,color:'#5EE0CE'}}>{d.lbl}</div>
+                      </div>
+                    ) : (
+                      <div style={{textAlign:'center'}}>
+                        <div style={{fontSize:10,color:'#3A4A5A'}}>{d.day}</div>
+                        <div style={{fontSize:10,color:'#3A4A5A'}}>{d.lbl}</div>
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
             </div>
           </div>
         </div>

@@ -91,7 +91,7 @@ function StatsTab({ sessions, clients, finance, pricePlans, setPricePlans }) {
       <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(300px,1fr))',gap:16}}>
         {/* Activity chart — стовпчики з glow + ростом */}
         <div style={{...glass,borderRadius:14,padding:16}}>
-          <div style={{fontFamily:'Oswald',fontSize:18,marginBottom:14,color:'#E8EAF0'}}>Активність за тиждень</div>
+          <div style={{fontFamily:'Oswald',fontSize:18,marginBottom:14,color:'#E8EAF0'}}>Активність — 7 днів</div>
           <div style={{display:'flex',alignItems:'flex-end',gap:8,height:120,marginBottom:8}}>
             {counts.map((c,i)=>{
               const isToday = days[i].ds===today
