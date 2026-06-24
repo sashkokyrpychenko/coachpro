@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef } from 'react'
-import { supabase, getUserId } from '../supabase'
+import { supabase } from '../supabase'
 import { todayStr, dateToStr, getMondayFirst, MONTHS_UK, MONTHS_UK2, DAYS_SHORT, DAYS_FULL } from '../constants'
 import StatsTab from './StatsTab'
 import FreeTimeTab from './FreeTimeTab'
 function ProfileTab({ sessions, clients, finance, setFinance, pricePlans, setPricePlans }) {
-  const [section, setSection] = useState('stats')
+  const [section, setSection] = useState('freetime')
   const [showAddPlan, setShowAddPlan] = useState(false)
   const [editPlan, setEditPlan] = useState(null)
   const [np, setNp] = useState({name:'',sessions:1,price:''})
@@ -12,6 +12,8 @@ function ProfileTab({ sessions, clients, finance, setFinance, pricePlans, setPri
   const [editFinance, setEditFinance] = useState(null)
   const [ef, setEf] = useState({name:'',amount:'',date:''})
   const [showAllFinance, setShowAllFinance] = useState(false)
+  const [priceOpen, setPriceOpen] = useState(false)
+  const [userEmail, setUserEmail] = useState('')
 
   const today = todayStr()
   const now = new Date()
@@ -93,13 +95,12 @@ function ProfileTab({ sessions, clients, finance, setFinance, pricePlans, setPri
 
   const savePlan = async () => {
     if (!np.name||!np.price) return
-    const user_id = await getUserId()
     if (editPlan) {
       const {data,error} = await supabase.from('price_plans').update({name:np.name,sessions:Number(np.sessions),price:Number(np.price)}).eq('id',editPlan.id).select().single()
       if (!error) setPricePlans(prev=>prev.map(p=>p.id===editPlan.id?data:p).sort((a,b)=>a.name.localeCompare(b.name,'uk')))
       setEditPlan(null)
     } else {
-      const {data,error} = await supabase.from('price_plans').insert({name:np.name,sessions:Number(np.sessions),price:Number(np.price),user_id}).select().single()
+      const {data,error} = await supabase.from('price_plans').insert({name:np.name,sessions:Number(np.sessions),price:Number(np.price)}).select().single()
       if (!error) setPricePlans(prev=>[...prev,data].sort((a,b)=>a.name.localeCompare(b.name,'uk')))
     }
     setShowAddPlan(false); setNp({name:'',sessions:1,price:''})
@@ -112,6 +113,10 @@ function ProfileTab({ sessions, clients, finance, setFinance, pricePlans, setPri
   const inp = {width:'100%',background:'#0D0D16',border:'1px solid #1A2E4A',borderRadius:10,padding:'10px 14px',color:'#E8EAF0',fontFamily:'DM Sans',fontSize:14,outline:'none',boxSizing:'border-box'}
   const lbl = {fontSize:11,color:'#4A90B8',textTransform:'uppercase',letterSpacing:.5,display:'block',marginBottom:6}
 
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => setUserEmail(data?.user?.email || ''))
+  }, [])
+
   return (
     <div>
       {/* Header */}
@@ -122,7 +127,7 @@ function ProfileTab({ sessions, clients, finance, setFinance, pricePlans, setPri
 
       {/* Section tabs */}
       <div style={{display:'flex',gap:4,background:'#0D0D16',borderRadius:12,padding:4,marginBottom:20}}>
-        {[['stats','Статистика'],['freetime','Free Time'],['finance','Фінанси'],['price','Прайс']].map(([id,label])=>(
+        {[['freetime','Free Time'],['finance','Фінанси'],['stats','Статистика'],['settings','Налаштування']].map(([id,label])=>(
           <div key={id} onClick={()=>setSection(id)}
             style={{flex:1,textAlign:'center',padding:'9px 4px',borderRadius:8,
               fontSize:12,fontWeight:section===id?700:400,
@@ -293,42 +298,69 @@ function ProfileTab({ sessions, clients, finance, setFinance, pricePlans, setPri
               </div>
             ))}
           </div>
+
+          {/* ── Прайс-листи (згорнутий блок всередині Фінансів) ── */}
+          <div style={{background:'#111118',border:'1px solid #1A2E4A',borderRadius:14,padding:16,marginTop:12}}>
+            <div onClick={()=>setPriceOpen(o=>!o)} style={{display:'flex',justifyContent:'space-between',alignItems:'center',cursor:'pointer'}}>
+              <div style={{display:'flex',alignItems:'center',gap:10}}>
+                <div style={{fontWeight:700,fontSize:14}}>Прайс-листи</div>
+                <span style={{fontSize:11,color:'#4A90B8',background:'rgba(74,144,184,.12)',padding:'2px 8px',borderRadius:7}}>{pricePlans.length}</span>
+              </div>
+              <span style={{color:'#4A90B8',fontSize:13,transform:priceOpen?'rotate(180deg)':'none',transition:'transform .2s'}}>▾</span>
+            </div>
+
+            {priceOpen && (
+              <div style={{marginTop:14,paddingTop:14,borderTop:'1px solid #1A2E4A'}}>
+                <div style={{display:'flex',justifyContent:'flex-end',marginBottom:12}}>
+                  <button onClick={()=>{setEditPlan(null);setNp({name:'',sessions:1,price:''});setShowAddPlan(true)}}
+                    style={{background:'#00F5FF',color:'#111',border:'none',borderRadius:8,padding:'6px 14px',fontSize:12,fontWeight:700,cursor:'pointer'}}>
+                    + Додати
+                  </button>
+                </div>
+                {pricePlans.length===0&&<div style={{display:'flex',flexDirection:'column',alignItems:'center',padding:'24px',gap:8,textAlign:'center'}}><span style={{fontSize:36}}>📋</span><div style={{fontSize:13,fontWeight:600,color:'#E8EAF0'}}>Прайс-листів ще немає</div><div style={{fontSize:11,color:'#4A90B8'}}>Додайте тарифи для клієнтів</div></div>}
+                <div style={{display:'flex',flexDirection:'column',gap:7}}>
+                  {visiblePlans.map(p=>(
+                    <div key={p.id} style={{display:'flex',alignItems:'center',gap:10,padding:'11px 12px',background:'#0D0D16',border:'1px solid #1A2E4A',borderRadius:12}}>
+                      <div style={{flex:1}}>
+                        <div style={{fontSize:13,fontWeight:600,color:'#E8EAF0'}}>{p.name}</div>
+                        <div style={{fontSize:11,color:'#4A90B8',marginTop:2}}>{p.sessions} {p.sessions===1?'тренування':'тренувань'}</div>
+                      </div>
+                      <div style={{fontFamily:'Oswald',fontSize:18,color:'#00F5FF'}}>{Number(p.price).toLocaleString('uk')} ₴</div>
+                      <button onClick={()=>{setEditPlan(p);setNp({name:p.name,sessions:p.sessions,price:p.price});setShowAddPlan(true)}}
+                        style={{background:'none',border:'1px solid #1A2E4A',borderRadius:7,color:'#4A90B8',fontSize:12,padding:'4px 8px',cursor:'pointer'}}>✏️</button>
+                      <button onClick={()=>deletePlan(p.id)}
+                        style={{background:'none',border:'none',color:'#4A90B8',fontSize:14,cursor:'pointer'}}>✕</button>
+                    </div>
+                  ))}
+                </div>
+                {pricePlans.length > 3 && (
+                  <button onClick={()=>setExpanded(!expanded)}
+                    style={{width:'100%',marginTop:10,padding:'10px',borderRadius:10,border:'1px solid #1A2E4A',background:'transparent',color:'#4A90B8',fontSize:13,cursor:'pointer'}}>
+                    {expanded?'▲ Згорнути':`▼ Показати всі (${pricePlans.length})`}
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       )}
 
-      {/* ── PRICE ── */}
-      {section==='price' && (
+      {/* ── НАЛАШТУВАННЯ ── */}
+      {section==='settings' && (
         <div>
+          <div style={{background:'#111118',border:'1px solid #1A2E4A',borderRadius:14,padding:16,display:'flex',alignItems:'center',gap:12,marginBottom:12}}>
+            <div style={{width:48,height:48,borderRadius:'50%',background:'linear-gradient(135deg,#5EE0CE,#3FA9F0)',display:'flex',alignItems:'center',justifyContent:'center',fontFamily:'Oswald',fontSize:20,fontWeight:600,color:'#06243B',flexShrink:0}}>Т</div>
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{fontSize:15,fontWeight:700,color:'#E8EAF0'}}>Тренер</div>
+              <div style={{fontSize:12,color:'#4A90B8',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{userEmail}</div>
+            </div>
+          </div>
+
           <div style={{background:'#111118',border:'1px solid #1A2E4A',borderRadius:14,padding:16}}>
-            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:14}}>
-              <div style={{fontWeight:700,fontSize:14}}>Прайс-листи</div>
-              <button onClick={()=>{setEditPlan(null);setNp({name:'',sessions:1,price:''});setShowAddPlan(true)}}
-                style={{background:'#00F5FF',color:'#111',border:'none',borderRadius:8,padding:'6px 14px',fontSize:12,fontWeight:700,cursor:'pointer'}}>
-                + Додати
-              </button>
-            </div>
-            {pricePlans.length===0&&<div style={{display:'flex',flexDirection:'column',alignItems:'center',padding:'24px',gap:8,textAlign:'center'}}><span style={{fontSize:36}}>📋</span><div style={{fontSize:13,fontWeight:600,color:'#E8EAF0'}}>Прайс-листів ще немає</div><div style={{fontSize:11,color:'#4A90B8'}}>Додайте тарифи для клієнтів</div></div>}
-            <div style={{display:'flex',flexDirection:'column',gap:7}}>
-              {visiblePlans.map(p=>(
-                <div key={p.id} style={{display:'flex',alignItems:'center',gap:10,padding:'11px 12px',background:'#0D0D16',border:'1px solid #1A2E4A',borderRadius:12}}>
-                  <div style={{flex:1}}>
-                    <div style={{fontSize:13,fontWeight:600,color:'#E8EAF0'}}>{p.name}</div>
-                    <div style={{fontSize:11,color:'#4A90B8',marginTop:2}}>{p.sessions} {p.sessions===1?'тренування':'тренувань'}</div>
-                  </div>
-                  <div style={{fontFamily:'Oswald',fontSize:18,color:'#00F5FF'}}>{Number(p.price).toLocaleString('uk')} ₴</div>
-                  <button onClick={()=>{setEditPlan(p);setNp({name:p.name,sessions:p.sessions,price:p.price});setShowAddPlan(true)}}
-                    style={{background:'none',border:'1px solid #1A2E4A',borderRadius:7,color:'#4A90B8',fontSize:12,padding:'4px 8px',cursor:'pointer'}}>✏️</button>
-                  <button onClick={()=>deletePlan(p.id)}
-                    style={{background:'none',border:'none',color:'#4A90B8',fontSize:14,cursor:'pointer'}}>✕</button>
-                </div>
-              ))}
-            </div>
-            {pricePlans.length > 3 && (
-              <button onClick={()=>setExpanded(!expanded)}
-                style={{width:'100%',marginTop:10,padding:'10px',borderRadius:10,border:'1px solid #1A2E4A',background:'transparent',color:'#4A90B8',fontSize:13,cursor:'pointer'}}>
-                {expanded?'▲ Згорнути':`▼ Показати всі (${pricePlans.length})`}
-              </button>
-            )}
+            <button onClick={()=>supabase.auth.signOut()}
+              style={{width:'100%',padding:'13px',borderRadius:12,border:'1px solid rgba(255,68,102,.3)',background:'rgba(255,68,102,.08)',color:'#FF4466',fontSize:14,fontWeight:600,cursor:'pointer',fontFamily:'DM Sans',display:'flex',alignItems:'center',justifyContent:'center',gap:8}}>
+              Вийти з акаунту
+            </button>
           </div>
         </div>
       )}
