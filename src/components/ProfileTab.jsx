@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { supabase } from '../supabase'
+import { supabase, getUserId } from '../supabase'
 import { todayStr, dateToStr, getMondayFirst, MONTHS_UK, MONTHS_UK2, DAYS_SHORT, DAYS_FULL } from '../constants'
 import StatsTab from './StatsTab'
 import FreeTimeTab from './FreeTimeTab'
@@ -14,6 +14,7 @@ function ProfileTab({ sessions, clients, finance, setFinance, pricePlans, setPri
   const [showAllFinance, setShowAllFinance] = useState(false)
   const [priceOpen, setPriceOpen] = useState(false)
   const [userEmail, setUserEmail] = useState('')
+  const [incomePercent, setIncomePercent] = useState(100)
 
   const today = todayStr()
   const now = new Date()
@@ -117,6 +118,23 @@ function ProfileTab({ sessions, clients, finance, setFinance, pricePlans, setPri
     supabase.auth.getUser().then(({ data }) => setUserEmail(data?.user?.email || ''))
   }, [])
 
+  useEffect(() => {
+    const loadPercent = async () => {
+      const { data } = await supabase.from('settings').select('*').eq('key','income_percent').maybeSingle()
+      if (data?.value) { const v = Number(data.value); if (v>=1 && v<=100) setIncomePercent(v) }
+    }
+    loadPercent()
+  }, [])
+
+  const saveIncomePercent = async (v) => {
+    const clamped = Math.min(100, Math.max(1, Number(v)||100))
+    setIncomePercent(clamped)
+    const user_id = await getUserId()
+    await supabase.from('settings').upsert({ key:'income_percent', value:String(clamped), user_id }, { onConflict:'key,user_id' })
+  }
+
+  const pct = incomePercent / 100
+
   return (
     <div>
       {/* Header */}
@@ -207,12 +225,13 @@ function ProfileTab({ sessions, clients, finance, setFinance, pricePlans, setPri
                 <div style={{fontSize:11,color:'#4A90B8',marginBottom:4,textTransform:'uppercase',letterSpacing:.5,display:'flex',alignItems:'center',gap:6}}>
                   Прогноз {F.label}
                   <span style={{fontSize:9,padding:'1px 7px',borderRadius:10,background:'rgba(94,224,206,.12)',color:'#5EE0CE',textTransform:'none',letterSpacing:0}}>{forecastWeek?'тиждень':'місяць'} ⇄</span>
+                  {incomePercent<100 && <span style={{fontSize:9,padding:'1px 7px',borderRadius:10,background:'rgba(255,255,255,.06)',color:'#878F9B',textTransform:'none',letterSpacing:0}}>{incomePercent}%</span>}
                 </div>
-                <div key={F.label} style={{fontFamily:'Oswald',fontSize:30,color:'#00FF88',lineHeight:1,animation:'fadeUp .25s ease-out both'}}>{Math.round(F.total).toLocaleString('uk')} ₴</div>
+                <div key={F.label} style={{fontFamily:'Oswald',fontSize:30,color:'#00FF88',lineHeight:1,animation:'fadeUp .25s ease-out both'}}>{Math.round(F.total*pct).toLocaleString('uk')} ₴</div>
               </div>
               <div style={{textAlign:'right'}}>
                 <div style={{fontSize:11,color:'#4A90B8',marginBottom:4}}>Вже зароблено</div>
-                <div key={F.label+'f'} style={{fontFamily:'Oswald',fontSize:20,color:'#00F5FF',animation:'fadeUp .25s ease-out both'}}>{Math.round(F.factual).toLocaleString('uk')} ₴</div>
+                <div key={F.label+'f'} style={{fontFamily:'Oswald',fontSize:20,color:'#00F5FF',animation:'fadeUp .25s ease-out both'}}>{Math.round(F.factual*pct).toLocaleString('uk')} ₴</div>
               </div>
             </div>
             {/* Прогрес-бар */}
@@ -234,7 +253,7 @@ function ProfileTab({ sessions, clients, finance, setFinance, pricePlans, setPri
           <div style={{marginBottom:12}}>
             <div style={{background:'#111118',border:'1px solid #1A2E4A',borderRadius:14,padding:16}}>
               <div style={{fontSize:11,color:'#4A90B8',marginBottom:4}}>Дохід (всього)</div>
-              <div style={{fontFamily:'Oswald',fontSize:32,color:'#00FF88'}}>{income.toLocaleString('uk')} ₴</div>
+              <div style={{fontFamily:'Oswald',fontSize:32,color:'#00FF88'}}>{Math.round(income*pct).toLocaleString('uk')} ₴</div>
             </div>
           </div>
           {/* Модал редагування транзакції */}
@@ -353,6 +372,20 @@ function ProfileTab({ sessions, clients, finance, setFinance, pricePlans, setPri
             <div style={{flex:1,minWidth:0}}>
               <div style={{fontSize:15,fontWeight:700,color:'#E8EAF0'}}>Тренер</div>
               <div style={{fontSize:12,color:'#4A90B8',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{userEmail}</div>
+            </div>
+          </div>
+
+          {/* ── Відсоток доходу ── */}
+          <div style={{background:'#111118',border:'1px solid #1A2E4A',borderRadius:14,padding:16,marginBottom:12}}>
+            <div style={{fontWeight:700,fontSize:14,marginBottom:6}}>Відсоток доходу</div>
+            <div style={{fontSize:12,color:'#4A90B8',marginBottom:14,lineHeight:1.5}}>Якщо ти отримуєш не повну вартість тренування (наприклад, працюєш за комісію), вкажи свій реальний відсоток. Прогноз і дохід у Фінансах будуть рахуватись з урахуванням цього.</div>
+            <div style={{display:'flex',alignItems:'center',gap:14}}>
+              <input type="range" min="1" max="100" value={incomePercent}
+                onChange={e=>setIncomePercent(Number(e.target.value))}
+                onMouseUp={e=>saveIncomePercent(e.target.value)}
+                onTouchEnd={e=>saveIncomePercent(e.target.value)}
+                style={{flex:1,accentColor:'#5EE0CE'}}/>
+              <div style={{fontFamily:'Oswald',fontSize:22,color:'#5EE0CE',minWidth:54,textAlign:'right'}}>{incomePercent}%</div>
             </div>
           </div>
 
