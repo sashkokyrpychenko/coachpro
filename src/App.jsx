@@ -4,6 +4,7 @@ import './App.css'
 import ScheduleTab from './components/ScheduleTab'
 import ClientsTab from './components/ClientsTab'
 import ProfileTab from './components/ProfileTab'
+import AuthScreen from './components/AuthScreen'
 import { SkeletonLoader } from './components/SkeletonLoader'
 import { DAYS_FULL, MONTHS_UK2 } from './constants'
 import { getThemeCSS } from './constants-theme'
@@ -58,6 +59,8 @@ export default function App() {
   const [pricePlans, setPricePlans] = useState([])
   const [programs, setPrograms] = useState([])
   const [loading, setLoading] = useState(true)
+  const [session, setSession] = useState(null)
+  const [authChecked, setAuthChecked] = useState(false)
   const [isDark, setIsDark] = useState(true)  // примусово темна поки світла не дороблена
   const [selectedClientId, setSelectedClientId] = useState(null)
   const scrollRef = useRef(null)
@@ -77,7 +80,20 @@ export default function App() {
 
   // Слухач системної теми вимкнено поки світла тема не дороблена
 
+  // ── Авторизація: перевірка сесії при старті + слухач змін ──
   useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      setSession(data.session)
+      setAuthChecked(true)
+    })
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, newSession) => {
+      setSession(newSession)
+    })
+    return () => listener.subscription.unsubscribe()
+  }, [])
+
+  useEffect(() => {
+    if (!session) return   // дані тягнемо лише коли є активна сесія
     const load = async () => {
       const [c,s,f,r,pp,pr] = await Promise.all([
         supabase.from('clients').select('*').order('created_at'),
@@ -99,12 +115,22 @@ export default function App() {
       setLoading(false)
     }
     load()
-  }, [])
+  }, [session])
 
   const now = new Date()
   const dateStr = `${DAYS_FULL[now.getDay()]}, ${now.getDate()} ${MONTHS_UK2[now.getMonth()]}`
   const TABS = [['schedule','Графік'],['clients','Клієнти'],['profile','Профіль']]
   const slideDir = TAB_ORDER.indexOf(tab) >= TAB_ORDER.indexOf(prevTabRef.current) ? 'R' : 'L'
+
+  // поки не перевірили сесію — нічого не показуємо (уникаємо блимання)
+  if (!authChecked) {
+    return <div style={{height:'100dvh',background:'#0A0B0F'}}/>
+  }
+
+  // нема активної сесії — показуємо екран входу
+  if (!session) {
+    return <AuthScreen/>
+  }
 
   return (
     <div style={{display:'flex',height:'100dvh',background:'#0A0B0F',color:'#EAECEF',fontFamily:'DM Sans',position:'relative'}}>
