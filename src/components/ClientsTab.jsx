@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { supabase } from '../supabase'
+import { supabase, getUserId } from '../supabase'
 import { todayStr, dateToStr, getMondayFirst, COLORS, MONTHS_UK2, DAYS_SHORT } from '../constants'
 import ClipTab from './ClipTab'
 import ProgramsTab from './ProgramsTab'
@@ -127,8 +127,9 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
 
   const saveMetric = async (clientId) => {
     if (!nm.name) return
+    const user_id = await getUserId()
     const {data,error} = await supabase.from('metrics').insert({
-      client_id: clientId, name: nm.name, unit: nm.unit
+      client_id: clientId, name: nm.name, unit: nm.unit, user_id
     }).select().single()
     if (!error) setMetrics(prev => [...prev, data])
     setShowAddMetric(null); setNm({name:'', unit:'кг'})
@@ -142,9 +143,10 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
 
   const saveMeasurement = async (metricId, clientId) => {
     if (!nv.value) return
+    const user_id = await getUserId()
     const {data,error} = await supabase.from('measurements').insert({
       metric_id: metricId, client_id: clientId,
-      value: Number(nv.value), date: nv.date
+      value: Number(nv.value), date: nv.date, user_id
     }).select().single()
     if (!error) {
       setMeasurements(prev => [...prev, data])
@@ -240,7 +242,8 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
       cur.setDate(cur.getDate()+1)
     }
     if (!inserts.length) { alert('Всі сесії вже існують'); return }
-    const {data,error} = await supabase.from('sessions').insert(inserts).select()
+    const user_id = await getUserId()
+    const {data,error} = await supabase.from('sessions').insert(inserts.map(s=>({...s,user_id}))).select()
     if (!error&&data) { setSessions(prev=>[...prev,...data]); alert(`✅ Додано ${data.length} сесій!`) }
   }
 
@@ -275,7 +278,8 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
       cur.setDate(cur.getDate()+1)
     }
     if (!inserts.length) { alert('Немає сесій для створення'); return }
-    const {data,error} = await supabase.from('sessions').insert(inserts).select()
+    const user_id = await getUserId()
+    const {data,error} = await supabase.from('sessions').insert(inserts.map(s=>({...s,user_id}))).select()
     if (!error&&data) {
       setSessions(prev=>[...prev,...data])
       alert(`✅ Оновлено! Видалено: ${toDelete.length}, створено: ${data.length} сесій`)
@@ -321,6 +325,7 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
     const fullName = nc.last?nc.name+' '+nc.last:nc.name
     const initials = (nc.name[0]||'')+(nc.last[0]||'')
     const selectedPlan = pricePlans.find(p=>p.id===nc.planId)
+    const user_id = await getUserId()
     const {data,error} = await supabase.from('clients').insert({
       name:fullName, goal:nc.goal||'Загальна форма',
       weight:Number(nc.w)||70, height:Number(nc.h)||170,
@@ -331,7 +336,7 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
       active_plan_id: nc.planId||null,
       clip_renewed_at: nc.planId ? todayStr() : null,
       schedule_days:[], schedule_times:{},
-      started_at: todayStr()
+      started_at: todayStr(), user_id
     }).select().single()
     if (!error) setClients(prev => [...prev, data].sort((a,b) => a.name.localeCompare(b.name, 'uk')))
     setSaving(false); setShowAdd(false)
@@ -341,8 +346,9 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
     if (!nr.exercise||!nr.value) return
     const now = new Date()
     const dateStr = `${now.getDate()} ${MONTHS_UK2[now.getMonth()]}`
+    const user_id = await getUserId()
     const {data,error} = await supabase.from('records').insert({
-      client_id:clientId, exercise:nr.exercise, value:nr.value, unit:nr.unit, date:dateStr
+      client_id:clientId, exercise:nr.exercise, value:nr.value, unit:nr.unit, date:dateStr, user_id
     }).select().single()
     if (!error) setRecords([...records,data])
     setShowAddRecord(null); setNr({exercise:'',value:'',unit:'кг'})

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { supabase } from '../supabase'
+import { supabase, getUserId } from '../supabase'
 import { todayStr, dateToStr, getMondayFirst, MONTHS_UK, MONTHS_UK2, DAYS_SHORT, DAYS_FULL } from '../constants'
 import StatsTab from './StatsTab'
 import FreeTimeTab from './FreeTimeTab'
@@ -93,12 +93,13 @@ function ProfileTab({ sessions, clients, finance, setFinance, pricePlans, setPri
 
   const savePlan = async () => {
     if (!np.name||!np.price) return
+    const user_id = await getUserId()
     if (editPlan) {
       const {data,error} = await supabase.from('price_plans').update({name:np.name,sessions:Number(np.sessions),price:Number(np.price)}).eq('id',editPlan.id).select().single()
       if (!error) setPricePlans(prev=>prev.map(p=>p.id===editPlan.id?data:p).sort((a,b)=>a.name.localeCompare(b.name,'uk')))
       setEditPlan(null)
     } else {
-      const {data,error} = await supabase.from('price_plans').insert({name:np.name,sessions:Number(np.sessions),price:Number(np.price)}).select().single()
+      const {data,error} = await supabase.from('price_plans').insert({name:np.name,sessions:Number(np.sessions),price:Number(np.price),user_id}).select().single()
       if (!error) setPricePlans(prev=>[...prev,data].sort((a,b)=>a.name.localeCompare(b.name,'uk')))
     }
     setShowAddPlan(false); setNp({name:'',sessions:1,price:''})

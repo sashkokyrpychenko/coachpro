@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { supabase } from '../supabase'
+import { supabase, getUserId } from '../supabase'
 import { todayStr, MONTHS_UK2 } from '../constants'
 
 function ClipTab({ clientId, clients, setClients, sessions, pricePlans, setFinance }) {
@@ -27,7 +27,8 @@ function ClipTab({ clientId, clients, setClients, sessions, pricePlans, setFinan
   const addFinanceRecord = async (planName, amount) => {
     const lastName = c.name ? c.name.split(' ')[1] || c.name.split(' ')[0] : c.name
     const finName = `${lastName} - ${planName} - ${Number(amount).toLocaleString('uk')} грн`
-    const {data} = await supabase.from('finance').insert({name:finName, amount:Number(amount), type:'in', date:todayStr()}).select().single()
+    const user_id = await getUserId()
+    const {data} = await supabase.from('finance').insert({name:finName, amount:Number(amount), type:'in', date:todayStr(), user_id}).select().single()
     if (data && setFinance) setFinance(prev => [data, ...prev])
   }
 

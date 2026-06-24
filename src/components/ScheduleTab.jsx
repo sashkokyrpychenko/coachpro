@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react'
-import { supabase } from '../supabase'
+import { supabase, getUserId } from '../supabase'
 import { todayStr, dateToStr, getWeekDates, getMonthDates, MONTHS_UK, MONTHS_UK2, DAYS_SHORT, DAYS_FULL } from '../constants'
 import SwipeSessionCard from './SwipeSessionCard'
 import SplitCard from './SplitCard'
@@ -79,7 +79,8 @@ export default function ScheduleTab({ clients, sessions, setSessions, setClients
     if (splitMode && fClient2 && fClient2!==fClient) {
       inserts.push({client_id:fClient2, time:fTime, type:fType||'Тренування', date:selDs, done:false, duration:fDuration})
     }
-    const {data,error} = await supabase.from('sessions').insert(inserts).select()
+    const user_id = await getUserId()
+    const {data,error} = await supabase.from('sessions').insert(inserts.map(s=>({...s,user_id}))).select()
     if (!error&&data) setSessions([...sessions,...data])
     setShowModal(false); setFType(''); setSplitMode(false); setFClient2(''); setFDuration(60)
   }

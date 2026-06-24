@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { supabase } from '../supabase'
+import { supabase, getUserId } from '../supabase'
 
 export default function ProgramsTab({ clientId, programs, setPrograms }) {
   const clientPrograms = programs.filter(p => p.client_id === clientId)
@@ -9,8 +9,9 @@ export default function ProgramsTab({ clientId, programs, setPrograms }) {
 
   const addProgram = async () => {
     if (!newName.trim() || clientPrograms.length >= 5) return
+    const user_id = await getUserId()
     const { data, error } = await supabase.from('programs').insert({
-      client_id: clientId, name: newName.trim(), exercises: []
+      client_id: clientId, name: newName.trim(), exercises: [], user_id
     }).select().single()
     if (!error && data) {
       setPrograms(prev => [...prev, data])

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { supabase } from '../supabase'
+import { supabase, getUserId } from '../supabase'
 import { dateToStr, getMondayFirst } from '../constants'
 
 const GRD = 'linear-gradient(135deg,#5EE0CE,#3FA9F0)'
@@ -71,7 +71,8 @@ function FreeTimeTab({ sessions, clients }) {
 
   const persist = async (nextHours) => {
     setHoursByMode(prev => ({ ...prev, [mode]: nextHours }))
-    await supabase.from('settings').upsert({ key: STORAGE_KEY[mode], value: JSON.stringify(nextHours) }, { onConflict:'key' })
+    const user_id = await getUserId()
+    await supabase.from('settings').upsert({ key: STORAGE_KEY[mode], value: JSON.stringify(nextHours), user_id }, { onConflict:'key,user_id' })
   }
 
   const clearEdit = (idx) => setEditedMsg(p => { const n = {...p}; delete n[idx]; return n })
