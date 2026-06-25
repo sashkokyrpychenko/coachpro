@@ -3,6 +3,47 @@ import { supabase, getUserId } from '../supabase'
 import { todayStr, dateToStr, getMondayFirst, MONTHS_UK, MONTHS_UK2, DAYS_SHORT, DAYS_FULL } from '../constants'
 import StatsTab from './StatsTab'
 import FreeTimeTab from './FreeTimeTab'
+// ── PriceRow — рядок прайсу без видимих кнопок, свайп відкриває редагувати/видалити ──
+function PriceRow({ plan, onEdit, onDelete }) {
+  const ACTIONS_W = 144
+  const [dx, setDx] = useState(0)
+  const startX = useRef(null)
+  const dragging = useRef(false)
+  const startDx = useRef(0)
+
+  const onStart = (x) => { startX.current = x; dragging.current = true; startDx.current = dx }
+  const onMove = (x) => {
+    if (!dragging.current) return
+    const delta = x - startX.current
+    setDx(Math.min(0, Math.max(-ACTIONS_W, startDx.current + delta)))
+  }
+  const onEnd = () => { dragging.current = false; setDx(dx < -ACTIONS_W/2 ? -ACTIONS_W : 0) }
+
+  return (
+    <div style={{position:'relative', borderRadius:12, overflow:'hidden'}}>
+      <div style={{position:'absolute', top:0, right:0, bottom:0, width:ACTIONS_W, display:'flex'}}>
+        <button onClick={()=>{onEdit(); setDx(0)}} style={{width:72, height:'100%', border:'none', background:'#3FA9F0', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer'}}>
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+        </button>
+        <button onClick={()=>{onDelete(); setDx(0)}} style={{width:72, height:'100%', border:'none', background:'#FF6B6B', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer'}}>
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+        </button>
+      </div>
+      <div
+        onMouseDown={e=>onStart(e.clientX)} onMouseMove={e=>dragging.current&&onMove(e.clientX)} onMouseUp={onEnd} onMouseLeave={()=>dragging.current&&onEnd()}
+        onTouchStart={e=>onStart(e.touches[0].clientX)} onTouchMove={e=>onMove(e.touches[0].clientX)} onTouchEnd={onEnd}
+        style={{display:'flex', alignItems:'center', gap:10, padding:'11px 12px', background:'#0D0D16', border:'1px solid #1A2E4A', borderRadius:12, position:'relative', transform:`translateX(${dx}px)`, transition:dragging.current?'none':'transform .25s', touchAction:'pan-y'}}
+      >
+        <div style={{flex:1}}>
+          <div style={{fontSize:13,fontWeight:600,color:'#E8EAF0'}}>{plan.name}</div>
+          <div style={{fontSize:11,color:'#4A90B8',marginTop:2}}>{plan.sessions} {plan.sessions===1?'тренування':'тренувань'}</div>
+        </div>
+        <div style={{fontFamily:'Oswald',fontSize:18,color:'#00F5FF'}}>{Number(plan.price).toLocaleString('uk')} ₴</div>
+      </div>
+    </div>
+  )
+}
+
 function ProfileTab({ sessions, clients, finance, setFinance, pricePlans, setPricePlans }) {
   const [section, setSection] = useState('freetime')
   const [showAddPlan, setShowAddPlan] = useState(false)
@@ -352,17 +393,10 @@ function ProfileTab({ sessions, clients, finance, setFinance, pricePlans, setPri
                 {pricePlans.length===0&&<div style={{display:'flex',flexDirection:'column',alignItems:'center',padding:'24px',gap:8,textAlign:'center'}}><span style={{fontSize:36}}>📋</span><div style={{fontSize:13,fontWeight:600,color:'#E8EAF0'}}>Прайс-листів ще немає</div><div style={{fontSize:11,color:'#4A90B8'}}>Додайте тарифи для клієнтів</div></div>}
                 <div style={{display:'flex',flexDirection:'column',gap:7}}>
                   {visiblePlans.map(p=>(
-                    <div key={p.id} style={{display:'flex',alignItems:'center',gap:10,padding:'11px 12px',background:'#0D0D16',border:'1px solid #1A2E4A',borderRadius:12}}>
-                      <div style={{flex:1}}>
-                        <div style={{fontSize:13,fontWeight:600,color:'#E8EAF0'}}>{p.name}</div>
-                        <div style={{fontSize:11,color:'#4A90B8',marginTop:2}}>{p.sessions} {p.sessions===1?'тренування':'тренувань'}</div>
-                      </div>
-                      <div style={{fontFamily:'Oswald',fontSize:18,color:'#00F5FF'}}>{Number(p.price).toLocaleString('uk')} ₴</div>
-                      <button onClick={()=>{setEditPlan(p);setNp({name:p.name,sessions:p.sessions,price:p.price});setShowAddPlan(true)}}
-                        style={{background:'none',border:'1px solid #1A2E4A',borderRadius:7,color:'#4A90B8',fontSize:12,padding:'4px 8px',cursor:'pointer'}}>✏️</button>
-                      <button onClick={()=>deletePlan(p.id)}
-                        style={{background:'none',border:'none',color:'#4A90B8',fontSize:14,cursor:'pointer'}}>✕</button>
-                    </div>
+                    <PriceRow key={p.id} plan={p}
+                      onEdit={()=>{setEditPlan(p);setNp({name:p.name,sessions:p.sessions,price:p.price});setShowAddPlan(true)}}
+                      onDelete={()=>deletePlan(p.id)}
+                    />
                   ))}
                 </div>
                 {pricePlans.length > 3 && (

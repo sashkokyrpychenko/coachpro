@@ -4,12 +4,21 @@ import { todayStr, dateToStr, getMondayFirst, COLORS, MONTHS_UK2, DAYS_SHORT } f
 import ClipTab from './ClipTab'
 import ProgramsTab from './ProgramsTab'
 
-// ── NoteRow — окрема нотатка зі свайп-видаленням ──
-function NoteRow({ note, onDelete }) {
+// ── іконки для типів нотаток ──
+const NOTE_ICON = {
+  strong: (c='#46DCA8') => (<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>),
+  weak: (c='#FF6B6B') => (<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>),
+  note: (c='#7FD4E8') => (<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>),
+}
+const NOTE_COLOR = { strong:'#46DCA8', weak:'#FF6B6B', note:'#7FD4E8' }
+
+// ── NoteRow — окрема нотатка зі свайп-видаленням, стрічковий стиль ──
+function NoteRow({ note, type='note', onDelete }) {
   const [offset, setOffset] = useState(0)
   const [removing, setRemoving] = useState(false)
   const startX = useRef(null)
   const isDragging = useRef(false)
+  const color = NOTE_COLOR[type]
 
   const onStart = (x) => { startX.current = x; isDragging.current = false }
   const onMove  = (x) => {
@@ -25,40 +34,18 @@ function NoteRow({ note, onDelete }) {
   }
 
   return (
-    <div style={{position:'relative',overflow:'hidden',borderRadius:9,marginBottom:5,maxHeight:removing?0:80,opacity:removing?0:1,transition:'max-height .26s ease, opacity .26s ease'}}>
+    <div style={{position:'relative',overflow:'hidden',borderRadius:9,marginBottom:6,maxHeight:removing?0:80,opacity:removing?0:1,transition:'max-height .26s ease, opacity .26s ease'}}>
       <div style={{position:'absolute',right:0,top:0,bottom:0,width:72,background:'rgba(255,60,60,.15)',border:'1px solid rgba(255,60,60,.2)',borderRadius:9,display:'flex',alignItems:'center',justifyContent:'center',opacity:offset<0?1:0,transition:'opacity .15s',pointerEvents:'none'}}>
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FF6B6B" strokeWidth="2" strokeLinecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
       </div>
       <div
         onTouchStart={e=>onStart(e.touches[0].clientX)} onTouchMove={e=>onMove(e.touches[0].clientX)} onTouchEnd={onEnd}
         onMouseDown={e=>onStart(e.clientX)} onMouseMove={e=>{if(startX.current!==null)onMove(e.clientX)}} onMouseUp={onEnd} onMouseLeave={onEnd}
-        style={{display:'flex',alignItems:'flex-start',gap:8,padding:'8px 10px',background:'rgba(255,255,255,.03)',border:'1px solid rgba(255,255,255,.06)',borderRadius:9,transform:`translateX(${offset}px)`,transition:offset===0?'transform .2s ease':'none',position:'relative',zIndex:1,userSelect:'none',cursor:'grab'}}
+        style={{display:'flex',alignItems:'flex-start',gap:9,padding:'9px 11px',background:`${color}0F`,border:`1px solid ${color}33`,borderRadius:9,transform:`translateX(${offset}px)`,transition:offset===0?'transform .2s ease':'none',position:'relative',zIndex:1,userSelect:'none',cursor:'grab'}}
       >
-        <div style={{width:4,height:4,borderRadius:'50%',background:'rgba(94,224,206,.4)',flexShrink:0,marginTop:5}}/>
-        <span style={{color:'#C8CBD0',fontSize:12,lineHeight:1.55,flex:1}}>{note.text}</span>
+        <span style={{flexShrink:0,marginTop:1}}>{NOTE_ICON[type](color)}</span>
+        <span style={{color:'#EAECEF',fontSize:12.5,lineHeight:1.5,flex:1}}>{note.text}</span>
       </div>
-    </div>
-  )
-}
-
-// ── AddNoteRow — рядок-дія для додавання нотатки ──
-function AddNoteRow({ open, text, onOpen, onClose, onTextChange, onSave }) {
-  if (open) return (
-    <div style={{background:'rgba(255,255,255,.04)',border:'1px solid rgba(94,224,206,.2)',borderRadius:9,padding:'8px 10px'}}>
-      <input autoFocus value={text} onChange={e=>onTextChange(e.target.value)}
-        onKeyDown={e=>{if(e.key==='Enter')onSave();if(e.key==='Escape')onClose();}}
-        placeholder="Введи нотатку..."
-        style={{width:'100%',background:'none',border:'none',outline:'none',color:'#E8EAF0',fontSize:12,lineHeight:1.55,fontFamily:'DM Sans'}}/>
-      <div style={{display:'flex',justifyContent:'flex-end',gap:6,marginTop:6}}>
-        <button onClick={onClose} style={{padding:'3px 10px',borderRadius:7,border:'1px solid rgba(255,255,255,.1)',background:'none',color:'#6B7280',fontSize:11,cursor:'pointer',fontFamily:'DM Sans'}}>Скасувати</button>
-        <button onClick={onSave} style={{padding:'3px 10px',borderRadius:7,border:'none',background:text.trim()?'linear-gradient(135deg,#5EE0CE,#3FA9F0)':'rgba(255,255,255,.06)',color:text.trim()?'#000':'#4A5568',fontSize:11,fontWeight:700,cursor:text.trim()?'pointer':'default',fontFamily:'DM Sans',transition:'all .2s'}}>Зберегти</button>
-      </div>
-    </div>
-  )
-  return (
-    <div onClick={onOpen} style={{display:'flex',alignItems:'center',gap:8,padding:'7px 10px',borderRadius:9,border:'1px dashed rgba(255,255,255,.09)',cursor:'pointer',marginTop:2}}>
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#4A5568" strokeWidth="2.2" strokeLinecap="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-      <span style={{color:'#4A5568',fontSize:11}}>Додати нотатку</span>
     </div>
   )
 }
@@ -104,12 +91,8 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
   const [openMetricChart, setOpenMetricChart] = useState(null)
   const [nm, setNm] = useState({name:'', unit:'кг'})
   const [nv, setNv] = useState({value:'', date: todayStr()})
-  const [noteInput, setNoteInput] = useState({})   // clientId → текст
-  const [noteOpen,  setNoteOpen]  = useState({})   // clientId → bool
-  const [strInput,  setStrInput]  = useState({})   // clientId → текст (сильні)
-  const [strOpen,   setStrOpen]   = useState({})
-  const [weakInput, setWeakInput] = useState({})   // clientId → текст (слабкі)
-  const [weakOpen,  setWeakOpen]  = useState({})
+  const [noteInput, setNoteInput] = useState({})      // clientId → текст (спільний для всіх типів)
+  const [noteAddOpen, setNoteAddOpen] = useState({})   // clientId → 'strong' | 'weak' | 'note' | null
   const [barsIn, setBarsIn] = useState(false)      // тригер заповнення прогрес-барів
   useEffect(() => { const t = setTimeout(()=>setBarsIn(true), 80); return ()=>clearTimeout(t) }, [])
 
@@ -385,11 +368,7 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
                   <div style={{fontSize:12,color:'#4A90B8',marginTop:2}}>{c.goal}</div>
                 </div>
                 <div style={{display:'flex',flexDirection:'column',alignItems:'flex-end',gap:4}}>
-                  <div style={{display:'flex',gap:6,alignItems:'center'}}>
-                    <button onClick={e=>{e.stopPropagation();setEc({name:c.name,goal:c.goal,w:c.weight,h:c.height,started:c.started_at||'',phone:c.phone||'',telegram:c.telegram||''});setEditClient(c)}}
-                      style={{background:'none',border:`1px solid rgba(255,255,255,.1)`,borderRadius:7,color:'#4A90B8',fontSize:12,padding:'3px 7px',cursor:'pointer'}}>✏️</button>
-                    <span style={{fontSize:11,padding:'3px 9px',borderRadius:20,fontWeight:600,background:'rgba(94,224,206,.12)',color:'#5EE0CE'}}>{c.clip_used}/{c.clip_total}</span>
-                  </div>
+                  <span style={{fontSize:11,padding:'3px 9px',borderRadius:20,fontWeight:600,background:'rgba(94,224,206,.12)',color:'#5EE0CE'}}>{c.clip_used}/{c.clip_total}</span>
                   <span style={{color:'#4A90B8',fontSize:14,transform:isOpen?'rotate(180deg)':'none',transition:'transform .2s'}}>▾</span>
                 </div>
               </div>
@@ -417,61 +396,66 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
                           </div>
                         ))}
                       </div>
-                      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:12}}>
-                        <div style={{background:'rgba(255,255,255,.04)',borderRadius:10,padding:10}}>
-                          <div style={{fontSize:11,fontWeight:600,color:'#46DCA8',marginBottom:6,textTransform:'uppercase',letterSpacing:.5}}>💪 Сильні</div>
-                          {(c.strengths||[]).map((text,idx)=>(
-                            <NoteRow key={idx} note={{id:idx,text}} onDelete={()=>deleteStrengthAt(c.id,idx)}/>
-                          ))}
-                          <AddNoteRow
-                            open={!!strOpen[c.id]}
-                            text={strInput[c.id]||''}
-                            onOpen={()=>setStrOpen(p=>({...p,[c.id]:true}))}
-                            onClose={()=>setStrOpen(p=>({...p,[c.id]:false}))}
-                            onTextChange={t=>setStrInput(p=>({...p,[c.id]:t}))}
-                            onSave={()=>{
-                              const t=(strInput[c.id]||'').trim()
-                              if(t){addStrength(c.id,t);setStrInput(p=>({...p,[c.id]:''}));setStrOpen(p=>({...p,[c.id]:false}))}
-                            }}
-                          />
+                      <div style={{marginTop:4,marginBottom:12}}>
+                        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
+                          <span style={{fontSize:10,color:'#4A90B8',textTransform:'uppercase',letterSpacing:.5,fontWeight:600}}>Особливості та нотатки</span>
+                          <button onClick={()=>setNoteAddOpen(p=>({...p,[c.id]: p[c.id] ? null : 'note'}))}
+                            style={{display:'flex',alignItems:'center',gap:4,padding:'4px 9px',borderRadius:8,border:'1px solid rgba(94,224,206,.25)',background:'rgba(94,224,206,.08)',color:'#5EE0CE',fontSize:10,fontWeight:600,cursor:'pointer'}}>
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#5EE0CE" strokeWidth="2.4" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                            Додати
+                          </button>
                         </div>
-                        <div style={{background:'rgba(255,255,255,.04)',borderRadius:10,padding:10}}>
-                          <div style={{fontSize:11,fontWeight:600,color:'#FF6B6B',marginBottom:6,textTransform:'uppercase',letterSpacing:.5}}>⚠️ Слабкі</div>
-                          {(c.weaknesses||[]).map((text,idx)=>(
-                            <NoteRow key={idx} note={{id:idx,text}} onDelete={()=>deleteWeaknessAt(c.id,idx)}/>
-                          ))}
-                          <AddNoteRow
-                            open={!!weakOpen[c.id]}
-                            text={weakInput[c.id]||''}
-                            onOpen={()=>setWeakOpen(p=>({...p,[c.id]:true}))}
-                            onClose={()=>setWeakOpen(p=>({...p,[c.id]:false}))}
-                            onTextChange={t=>setWeakInput(p=>({...p,[c.id]:t}))}
-                            onSave={()=>{
-                              const t=(weakInput[c.id]||'').trim()
-                              if(t){addWeakness(c.id,t);setWeakInput(p=>({...p,[c.id]:''}));setWeakOpen(p=>({...p,[c.id]:false}))}
-                            }}
-                          />
-                        </div>
-                      </div>
-                      <div style={{marginTop:12,borderTop:'1px solid rgba(255,255,255,.06)',paddingTop:10}}>
-                        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:6}}>
-                          <span style={{fontSize:10,color:'#4A90B8',textTransform:'uppercase',letterSpacing:.5,fontWeight:600}}>Нотатки</span>
-                          {parseNotes(c).length>0&&<span style={{fontSize:10,color:'#4A5568'}}>{parseNotes(c).length}</span>}
-                        </div>
-                        {parseNotes(c).map(n=>(
-                          <NoteRow key={n.id} note={n} onDelete={noteId=>deleteNoteItem(c.id,noteId)}/>
+
+                        {/* обʼєднана стрічка: сильні + слабкі + нотатки, в порядку додавання */}
+                        {(c.strengths||[]).map((text,idx)=>(
+                          <NoteRow key={'s'+idx} note={{id:idx,text}} type="strong" onDelete={()=>deleteStrengthAt(c.id,idx)}/>
                         ))}
-                        <AddNoteRow
-                          open={!!noteOpen[c.id]}
-                          text={noteInput[c.id]||''}
-                          onOpen={()=>setNoteOpen(p=>({...p,[c.id]:true}))}
-                          onClose={()=>setNoteOpen(p=>({...p,[c.id]:false}))}
-                          onTextChange={t=>setNoteInput(p=>({...p,[c.id]:t}))}
-                          onSave={()=>{
-                            const t=(noteInput[c.id]||'').trim()
-                            if(t){addNote(c.id,t);setNoteInput(p=>({...p,[c.id]:''}));setNoteOpen(p=>({...p,[c.id]:false}))}
-                          }}
-                        />
+                        {(c.weaknesses||[]).map((text,idx)=>(
+                          <NoteRow key={'w'+idx} note={{id:idx,text}} type="weak" onDelete={()=>deleteWeaknessAt(c.id,idx)}/>
+                        ))}
+                        {parseNotes(c).map(n=>(
+                          <NoteRow key={'n'+n.id} note={n} type="note" onDelete={noteId=>deleteNoteItem(c.id,noteId)}/>
+                        ))}
+                        {!(c.strengths||[]).length && !(c.weaknesses||[]).length && !parseNotes(c).length && !noteAddOpen[c.id] && (
+                          <div style={{fontSize:12,color:'#4A5568',textAlign:'center',padding:'10px 0'}}>Поки немає нотаток</div>
+                        )}
+
+                        {/* форма додавання — спершу обираємо тип */}
+                        {noteAddOpen[c.id] && (
+                          <div style={{background:'rgba(255,255,255,.04)',border:'1px solid rgba(94,224,206,.2)',borderRadius:9,padding:'8px 10px',marginTop:2}}>
+                            <div style={{display:'flex',gap:6,marginBottom:8}}>
+                              {[['strong','Сильна','#46DCA8'],['weak','Слабка','#FF6B6B'],['note','Нотатка','#7FD4E8']].map(([id,label,color])=>(
+                                <button key={id} onClick={()=>setNoteAddOpen(p=>({...p,[c.id]:id}))}
+                                  style={{flex:1,padding:'5px 4px',borderRadius:7,fontSize:10,fontWeight:600,cursor:'pointer',border:`1px solid ${noteAddOpen[c.id]===id?color:'rgba(255,255,255,.1)'}`,background:noteAddOpen[c.id]===id?`${color}1A`:'none',color:noteAddOpen[c.id]===id?color:'#6B7280'}}>{label}</button>
+                              ))}
+                            </div>
+                            <input autoFocus value={noteInput[c.id]||''} onChange={e=>setNoteInput(p=>({...p,[c.id]:e.target.value}))}
+                              onKeyDown={e=>{
+                                if(e.key==='Enter'){
+                                  const t=(noteInput[c.id]||'').trim()
+                                  if(t){
+                                    const kind=noteAddOpen[c.id]
+                                    if(kind==='strong')addStrength(c.id,t); else if(kind==='weak')addWeakness(c.id,t); else addNote(c.id,t)
+                                    setNoteInput(p=>({...p,[c.id]:''})); setNoteAddOpen(p=>({...p,[c.id]:null}))
+                                  }
+                                }
+                                if(e.key==='Escape')setNoteAddOpen(p=>({...p,[c.id]:null}))
+                              }}
+                              placeholder="Введи текст..."
+                              style={{width:'100%',background:'none',border:'none',outline:'none',color:'#E8EAF0',fontSize:12,lineHeight:1.55,fontFamily:'DM Sans'}}/>
+                            <div style={{display:'flex',justifyContent:'flex-end',gap:6,marginTop:6}}>
+                              <button onClick={()=>setNoteAddOpen(p=>({...p,[c.id]:null}))} style={{padding:'3px 10px',borderRadius:7,border:'1px solid rgba(255,255,255,.1)',background:'none',color:'#6B7280',fontSize:11,cursor:'pointer',fontFamily:'DM Sans'}}>Скасувати</button>
+                              <button onClick={()=>{
+                                const t=(noteInput[c.id]||'').trim()
+                                if(t){
+                                  const kind=noteAddOpen[c.id]
+                                  if(kind==='strong')addStrength(c.id,t); else if(kind==='weak')addWeakness(c.id,t); else addNote(c.id,t)
+                                  setNoteInput(p=>({...p,[c.id]:''})); setNoteAddOpen(p=>({...p,[c.id]:null}))
+                                }
+                              }} style={{padding:'3px 10px',borderRadius:7,border:'none',background:(noteInput[c.id]||'').trim()?'linear-gradient(135deg,#5EE0CE,#3FA9F0)':'rgba(255,255,255,.06)',color:(noteInput[c.id]||'').trim()?'#000':'#4A5568',fontSize:11,fontWeight:700,cursor:(noteInput[c.id]||'').trim()?'pointer':'default',fontFamily:'DM Sans'}}>Зберегти</button>
+                            </div>
+                          </div>
+                        )}
                       </div>
                       {(c.phone||c.telegram) && (
                         <div style={{display:'flex',gap:8,marginTop:12}}>
@@ -489,6 +473,11 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
                           )}
                         </div>
                       )}
+                      <button onClick={()=>{setEc({name:c.name,goal:c.goal,w:c.weight,h:c.height,started:c.started_at||'',phone:c.phone||'',telegram:c.telegram||''});setEditClient(c)}}
+                        style={{width:'100%',marginTop:12,padding:'10px',borderRadius:10,border:'1px solid rgba(255,255,255,.08)',background:'rgba(255,255,255,.03)',color:'#878F9B',fontFamily:'DM Sans',fontSize:12,fontWeight:600,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:7}}>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#878F9B" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+                        Редагувати клієнта
+                      </button>
                     </div>
                   )}
                   {activeTab==='metrics' && (() => {
