@@ -120,8 +120,19 @@ function ProfileTab({ sessions, clients, finance, setFinance, pricePlans, setPri
 
   useEffect(() => {
     const loadPercent = async () => {
-      const { data } = await supabase.from('settings').select('*').eq('key','income_percent').maybeSingle()
-      if (data?.value) { const v = Number(data.value); if (v>=1 && v<=100) setIncomePercent(v) }
+      const user_id = await getUserId()
+      if (!user_id) return
+      const { data, error } = await supabase
+        .from('settings')
+        .select('*')
+        .eq('key','income_percent')
+        .eq('user_id', user_id)
+      if (error) { console.error('income_percent load error:', error); return }
+      const row = data?.[0]
+      if (row?.value) {
+        const v = Number(row.value)
+        if (v>=1 && v<=100) setIncomePercent(v)
+      }
     }
     loadPercent()
   }, [])
@@ -130,7 +141,9 @@ function ProfileTab({ sessions, clients, finance, setFinance, pricePlans, setPri
     const clamped = Math.min(100, Math.max(1, Number(v)||100))
     setIncomePercent(clamped)
     const user_id = await getUserId()
-    await supabase.from('settings').upsert({ key:'income_percent', value:String(clamped), user_id }, { onConflict:'key,user_id' })
+    if (!user_id) return
+    const { error } = await supabase.from('settings').upsert({ key:'income_percent', value:String(clamped), user_id }, { onConflict:'key,user_id' })
+    if (error) console.error('income_percent save error:', error)
   }
 
   const pct = incomePercent / 100
@@ -240,7 +253,7 @@ function ProfileTab({ sessions, clients, finance, setFinance, pricePlans, setPri
             </div>
             <div style={{display:'flex',justifyContent:'space-between',fontSize:10,color:'#3A4A5A'}}>
               <span>{F.dayWord} {F.dayNow} з {F.dayMax}</span>
-              <span style={{color:'#4A90B8'}}>+{Math.round(F.expect).toLocaleString('uk')} ₴ очікується</span>
+              <span style={{color:'#4A90B8'}}>+{Math.round(F.expect*pct).toLocaleString('uk')} ₴ очікується</span>
             </div>
             {F.future > 0 && (
               <div style={{marginTop:10,paddingTop:10,borderTop:'1px solid #1A2E4A',fontSize:11,color:'#4A90B8'}}>
