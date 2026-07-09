@@ -312,8 +312,9 @@ function ProfileTab({ sessions, clients, finance, setFinance, pricePlans, setPri
           </div>
           {/* Модал редагування транзакції */}
           {editFinance && (
-            <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.75)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:300}} onClick={()=>setEditFinance(null)}>
-              <div style={{background:'#111118',border:'1px solid #1A2E4A',borderRadius:16,padding:24,width:300}} onClick={e=>e.stopPropagation()}>
+            <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.75)',display:'flex',alignItems:'flex-end',justifyContent:'center',zIndex:300}} onClick={()=>setEditFinance(null)}>
+              <div style={{background:'#111118',border:'1px solid #1A2E4A',borderRadius:'20px 20px 0 0',width:'100%',maxWidth:480,padding:'20px 24px calc(env(safe-area-inset-bottom, 0px) + 20px)'}} onClick={e=>e.stopPropagation()}>
+                <div style={{width:40,height:4,background:'rgba(255,255,255,.15)',borderRadius:2,margin:'0 auto 16px'}}/>
                 <div style={{fontFamily:'Oswald',fontSize:20,marginBottom:16,color:'#E8EAF0'}}>Редагувати транзакцію</div>
                 <div style={{display:'flex',flexDirection:'column',gap:10,marginBottom:16}}>
                   <input value={ef.name} onChange={e=>setEf(p=>({...p,name:e.target.value}))} placeholder="Назва"

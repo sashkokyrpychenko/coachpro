@@ -617,8 +617,9 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
       </div>
 
       {showAdd && (
-        <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.7)',backdropFilter:'blur(4px)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:200,padding:20}}>
-          <div style={{background:'#101218',border:'1px solid rgba(255,255,255,.08)',borderRadius:20,width:'100%',maxWidth:480,padding:24}}>
+        <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.7)',backdropFilter:'blur(4px)',display:'flex',alignItems:'flex-end',justifyContent:'center',zIndex:200}} onClick={()=>setShowAdd(false)}>
+          <div style={{background:'#101218',border:'1px solid rgba(255,255,255,.08)',borderRadius:'20px 20px 0 0',width:'100%',maxWidth:480,maxHeight:'90dvh',overflowY:'auto',padding:'20px 24px calc(env(safe-area-inset-bottom, 0px) + 20px)'}} onClick={e=>e.stopPropagation()}>
+            <div style={{width:40,height:4,background:'rgba(255,255,255,.15)',borderRadius:2,margin:'0 auto 16px'}}/>
             <div style={{fontFamily:'Oswald',fontSize:22,marginBottom:16}}>Новий клієнт</div>
             <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:12}}>
               <div><label style={lbl}>Ім'я</label><input value={nc.name} onChange={e=>setNc({...nc,name:e.target.value})} placeholder="Аліна" style={inp}/></div>
@@ -661,8 +662,9 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
       )}
 
       {showAddRecord && (
-        <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.7)',backdropFilter:'blur(4px)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:200,padding:20}}>
-          <div style={{background:'#101218',border:'1px solid rgba(255,255,255,.08)',borderRadius:20,width:'100%',maxWidth:440,padding:24}}>
+        <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.7)',backdropFilter:'blur(4px)',display:'flex',alignItems:'flex-end',justifyContent:'center',zIndex:200}} onClick={()=>setShowAddRecord(null)}>
+          <div style={{background:'#101218',border:'1px solid rgba(255,255,255,.08)',borderRadius:'20px 20px 0 0',width:'100%',maxWidth:440,padding:'20px 24px calc(env(safe-area-inset-bottom, 0px) + 20px)'}} onClick={e=>e.stopPropagation()}>
+            <div style={{width:40,height:4,background:'rgba(255,255,255,.15)',borderRadius:2,margin:'0 auto 16px'}}/>
             <div style={{fontFamily:'Oswald',fontSize:22,marginBottom:16}}>Новий рекорд</div>
             <label style={lbl}>Вправа</label>
             <input value={nr.exercise} onChange={e=>setNr({...nr,exercise:e.target.value})} placeholder="Жим лежачи…" style={{...inp,marginBottom:12}}/>

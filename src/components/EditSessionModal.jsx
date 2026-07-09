@@ -36,17 +36,14 @@ export default function EditSessionModal({ session, clients, onClose, onSave, on
     <div
       style={{
         position:'fixed',
-        top:0, left:0, right:0, bottom:0,
-        height:'100vh',
-        height:'100dvh',
-        background:'#0A0B0F',
+        inset:0,
+        background:'rgba(0,0,0,.6)',
+        backdropFilter:'blur(4px)',
         display:'flex',
-        alignItems:'center',
+        alignItems:'flex-end',
         justifyContent:'center',
         zIndex:200,
-        padding:20,
         boxSizing:'border-box',
-        overflowY:'auto'
       }}
       onClick={onClose}
     >
@@ -55,18 +52,18 @@ export default function EditSessionModal({ session, clients, onClose, onSave, on
           background:'#171a21',
           border:'none',
           outline:'none',
-          borderRadius:20,
+          borderRadius:'20px 20px 0 0',
           width:'100%',
           maxWidth:480,
-          maxHeight:'min(85vh, 85dvh)',
-          padding:'24px',
+          maxHeight:'90dvh',
+          padding:'20px 20px calc(env(safe-area-inset-bottom, 0px) + 20px)',
           boxSizing:'border-box',
           overflowY:'auto',
-          margin:'auto',
-          boxShadow:'0 20px 60px rgba(0,0,0,.5)'
+          boxShadow:'0 -8px 40px rgba(0,0,0,.5)'
         }}
         onClick={e => e.stopPropagation()}
       >
+        <div style={{width:40,height:4,background:'rgba(255,255,255,.15)',borderRadius:2,margin:'0 auto 18px'}}/>
         <div style={{fontFamily:'DM Sans',fontWeight:700,fontSize:20,color:'#EAECEF',marginBottom:18}}>
           Редагувати сесію — {dateStr}
         </div>
