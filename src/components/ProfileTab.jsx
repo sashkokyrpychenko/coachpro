@@ -73,6 +73,19 @@ function ProfileTab({ sessions, clients, finance, setFinance, pricePlans, setPri
   const incomeMonth = finance.filter(f=>f.type==='in' && f.date>=monthStartStr).reduce((a,f)=>a+Number(f.amount),0)
   const income      = finance.filter(f=>f.type==='in').reduce((a,f)=>a+Number(f.amount),0)
 
+  // Дохід за останні 13 місяців для графіка
+  const monthlyIncome = Array.from({length:13},(_,i)=>{
+    const d = new Date(now.getFullYear(), now.getMonth()-12+i, 1)
+    const yr = d.getFullYear()
+    const mo = String(d.getMonth()+1).padStart(2,'0')
+    const start = `${yr}-${mo}-01`
+    const end = `${yr}-${mo}-31`
+    const short = MONTHS_UK[d.getMonth()].slice(0,3)
+    const amount = finance.filter(f=>f.type==='in' && f.date>=start && f.date<=end).reduce((a,f)=>a+Number(f.amount),0)
+    return { label: short, amount, isCurrent: i===12 }
+  })
+  const maxMonthly = Math.max(...monthlyIncome.map(m=>m.amount), 1)
+
   // Прогноз доходу на поточний місяць
   const monthEndStr = (() => {
     const d = new Date(now.getFullYear(), now.getMonth()+1, 0)
@@ -305,14 +318,46 @@ function ProfileTab({ sessions, clients, finance, setFinance, pricePlans, setPri
             )}
           </div>
 
-          {/* Загальний дохід */}
+          {/* Графік доходу за 13 місяців */}
           <div style={{marginBottom:12}}>
             <div style={{background:'#111118',border:'1px solid #1A2E4A',borderRadius:14,padding:16}}>
-              <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:4}}>
-                <div style={{fontSize:11,color:'#4A90B8'}}>Дохід за місяць</div>
-                <div style={{fontSize:10,color:'#4A5568'}}>Всього: {Math.round(income*pct).toLocaleString('uk')} ₴</div>
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:14}}>
+                <div style={{fontSize:11,color:'#4A90B8'}}>Дохід по місяцях</div>
+                <div style={{fontFamily:'Oswald',fontSize:16,color:'#00FF88'}}>{Math.round(incomeMonth*pct).toLocaleString('uk')} ₴</div>
               </div>
-              <div style={{fontFamily:'Oswald',fontSize:32,color:'#00FF88'}}>{Math.round(incomeMonth*pct).toLocaleString('uk')} ₴</div>
+              {/* стовпці */}
+              <div style={{display:'flex',alignItems:'flex-end',gap:4,height:70,marginBottom:8}}>
+                {monthlyIncome.map((m,i)=>{
+                  const h = Math.max(3, (m.amount/maxMonthly)*60)
+                  const intensity = 0.25 + (m.amount/maxMonthly)*0.6
+                  return (
+                    <div key={i} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'flex-end',height:'100%',gap:3}}>
+                      <div style={{
+                        width:'100%', borderRadius:'3px 3px 2px 2px', minHeight:3,
+                        height: h,
+                        background: m.isCurrent
+                          ? 'linear-gradient(180deg,#00FF88,#46DCA8)'
+                          : `rgba(70,220,168,${intensity})`,
+                        boxShadow: m.isCurrent ? '0 0 10px rgba(70,220,168,.5)' : 'none',
+                      }}/>
+                    </div>
+                  )
+                })}
+              </div>
+              {/* підписи місяців */}
+              <div style={{display:'flex',gap:4}}>
+                {monthlyIncome.map((m,i)=>(
+                  <div key={i} style={{flex:1,display:'flex',justifyContent:'center'}}>
+                    {m.isCurrent ? (
+                      <div style={{background:'rgba(70,220,168,.16)',borderRadius:7,padding:'2px 4px',textAlign:'center'}}>
+                        <div style={{fontSize:8,fontWeight:700,color:'#46DCA8',whiteSpace:'nowrap'}}>{m.label}</div>
+                      </div>
+                    ) : (
+                      <div style={{fontSize:8,color:'#3A4A5A',textAlign:'center'}}>{m.label}</div>
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
           {/* Модал редагування транзакції */}
