@@ -5,6 +5,7 @@ import SwipeSessionCard from './SwipeSessionCard'
 import SplitCard from './SplitCard'
 import DayTimeline from './DayTimeline'
 import DurationPicker from './DurationPicker'
+import Modal from './Modal'
 import PickClientModal from './PickClientModal'
 import EditSessionModal from './EditSessionModal'
 
@@ -209,10 +210,7 @@ export default function ScheduleTab({ clients, sessions, setSessions, setClients
         </div>
       )}
 
-      {showModal && (
-        <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.7)',backdropFilter:'blur(4px)',display:'flex',alignItems:'flex-end',justifyContent:'center',zIndex:200}} onClick={()=>{setShowModal(false);setSplitMode(false)}}>
-          <div style={{background:'#111118',border:'1px solid #1A2E4A',borderRadius:'20px 20px 0 0',width:'100%',maxWidth:480,maxHeight:'90dvh',overflowY:'auto',padding:'20px 24px calc(env(safe-area-inset-bottom, 0px) + 20px)'}} onClick={e=>e.stopPropagation()}>
-            <div style={{width:40,height:4,background:'rgba(255,255,255,.15)',borderRadius:2,margin:'0 auto 16px'}}/>
+      <Modal open={showModal} onClose={()=>{setShowModal(false);setSplitMode(false)}} zIndex={200}>
             <div style={{fontFamily:'Oswald',fontSize:22,marginBottom:16}}>Нова сесія — {selDate.getDate()} {MONTHS_UK2[selDate.getMonth()]}</div>
             <div style={{display:'flex',gap:8,marginBottom:12}}>
               <button onClick={()=>setSplitMode(false)} style={{flex:1,padding:'8px',borderRadius:10,border:`1px solid ${!splitMode?'#00F5FF':'#1E2A3A'}`,background:!splitMode?'rgba(0,245,255,.1)':'none',color:!splitMode?'#00F5FF':'#4A5A6A',fontFamily:'DM Sans',fontSize:12,fontWeight:600,cursor:'pointer'}}>👤 Один клієнт</button>
@@ -249,9 +247,7 @@ export default function ScheduleTab({ clients, sessions, setSessions, setClients
               <button onClick={()=>{setShowModal(false);setSplitMode(false)}} style={{flex:1,padding:'10px',borderRadius:10,border:'1px solid #1A2E4A',background:'#0D0D16',color:'#E8EAF0',fontFamily:'DM Sans',fontSize:13,fontWeight:600,cursor:'pointer'}}>Скасувати</button>
               <button onClick={saveSession} style={{flex:1,padding:'10px',borderRadius:10,border:'none',background:'#00F5FF',color:'#111',fontFamily:'DM Sans',fontSize:13,fontWeight:600,cursor:'pointer'}}>Додати</button>
             </div>
-          </div>
-        </div>
-      )}
+      </Modal>
 
       {pickList && (
         <PickClientModal sessions={pickList} clients={clients} onPick={s => { setPickList(null); setEditSession(s) }} onClose={() => setPickList(null)}/>

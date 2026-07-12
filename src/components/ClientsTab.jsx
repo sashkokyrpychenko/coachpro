@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { supabase, getUserId } from '../supabase'
+import Modal from './Modal'
 import { todayStr, dateToStr, getMondayFirst, COLORS, MONTHS_UK2, DAYS_SHORT } from '../constants'
 import ClipTab from './ClipTab'
 import ProgramsTab from './ProgramsTab'
@@ -616,10 +617,7 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
         })}
       </div>
 
-      {showAdd && (
-        <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.7)',backdropFilter:'blur(4px)',display:'flex',alignItems:'flex-end',justifyContent:'center',zIndex:200}} onClick={()=>setShowAdd(false)}>
-          <div style={{background:'#101218',border:'1px solid rgba(255,255,255,.08)',borderRadius:'20px 20px 0 0',width:'100%',maxWidth:480,maxHeight:'90dvh',overflowY:'auto',padding:'20px 24px calc(env(safe-area-inset-bottom, 0px) + 20px)'}} onClick={e=>e.stopPropagation()}>
-            <div style={{width:40,height:4,background:'rgba(255,255,255,.15)',borderRadius:2,margin:'0 auto 16px'}}/>
+      <Modal open={showAdd} onClose={()=>setShowAdd(false)} zIndex={200}>
             <div style={{fontFamily:'Oswald',fontSize:22,marginBottom:16}}>Новий клієнт</div>
             <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:12}}>
               <div><label style={lbl}>Ім'я</label><input value={nc.name} onChange={e=>setNc({...nc,name:e.target.value})} placeholder="Аліна" style={inp}/></div>
@@ -657,14 +655,9 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
               <button onClick={()=>setShowAdd(false)} style={{flex:1,padding:'10px',borderRadius:10,border:'1px solid rgba(255,255,255,.08)',background:'rgba(255,255,255,.04)',color:'#E8EAF0',fontFamily:'DM Sans',fontSize:13,fontWeight:600,cursor:'pointer'}}>Скасувати</button>
               <button onClick={saveClient} disabled={saving} style={{flex:1,padding:'10px',borderRadius:10,border:'none',background:'linear-gradient(135deg,#5EE0CE,#3FA9F0)',color:'#111',fontFamily:'DM Sans',fontSize:13,fontWeight:600,cursor:'pointer'}}>{saving?'Збереження…':'Додати'}</button>
             </div>
-          </div>
-        </div>
-      )}
+      </Modal>
 
-      {showAddRecord && (
-        <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.7)',backdropFilter:'blur(4px)',display:'flex',alignItems:'flex-end',justifyContent:'center',zIndex:200}} onClick={()=>setShowAddRecord(null)}>
-          <div style={{background:'#101218',border:'1px solid rgba(255,255,255,.08)',borderRadius:'20px 20px 0 0',width:'100%',maxWidth:440,padding:'20px 24px calc(env(safe-area-inset-bottom, 0px) + 20px)'}} onClick={e=>e.stopPropagation()}>
-            <div style={{width:40,height:4,background:'rgba(255,255,255,.15)',borderRadius:2,margin:'0 auto 16px'}}/>
+      <Modal open={!!showAddRecord} onClose={()=>setShowAddRecord(null)} zIndex={200}>
             <div style={{fontFamily:'Oswald',fontSize:22,marginBottom:16}}>Новий рекорд</div>
             <label style={lbl}>Вправа</label>
             <input value={nr.exercise} onChange={e=>setNr({...nr,exercise:e.target.value})} placeholder="Жим лежачи…" style={{...inp,marginBottom:12}}/>
@@ -680,9 +673,7 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
               <button onClick={()=>setShowAddRecord(null)} style={{flex:1,padding:'10px',borderRadius:10,border:'1px solid rgba(255,255,255,.08)',background:'rgba(255,255,255,.04)',color:'#E8EAF0',fontFamily:'DM Sans',fontSize:13,fontWeight:600,cursor:'pointer'}}>Скасувати</button>
               <button onClick={()=>saveRecord(showAddRecord)} style={{flex:1,padding:'10px',borderRadius:10,border:'none',background:'linear-gradient(135deg,#5EE0CE,#3FA9F0)',color:'#111',fontFamily:'DM Sans',fontSize:13,fontWeight:600,cursor:'pointer'}}>Зберегти</button>
             </div>
-          </div>
-        </div>
-      )}
+      </Modal>
 
       {/* Edit Client Modal */}
       {editClient && (

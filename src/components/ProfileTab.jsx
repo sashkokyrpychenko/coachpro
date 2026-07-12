@@ -3,6 +3,7 @@ import { supabase, getUserId } from '../supabase'
 import { todayStr, dateToStr, getMondayFirst, MONTHS_UK, MONTHS_UK2, DAYS_SHORT, DAYS_FULL } from '../constants'
 import StatsTab from './StatsTab'
 import FreeTimeTab from './FreeTimeTab'
+import Modal from './Modal'
 // ── PriceRow — рядок прайсу без видимих кнопок, свайп відкриває редагувати/видалити ──
 function PriceRow({ plan, onEdit, onDelete }) {
   const ACTIONS_W = 144
@@ -69,7 +70,8 @@ function ProfileTab({ sessions, clients, finance, setFinance, pricePlans, setPri
   const days = Array.from({length:7},(_,i)=>{ const d=new Date(now); d.setDate(now.getDate()-6+i); return {ds:dateToStr(d),lbl:d.getDate(),day:DAYS_SHORT[getMondayFirst(d)]} })
   const counts = days.map(d=>sessions.filter(s=>s.date===d.ds).length)
   const maxC = Math.max(...counts,1)
-  const income  = finance.filter(f=>f.type==='in').reduce((a,f)=>a+Number(f.amount),0)
+  const incomeMonth = finance.filter(f=>f.type==='in' && f.date>=monthStartStr).reduce((a,f)=>a+Number(f.amount),0)
+  const income      = finance.filter(f=>f.type==='in').reduce((a,f)=>a+Number(f.amount),0)
 
   // Прогноз доходу на поточний місяць
   const monthEndStr = (() => {
@@ -306,15 +308,15 @@ function ProfileTab({ sessions, clients, finance, setFinance, pricePlans, setPri
           {/* Загальний дохід */}
           <div style={{marginBottom:12}}>
             <div style={{background:'#111118',border:'1px solid #1A2E4A',borderRadius:14,padding:16}}>
-              <div style={{fontSize:11,color:'#4A90B8',marginBottom:4}}>Дохід (всього)</div>
-              <div style={{fontFamily:'Oswald',fontSize:32,color:'#00FF88'}}>{Math.round(income*pct).toLocaleString('uk')} ₴</div>
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:4}}>
+                <div style={{fontSize:11,color:'#4A90B8'}}>Дохід за місяць</div>
+                <div style={{fontSize:10,color:'#4A5568'}}>Всього: {Math.round(income*pct).toLocaleString('uk')} ₴</div>
+              </div>
+              <div style={{fontFamily:'Oswald',fontSize:32,color:'#00FF88'}}>{Math.round(incomeMonth*pct).toLocaleString('uk')} ₴</div>
             </div>
           </div>
           {/* Модал редагування транзакції */}
-          {editFinance && (
-            <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.75)',display:'flex',alignItems:'flex-end',justifyContent:'center',zIndex:300}} onClick={()=>setEditFinance(null)}>
-              <div style={{background:'#111118',border:'1px solid #1A2E4A',borderRadius:'20px 20px 0 0',width:'100%',maxWidth:480,padding:'20px 24px calc(env(safe-area-inset-bottom, 0px) + 20px)'}} onClick={e=>e.stopPropagation()}>
-                <div style={{width:40,height:4,background:'rgba(255,255,255,.15)',borderRadius:2,margin:'0 auto 16px'}}/>
+          <Modal open={!!editFinance} onClose={()=>setEditFinance(null)} zIndex={300}>
                 <div style={{fontFamily:'Oswald',fontSize:20,marginBottom:16,color:'#E8EAF0'}}>Редагувати транзакцію</div>
                 <div style={{display:'flex',flexDirection:'column',gap:10,marginBottom:16}}>
                   <input value={ef.name} onChange={e=>setEf(p=>({...p,name:e.target.value}))} placeholder="Назва"
@@ -323,7 +325,6 @@ function ProfileTab({ sessions, clients, finance, setFinance, pricePlans, setPri
                     style={{padding:'9px 12px',borderRadius:10,border:'1px solid #1A2E4A',background:'#08080F',color:'#E8EAF0',fontSize:13}}/>
                   <input type="date" value={ef.date} onChange={e=>setEf(p=>({...p,date:e.target.value}))}
                     style={{padding:'9px 12px',borderRadius:10,border:'1px solid #1A2E4A',background:'#08080F',color:'#E8EAF0',fontSize:13}}/>
-
                 </div>
                 <div style={{display:'flex',gap:8}}>
                   <button onClick={async()=>{
@@ -342,9 +343,7 @@ function ProfileTab({ sessions, clients, finance, setFinance, pricePlans, setPri
                     Зберегти
                   </button>
                 </div>
-              </div>
-            </div>
-          )}
+          </Modal>
 
           <div style={{background:'#111118',border:'1px solid #1A2E4A',borderRadius:14,padding:16}}>
             <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12}}>
