@@ -59,6 +59,7 @@ function ProfileTab({ sessions, clients, finance, setFinance, pricePlans, setPri
   const [incomePercent, setIncomePercent] = useState(100)
   const [showMonthInput, setShowMonthInput] = useState(false)
   const [monthInputData, setMonthInputData] = useState({})
+  const [selectedMonth, setSelectedMonth] = useState(null) // null = поточний
 
   const today = todayStr()
   const now = new Date()
@@ -195,6 +196,34 @@ function ProfileTab({ sessions, clients, finance, setFinance, pricePlans, setPri
     loadPercent()
   }, [])
 
+  useEffect(() => {
+    // Автоматично зберігає дохід попереднього місяця при старті нового місяця
+    const autoSavePrevMonth = async () => {
+      const user_id = await getUserId()
+      if (!user_id || !finance.length) return
+      const now = new Date()
+      // попередній місяць
+      const prev = new Date(now.getFullYear(), now.getMonth()-1, 1)
+      const yr = prev.getFullYear()
+      const mo = String(prev.getMonth()+1).padStart(2,'0')
+      const ym = `${yr}-${mo}`
+      const recordName = `Місячний підсумок ${ym}`
+      // перевіряємо чи вже є запис за попередній місяць
+      const exists = finance.some(f=>f.name===recordName)
+      if (exists) return
+      // рахуємо суму з реальних транзакцій за той місяць
+      const total = finance.filter(f=>f.type==='in' && f.date && f.date.startsWith(ym) && f.name!==recordName)
+                          .reduce((a,f)=>a+Number(f.amount),0)
+      if (!total) return
+      // зберігаємо підсумок
+      const { data } = await supabase.from('finance').insert({
+        name: recordName, amount: total, type:'in', date:`${ym}-01`, user_id
+      }).select().single()
+      if (data) setFinance(prev=>[...prev, data])
+    }
+    autoSavePrevMonth()
+  }, [finance.length])
+
   const saveIncomePercent = async (v) => {
     const clamped = Math.min(100, Math.max(1, Number(v)||100))
     setIncomePercent(clamped)
@@ -321,60 +350,70 @@ function ProfileTab({ sessions, clients, finance, setFinance, pricePlans, setPri
           </div>
 
           {/* Графік доходу за 13 місяців */}
-          <div style={{marginBottom:12}}>
-            <div style={{background:'#111118',border:'1px solid #1A2E4A',borderRadius:14,padding:16}}>
-              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:14}}>
-                <div style={{fontSize:11,color:'#4A90B8'}}>Дохід по місяцях</div>
-                <div style={{display:'flex',alignItems:'center',gap:8}}>
-                  <button onClick={()=>{
-                    const init={}
-                    monthlyIncome.forEach(m=>{
-                      const key=m.yearMonth
-                      const existing=finance.filter(f=>f.type==='in'&&f.date&&f.date.startsWith(key)).reduce((a,f)=>a+Number(f.amount),0)
-                      init[key]=existing>0?String(existing):''
-                    })
-                    setMonthInputData(init); setShowMonthInput(true)
-                  }} style={{fontSize:11,color:'#5EE0CE',background:'rgba(94,224,206,.08)',border:'1px solid rgba(94,224,206,.25)',borderRadius:8,padding:'4px 10px',cursor:'pointer'}}>
-                    Ввести дані
-                  </button>
-                  <div style={{fontFamily:'Oswald',fontSize:16,color:'#00FF88'}}>{Math.round(incomeMonth*pct).toLocaleString('uk')} ₴</div>
+          {(() => {
+            const sel = selectedMonth !== null ? monthlyIncome[selectedMonth] : monthlyIncome[12]
+            const currentAmount = monthlyIncome[12].amount
+            return (
+            <div style={{marginBottom:12}}>
+              <div style={{background:'#111118',border:'1px solid #1A2E4A',borderRadius:14,padding:16}}>
+                {/* заголовок — показує вибраний місяць або поточний */}
+                <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:14}}>
+                  <div>
+                    <div style={{fontSize:11,color:'#4A90B8'}}>Дохід по місяцях</div>
+                    <div style={{fontSize:10,color:'#4A5568',marginTop:2}}>{sel.label} {sel.yearMonth.slice(0,4)}</div>
+                  </div>
+                  <div style={{fontFamily:'Oswald',fontSize:20,color: sel.amount >= currentAmount ? '#00FF88' : '#878F9B'}}>
+                    {Math.round(sel.amount*pct).toLocaleString('uk')} ₴
+                  </div>
+                </div>
+                {/* стовпці */}
+                <div style={{display:'flex',alignItems:'flex-end',gap:4,height:70,marginBottom:8}}>
+                  {monthlyIncome.map((m,i)=>{
+                    const h = Math.max(3, (m.amount/maxMonthly)*60)
+                    const isSelected = selectedMonth===i || (selectedMonth===null && m.isCurrent)
+                    const isLess = !m.isCurrent && m.amount < currentAmount
+                    return (
+                      <div key={i} onClick={()=>setSelectedMonth(i===12&&selectedMonth===null?null:i===selectedMonth?null:i)}
+                        style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'flex-end',height:'100%',gap:3,cursor:'pointer'}}>
+                        <div style={{
+                          width:'100%', borderRadius:'3px 3px 2px 2px', minHeight:3,
+                          height: h,
+                          background: isSelected
+                            ? (m.isCurrent ? 'linear-gradient(180deg,#00FF88,#46DCA8)' : 'linear-gradient(180deg,#5EE0CE,#3FA9F0)')
+                            : isLess
+                              ? `rgba(120,130,140,${0.2 + (m.amount/maxMonthly)*0.35})`
+                              : m.isCurrent
+                                ? 'linear-gradient(180deg,#00FF88,#46DCA8)'
+                                : `rgba(70,220,168,${0.25+(m.amount/maxMonthly)*0.5})`,
+                          boxShadow: isSelected ? `0 0 10px ${m.isCurrent?'rgba(70,220,168,.5)':'rgba(94,224,206,.4)'}` : 'none',
+                          transition:'all .15s',
+                        }}/>
+                      </div>
+                    )
+                  })}
+                </div>
+                {/* підписи місяців */}
+                <div style={{display:'flex',gap:4}}>
+                  {monthlyIncome.map((m,i)=>{
+                    const isSelected = selectedMonth===i || (selectedMonth===null && m.isCurrent)
+                    return (
+                      <div key={i} onClick={()=>setSelectedMonth(i===selectedMonth?null:i)}
+                        style={{flex:1,display:'flex',justifyContent:'center',cursor:'pointer'}}>
+                        {isSelected ? (
+                          <div style={{background:m.isCurrent?'rgba(70,220,168,.16)':'rgba(94,224,206,.12)',borderRadius:7,padding:'2px 3px',textAlign:'center'}}>
+                            <div style={{fontSize:8,fontWeight:700,color:m.isCurrent?'#46DCA8':'#5EE0CE',whiteSpace:'nowrap'}}>{m.label}</div>
+                          </div>
+                        ) : (
+                          <div style={{fontSize:8,color:'#3A4A5A',textAlign:'center'}}>{m.label}</div>
+                        )}
+                      </div>
+                    )
+                  })}
                 </div>
               </div>
-              {/* стовпці */}
-              <div style={{display:'flex',alignItems:'flex-end',gap:4,height:70,marginBottom:8}}>
-                {monthlyIncome.map((m,i)=>{
-                  const h = Math.max(3, (m.amount/maxMonthly)*60)
-                  const intensity = 0.25 + (m.amount/maxMonthly)*0.6
-                  return (
-                    <div key={i} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'flex-end',height:'100%',gap:3}}>
-                      <div style={{
-                        width:'100%', borderRadius:'3px 3px 2px 2px', minHeight:3,
-                        height: h,
-                        background: m.isCurrent
-                          ? 'linear-gradient(180deg,#00FF88,#46DCA8)'
-                          : `rgba(70,220,168,${intensity})`,
-                        boxShadow: m.isCurrent ? '0 0 10px rgba(70,220,168,.5)' : 'none',
-                      }}/>
-                    </div>
-                  )
-                })}
-              </div>
-              {/* підписи місяців */}
-              <div style={{display:'flex',gap:4}}>
-                {monthlyIncome.map((m,i)=>(
-                  <div key={i} style={{flex:1,display:'flex',justifyContent:'center'}}>
-                    {m.isCurrent ? (
-                      <div style={{background:'rgba(70,220,168,.16)',borderRadius:7,padding:'2px 4px',textAlign:'center'}}>
-                        <div style={{fontSize:8,fontWeight:700,color:'#46DCA8',whiteSpace:'nowrap'}}>{m.label}</div>
-                      </div>
-                    ) : (
-                      <div style={{fontSize:8,color:'#3A4A5A',textAlign:'center'}}>{m.label}</div>
-                    )}
-                  </div>
-                ))}
-              </div>
             </div>
-          </div>
+            )
+          })()}
           {/* Модал редагування транзакції */}
           <Modal open={!!editFinance} onClose={()=>setEditFinance(null)} zIndex={300}>
                 <div style={{fontFamily:'Oswald',fontSize:20,marginBottom:16,color:'#E8EAF0'}}>Редагувати транзакцію</div>
