@@ -57,6 +57,8 @@ function ProfileTab({ sessions, clients, finance, setFinance, pricePlans, setPri
   const [priceOpen, setPriceOpen] = useState(false)
   const [userEmail, setUserEmail] = useState('')
   const [incomePercent, setIncomePercent] = useState(100)
+  const [showMonthInput, setShowMonthInput] = useState(false)
+  const [monthInputData, setMonthInputData] = useState({})
 
   const today = todayStr()
   const now = new Date()
@@ -82,7 +84,7 @@ function ProfileTab({ sessions, clients, finance, setFinance, pricePlans, setPri
     const end = `${yr}-${mo}-31`
     const short = MONTHS_UK[d.getMonth()].slice(0,3)
     const amount = finance.filter(f=>f.type==='in' && f.date>=start && f.date<=end).reduce((a,f)=>a+Number(f.amount),0)
-    return { label: short, amount, isCurrent: i===12 }
+    return { label: short, yearMonth:`${yr}-${mo}`, amount, isCurrent: i===12 }
   })
   const maxMonthly = Math.max(...monthlyIncome.map(m=>m.amount), 1)
 
@@ -323,7 +325,20 @@ function ProfileTab({ sessions, clients, finance, setFinance, pricePlans, setPri
             <div style={{background:'#111118',border:'1px solid #1A2E4A',borderRadius:14,padding:16}}>
               <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:14}}>
                 <div style={{fontSize:11,color:'#4A90B8'}}>Дохід по місяцях</div>
-                <div style={{fontFamily:'Oswald',fontSize:16,color:'#00FF88'}}>{Math.round(incomeMonth*pct).toLocaleString('uk')} ₴</div>
+                <div style={{display:'flex',alignItems:'center',gap:8}}>
+                  <button onClick={()=>{
+                    const init={}
+                    monthlyIncome.forEach(m=>{
+                      const key=m.yearMonth
+                      const existing=finance.filter(f=>f.type==='in'&&f.date&&f.date.startsWith(key)).reduce((a,f)=>a+Number(f.amount),0)
+                      init[key]=existing>0?String(existing):''
+                    })
+                    setMonthInputData(init); setShowMonthInput(true)
+                  }} style={{fontSize:11,color:'#5EE0CE',background:'rgba(94,224,206,.08)',border:'1px solid rgba(94,224,206,.25)',borderRadius:8,padding:'4px 10px',cursor:'pointer'}}>
+                    Ввести дані
+                  </button>
+                  <div style={{fontFamily:'Oswald',fontSize:16,color:'#00FF88'}}>{Math.round(incomeMonth*pct).toLocaleString('uk')} ₴</div>
+                </div>
               </div>
               {/* стовпці */}
               <div style={{display:'flex',alignItems:'flex-end',gap:4,height:70,marginBottom:8}}>
@@ -509,6 +524,44 @@ function ProfileTab({ sessions, clients, finance, setFinance, pricePlans, setPri
           </div>
         </div>
       )}
+
+      {/* Модалка введення доходів по місяцях */}
+      <Modal open={showMonthInput} onClose={()=>setShowMonthInput(false)} zIndex={350}>
+        <div style={{fontFamily:'Oswald',fontSize:20,marginBottom:6}}>Дохід по місяцях</div>
+        <div style={{fontSize:12,color:'#4A90B8',marginBottom:16}}>Введи фактичний дохід за кожен місяць. Збережеться як транзакція на перше число.</div>
+        <div style={{display:'flex',flexDirection:'column',gap:8,marginBottom:20}}>
+          {monthlyIncome.map(m=>(
+            <div key={m.yearMonth} style={{display:'flex',alignItems:'center',gap:10}}>
+              <div style={{width:44,fontSize:12,color:m.isCurrent?'#5EE0CE':'#878F9B',fontWeight:m.isCurrent?700:400,flexShrink:0}}>{m.label}</div>
+              <input
+                type="number"
+                value={monthInputData[m.yearMonth]||''}
+                onChange={e=>setMonthInputData(p=>({...p,[m.yearMonth]:e.target.value}))}
+                placeholder="0"
+                style={{...inp,marginBottom:0,flex:1}}
+              />
+              <div style={{fontSize:11,color:'#4A5568',flexShrink:0}}>₴</div>
+            </div>
+          ))}
+        </div>
+        <button onClick={async()=>{
+          const user_id = await getUserId()
+          for (const [ym, val] of Object.entries(monthInputData)) {
+            const amount = Number(val)
+            if (!amount) continue
+            const date = `${ym}-01`
+            const name = `Дохід ${ym}`
+            // видаляємо старі записи типу "Дохід YYYY-MM" за цей місяць щоб не дублювати
+            const old = finance.filter(f=>f.name===name && f.date===date)
+            for (const o of old) { await supabase.from('finance').delete().eq('id',o.id) }
+            const {data} = await supabase.from('finance').insert({name, amount, type:'in', date, user_id}).select().single()
+            if (data) setFinance(prev=>[...prev.filter(f=>!(f.name===name&&f.date===date)), data])
+          }
+          setShowMonthInput(false)
+        }} style={{width:'100%',padding:12,borderRadius:12,border:'none',background:'linear-gradient(135deg,#5EE0CE,#3FA9F0)',color:'#111',fontSize:14,fontWeight:700,cursor:'pointer'}}>
+          Зберегти
+        </button>
+      </Modal>
     </div>
   )
 }

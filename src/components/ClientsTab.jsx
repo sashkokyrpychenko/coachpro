@@ -676,24 +676,15 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
       </Modal>
 
       {/* Edit Client Modal */}
-      {editClient && (
-        <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.75)',display:'flex',alignItems:'flex-end',justifyContent:'center',zIndex:300}} onClick={()=>setEditClient(null)}>
-          <div style={{background:'#101218',border:'1px solid rgba(255,255,255,.08)',borderRadius:'20px 20px 0 0',width:'100%',maxWidth:480,padding:'20px 20px 36px'}} onClick={e=>e.stopPropagation()}>
-            <div style={{width:40,height:4,background:'rgba(255,255,255,.08)',borderRadius:2,margin:'0 auto 18px'}}/>
+      <Modal open={!!editClient} onClose={()=>setEditClient(null)} zIndex={300}>
             <div style={{fontFamily:'Oswald',fontSize:22,marginBottom:16}}>Редагувати клієнта</div>
             <label style={lbl}>Повне ім'я</label>
             <input value={ec.name} onChange={e=>setEc({...ec,name:e.target.value})} style={{...inp,marginBottom:12}}/>
             <label style={lbl}>Мета</label>
             <input value={ec.goal} onChange={e=>setEc({...ec,goal:e.target.value})} style={{...inp,marginBottom:12}}/>
             <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:12}}>
-              <div>
-                <label style={lbl}>Вага (кг)</label>
-                <input type="number" value={ec.w} onChange={e=>setEc({...ec,w:e.target.value})} style={inp}/>
-              </div>
-              <div>
-                <label style={lbl}>Зріст (см)</label>
-                <input type="number" value={ec.h} onChange={e=>setEc({...ec,h:e.target.value})} style={inp}/>
-              </div>
+              <div><label style={lbl}>Вага (кг)</label><input type="number" value={ec.w} onChange={e=>setEc({...ec,w:e.target.value})} style={inp}/></div>
+              <div><label style={lbl}>Зріст (см)</label><input type="number" value={ec.h} onChange={e=>setEc({...ec,h:e.target.value})} style={inp}/></div>
             </div>
             <label style={lbl}>Дата початку співпраці</label>
             <input type="date" value={ec.started} onChange={e=>setEc({...ec,started:e.target.value})} style={{...inp,marginBottom:12}}/>
@@ -705,24 +696,17 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
               style={{width:'100%',padding:12,borderRadius:12,border:'none',background:'linear-gradient(135deg,#5EE0CE,#3FA9F0)',color:'#111',fontFamily:'DM Sans',fontSize:14,fontWeight:700,cursor:'pointer',marginBottom:8}}>
               Зберегти зміни
             </button>
-            <button onClick={async()=>{if(window.confirm(`Видалити ${editClient.name}? Всі сесії теж видаляться.`)){await deleteClient(editClient.id);setEditClient(null)}}}
+            <button onClick={async()=>{if(window.confirm(`Видалити ${editClient?.name}? Всі сесії теж видаляться.`)){await deleteClient(editClient.id);setEditClient(null)}}}
               style={{width:'100%',padding:11,borderRadius:12,border:'1px solid rgba(255,79,79,.3)',background:'transparent',color:'#FF6B6B',fontFamily:'DM Sans',fontSize:13,fontWeight:600,cursor:'pointer'}}>
-              🗑 Видалити клієнта
+              Видалити клієнта
             </button>
-          </div>
-        </div>
-      )}
+      </Modal>
 
-      {/* Add Metric Modal */}
-      {showAddMetric && (
-        <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.75)',display:'flex',alignItems:'flex-end',justifyContent:'center',zIndex:300}} onClick={()=>setShowAddMetric(null)}>
-          <div style={{background:'#101218',border:'1px solid rgba(255,255,255,.08)',borderRadius:'20px 20px 0 0',width:'100%',maxWidth:480,padding:'20px 20px 36px'}} onClick={e=>e.stopPropagation()}>
-            <div style={{width:40,height:4,background:'rgba(255,255,255,.08)',borderRadius:2,margin:'0 auto 18px'}}/>
+      <Modal open={!!showAddMetric} onClose={()=>setShowAddMetric(null)} zIndex={300}>
             <div style={{fontFamily:'Oswald',fontSize:22,marginBottom:16}}>Новий показник</div>
             <label style={lbl}>Назва</label>
             <input value={nm.name} onChange={e=>setNm({...nm,name:e.target.value})}
-              placeholder="Вага тіла, Обхват талії…"
-              style={{...inp,marginBottom:14}}/>
+              placeholder="Вага тіла, Обхват талії…" style={{...inp,marginBottom:14}}/>
             <label style={lbl}>Одиниця</label>
             <div style={{display:'flex',gap:8,flexWrap:'wrap',marginBottom:20}}>
               {UNITS.map(u=>(
@@ -736,35 +720,25 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
               style={{width:'100%',padding:12,borderRadius:12,border:'none',background:'linear-gradient(135deg,#5EE0CE,#3FA9F0)',color:'#111',fontSize:14,fontWeight:700,cursor:'pointer'}}>
               Додати показник
             </button>
-          </div>
-        </div>
-      )}
+      </Modal>
 
-      {/* Add Measurement Modal */}
-      {showAddMeasure && (
-        <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.85)',display:'flex',alignItems:'flex-end',justifyContent:'center',zIndex:400}} onClick={()=>setShowAddMeasure(null)}>
-          <div style={{background:'#101218',border:'1px solid rgba(255,255,255,.08)',borderRadius:'20px 20px 0 0',width:'100%',maxWidth:480,padding:'20px 20px 36px'}} onClick={e=>e.stopPropagation()}>
-            <div style={{width:40,height:4,background:'rgba(255,255,255,.08)',borderRadius:2,margin:'0 auto 18px'}}/>
+      <Modal open={!!showAddMeasure} onClose={()=>setShowAddMeasure(null)} zIndex={400}>
             <div style={{fontFamily:'Oswald',fontSize:22,marginBottom:16}}>Новий вимір</div>
             <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:20}}>
               <div>
-                <label style={lbl}>Значення ({showAddMeasure.unit})</label>
-                <input type="number" value={nv.value} onChange={e=>setNv({...nv,value:e.target.value})}
-                  placeholder="0" style={inp}/>
+                <label style={lbl}>Значення ({showAddMeasure?.unit})</label>
+                <input type="number" value={nv.value} onChange={e=>setNv({...nv,value:e.target.value})} placeholder="0" style={inp}/>
               </div>
               <div>
                 <label style={lbl}>Дата</label>
-                <input type="date" value={nv.date} onChange={e=>setNv({...nv,date:e.target.value})}
-                  style={inp}/>
+                <input type="date" value={nv.date} onChange={e=>setNv({...nv,date:e.target.value})} style={inp}/>
               </div>
             </div>
             <button onClick={()=>saveMeasurement(showAddMeasure.id, showAddMeasure.client_id)}
               style={{width:'100%',padding:12,borderRadius:12,border:'none',background:'linear-gradient(135deg,#5EE0CE,#3FA9F0)',color:'#111',fontSize:14,fontWeight:700,cursor:'pointer'}}>
               Зберегти вимір
             </button>
-          </div>
-        </div>
-      )}
+      </Modal>
 
       {/* Metric Chart Modal */}
       {openMetricChart && (() => {
@@ -787,8 +761,7 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
         const improving = delta!==null && delta<=0
         const lc = improving ? '#46DCA8' : '#FF6B6B'
         return (
-          <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.8)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:350,padding:16}} onClick={()=>setOpenMetricChart(null)}>
-            <div style={{background:'#101218',border:'1px solid rgba(255,255,255,.08)',borderRadius:20,width:'100%',maxWidth:420,padding:24}} onClick={e=>e.stopPropagation()}>
+          <Modal open={!!openMetricChart} onClose={()=>setOpenMetricChart(null)} zIndex={350}>
               <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:16}}>
                 <div>
                   <div style={{fontWeight:700,fontSize:18,color:'#E8EAF0'}}>{metric.name}</div>
@@ -853,8 +826,7 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
                 style={{width:'100%',padding:10,borderRadius:12,border:'1px solid rgba(255,255,255,.08)',background:'transparent',color:'#4A90B8',fontSize:13,cursor:'pointer'}}>
                 Закрити
               </button>
-            </div>
-          </div>
+          </Modal>
         )
       })()}
     </div>
