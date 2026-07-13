@@ -163,13 +163,15 @@ function ProfileTab({ sessions, clients, finance, setFinance, pricePlans, setPri
 
   const savePlan = async () => {
     if (!np.name||!np.price) return
+    const user_id = await getUserId()
     if (editPlan) {
       const {data,error} = await supabase.from('price_plans').update({name:np.name,sessions:Number(np.sessions),price:Number(np.price)}).eq('id',editPlan.id).select().single()
       if (!error) setPricePlans(prev=>prev.map(p=>p.id===editPlan.id?data:p).sort((a,b)=>a.name.localeCompare(b.name,'uk')))
       setEditPlan(null)
     } else {
-      const {data,error} = await supabase.from('price_plans').insert({name:np.name,sessions:Number(np.sessions),price:Number(np.price)}).select().single()
-      if (!error) setPricePlans(prev=>[...prev,data].sort((a,b)=>a.name.localeCompare(b.name,'uk')))
+      const {data,error} = await supabase.from('price_plans').insert({name:np.name,sessions:Number(np.sessions),price:Number(np.price),user_id}).select().single()
+      if (!error && data) setPricePlans(prev=>[...prev,data].sort((a,b)=>a.name.localeCompare(b.name,'uk')))
+      if (error) console.error('savePlan error:', error)
     }
     setShowAddPlan(false); setNp({name:'',sessions:1,price:''})
   }
@@ -553,10 +555,7 @@ function ProfileTab({ sessions, clients, finance, setFinance, pricePlans, setPri
       )}
 
       {/* Add/Edit plan modal */}
-      {showAddPlan && (
-        <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.75)',display:'flex',alignItems:'flex-end',justifyContent:'center',zIndex:200}} onClick={()=>setShowAddPlan(false)}>
-          <div style={{background:'#111118',border:'1px solid #1A2E4A',borderRadius:'20px 20px 0 0',width:'100%',maxWidth:480,padding:'20px 20px 36px'}} onClick={e=>e.stopPropagation()}>
-            <div style={{width:40,height:4,background:'#1E2A3A',borderRadius:2,margin:'0 auto 18px'}}/>
+      <Modal open={showAddPlan} onClose={()=>setShowAddPlan(false)} zIndex={200}>
             <div style={{fontFamily:'Oswald',fontSize:22,marginBottom:16}}>{editPlan?'Редагувати план':'Новий план'}</div>
             <label style={lbl}>Назва</label>
             <input value={np.name} onChange={e=>setNp({...np,name:e.target.value})} placeholder="Спліт 2026 · 12 тренувань…" style={{...inp,marginBottom:12}}/>
@@ -568,9 +567,7 @@ function ProfileTab({ sessions, clients, finance, setFinance, pricePlans, setPri
               style={{width:'100%',padding:12,borderRadius:12,border:'none',background:'#00F5FF',color:'#111',fontSize:14,fontWeight:700,cursor:'pointer'}}>
               {editPlan?'Зберегти зміни':'Додати план'}
             </button>
-          </div>
-        </div>
-      )}
+      </Modal>
 
       {/* Модалка введення доходів по місяцях */}
       <Modal open={showMonthInput} onClose={()=>setShowMonthInput(false)} zIndex={350}>
