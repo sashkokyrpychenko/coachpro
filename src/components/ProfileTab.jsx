@@ -73,7 +73,7 @@ function ProfileTab({ sessions, clients, finance, setFinance, pricePlans, setPri
   const days = Array.from({length:7},(_,i)=>{ const d=new Date(now); d.setDate(now.getDate()-6+i); return {ds:dateToStr(d),lbl:d.getDate(),day:DAYS_SHORT[getMondayFirst(d)]} })
   const counts = days.map(d=>sessions.filter(s=>s.date===d.ds).length)
   const maxC = Math.max(...counts,1)
-  const incomeMonth = finance.filter(f=>f.type==='in' && f.date>=monthStartStr).reduce((a,f)=>a+Number(f.amount),0)
+  const incomeMonth = finance.filter(f=>f.type==='in' && f.date>=monthStartStr && !f.name?.startsWith('Місячний підсумок')).reduce((a,f)=>a+Number(f.amount),0)
   const income      = finance.filter(f=>f.type==='in').reduce((a,f)=>a+Number(f.amount),0)
 
   // Дохід за останні 13 місяців для графіка
@@ -84,8 +84,16 @@ function ProfileTab({ sessions, clients, finance, setFinance, pricePlans, setPri
     const start = `${yr}-${mo}-01`
     const end = `${yr}-${mo}-31`
     const short = MONTHS_UK[d.getMonth()].slice(0,3)
-    const amount = finance.filter(f=>f.type==='in' && f.date>=start && f.date<=end).reduce((a,f)=>a+Number(f.amount),0)
-    return { label: short, yearMonth:`${yr}-${mo}`, amount, isCurrent: i===12 }
+    const isCurrent = i===12
+    // реальні транзакції (не "Місячний підсумок")
+    const realTx = finance.filter(f=>f.type==='in' && f.date>=start && f.date<=end && !f.name?.startsWith('Місячний підсумок'))
+    const realAmount = realTx.reduce((a,f)=>a+Number(f.amount),0)
+    // підсумок (ручний/автоматичний)
+    const summaryTx = finance.filter(f=>f.type==='in' && f.date>=start && f.date<=end && f.name?.startsWith('Місячний підсумок'))
+    const summaryAmount = summaryTx.reduce((a,f)=>a+Number(f.amount),0)
+    // для поточного місяця — завжди реальні; для минулих — реальні якщо є, інакше підсумок
+    const amount = isCurrent ? realAmount : (realAmount > 0 ? realAmount : summaryAmount)
+    return { label: short, yearMonth:`${yr}-${mo}`, amount, isCurrent }
   })
   const maxMonthly = Math.max(...monthlyIncome.map(m=>m.amount), 1)
 
@@ -212,7 +220,7 @@ function ProfileTab({ sessions, clients, finance, setFinance, pricePlans, setPri
       const exists = finance.some(f=>f.name===recordName)
       if (exists) return
       // рахуємо суму з реальних транзакцій за той місяць
-      const total = finance.filter(f=>f.type==='in' && f.date && f.date.startsWith(ym) && f.name!==recordName)
+      const total = finance.filter(f=>f.type==='in' && f.date && f.date.startsWith(ym) && !f.name?.startsWith('Місячний підсумок'))
                           .reduce((a,f)=>a+Number(f.amount),0)
       if (!total) return
       // зберігаємо підсумок
