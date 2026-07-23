@@ -219,14 +219,14 @@ export default function ScheduleTab({ clients, sessions, setSessions, setClients
             <label style={{fontSize:11,color:'#4A90B8',textTransform:'uppercase',letterSpacing:.5,display:'block',marginBottom:6}}>{splitMode?'Перший клієнт':'Клієнт'}</label>
             <select value={fClient} onChange={e=>setFClient(e.target.value)} style={{width:'100%',background:'#0D0D16',border:'1px solid #1A2E4A',borderRadius:10,padding:'10px 14px',color:'#E8EAF0',fontFamily:'DM Sans',fontSize:14,marginBottom:12,outline:'none'}}>
               <option value="">— Оберіть —</option>
-              {clients.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}
+              {clients.filter(c=>!c.archived).map(c=><option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
             {splitMode && (
               <>
                 <label style={{fontSize:11,color:'#4A90B8',textTransform:'uppercase',letterSpacing:.5,display:'block',marginBottom:6}}>Другий клієнт</label>
                 <select value={fClient2} onChange={e=>setFClient2(e.target.value)} style={{width:'100%',background:'#0D0D16',border:'1px solid #1A2E4A',borderRadius:10,padding:'10px 14px',color:'#E8EAF0',fontFamily:'DM Sans',fontSize:14,marginBottom:12,outline:'none'}}>
                   <option value="">— Оберіть —</option>
-                  {clients.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}
+                  {clients.filter(c=>!c.archived).map(c=><option key={c.id} value={c.id}>{c.name}</option>)}
                 </select>
               </>
             )}

@@ -33,7 +33,7 @@ export default function EditSessionModal({ session, clients, onClose, onSave, on
       <select value={clientId} onChange={e=>setClientId(e.target.value)}
         style={{...inputStyle,marginBottom:12,textAlign:'left',textAlignLast:'left'}}>
         <option value="">— Оберіть —</option>
-        {clients.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}
+        {clients.filter(c=>!c.archived).map(c=><option key={c.id} value={c.id}>{c.name}</option>)}
       </select>
 
       <label style={labelStyle}>Дата</label>

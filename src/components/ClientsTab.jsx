@@ -79,6 +79,7 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
 
   const [tabMap, setTabMap] = useState({})
   const [showAdd, setShowAdd] = useState(false)
+  const [archiveOpen, setArchiveOpen] = useState(false)
   const [showAddRecord, setShowAddRecord] = useState(null)
   const [editClient, setEditClient] = useState(null)
   const [ec, setEc] = useState({name:'',goal:'',w:'',h:'',started:'',phone:'',telegram:''})
@@ -152,9 +153,20 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
 
   const SCHEDULE_DAYS = ['ПН','ВТ','СР','ЧТ','ПТ','СБ','НД']
   const UNITS = ['кг', 'см', '%', 'сек', 'хв', 'повт', 'ккал']
-  const filtered = clients.filter(c=>c.name.toLowerCase().includes(search.toLowerCase()))
+  const filtered = clients.filter(c=>!c.archived && c.name.toLowerCase().includes(search.toLowerCase()))
+  const archived = clients.filter(c=>c.archived)
   const setTab = (id,t) => setTabMap(p=>({...p,[id]:t}))
   const getTab = (id) => tabMap[id]||'profile'
+
+  const archiveClient = async (id) => {
+    await supabase.from('clients').update({archived:true}).eq('id',id)
+    setClients(prev=>prev.map(c=>c.id===id?{...c,archived:true}:c))
+    setOpenId(null)
+  }
+  const unarchiveClient = async (id) => {
+    await supabase.from('clients').update({archived:false}).eq('id',id)
+    setClients(prev=>prev.map(c=>c.id===id?{...c,archived:false}:c))
+  }
 
   const updateNote = async (id, note) => {
     await supabase.from('clients').update({note}).eq('id',id)
@@ -479,6 +491,11 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#878F9B" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
                         Редагувати клієнта
                       </button>
+                      <button onClick={()=>archiveClient(c.id)}
+                        style={{width:'100%',marginTop:8,padding:'10px',borderRadius:10,border:'1px solid rgba(255,165,0,.2)',background:'rgba(255,165,0,.06)',color:'#FFA500',fontFamily:'DM Sans',fontSize:12,fontWeight:600,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:7}}>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FFA500" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
+                        Перемістити в архів
+                      </button>
                     </div>
                   )}
                   {activeTab==='metrics' && (() => {
@@ -616,6 +633,36 @@ function ClientsTab({ clients, setClients, sessions, setSessions, records, setRe
           )
         })}
       </div>
+
+      {/* ── АРХІВ ── */}
+      {archived.length > 0 && (
+        <div style={{marginTop:24}}>
+          <div onClick={()=>setArchiveOpen(p=>!p)}
+            style={{display:'flex',alignItems:'center',gap:10,cursor:'pointer',padding:'10px 4px',userSelect:'none'}}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6B7280" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
+            <span style={{fontSize:13,fontWeight:600,color:'#6B7280'}}>Архів</span>
+            <span style={{fontSize:11,color:'#4A5568',background:'rgba(255,255,255,.06)',padding:'2px 8px',borderRadius:10}}>{archived.length}</span>
+            <span style={{marginLeft:'auto',color:'#4A5568',fontSize:12,transform:archiveOpen?'rotate(180deg)':'none',transition:'transform .2s'}}>▾</span>
+          </div>
+          {archiveOpen && (
+            <div style={{display:'flex',flexDirection:'column',gap:8,marginTop:4}}>
+              {archived.map(c=>(
+                <div key={c.id} style={{display:'flex',alignItems:'center',gap:12,padding:'12px 14px',borderRadius:12,background:'rgba(255,255,255,.03)',border:'1px solid rgba(255,255,255,.05)',opacity:.7}}>
+                  <div style={{width:38,height:38,borderRadius:'50%',background:c.color||'#4A5568',display:'flex',alignItems:'center',justifyContent:'center',fontFamily:'Oswald',fontWeight:600,color:'#fff',fontSize:13,flexShrink:0}}>{c.ava}</div>
+                  <div style={{flex:1,minWidth:0}}>
+                    <div style={{fontSize:13,fontWeight:600,color:'#878F9B',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{c.name}</div>
+                    <div style={{fontSize:11,color:'#4A5568'}}>{c.goal}</div>
+                  </div>
+                  <button onClick={()=>unarchiveClient(c.id)}
+                    style={{flexShrink:0,padding:'5px 12px',borderRadius:8,border:'1px solid rgba(94,224,206,.2)',background:'rgba(94,224,206,.06)',color:'#5EE0CE',fontSize:11,fontWeight:600,cursor:'pointer',fontFamily:'DM Sans'}}>
+                    Відновити
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       <Modal open={showAdd} onClose={()=>setShowAdd(false)} zIndex={200}>
             <div style={{fontFamily:'Oswald',fontSize:22,marginBottom:16}}>Новий клієнт</div>
