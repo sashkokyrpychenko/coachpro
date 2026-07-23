@@ -17,17 +17,17 @@ const DEFAULT_HOURS = {
   6:{on:false, from:10, to:16, breakFrom:null, breakTo:null},
 }
 
-// нормалізація: гарантує що в кожного дня є всі поля
+// нормалізація: гарантує що в кожного дня є всі поля і всі числа — числа
 const normalize = (h) => {
   const out = {}
   for (let i = 0; i < 7; i++) {
     const d = h?.[i] || {}
     out[i] = {
       on: d.on ?? DEFAULT_HOURS[i].on,
-      from: d.from ?? 8,
-      to: d.to ?? 20,
-      breakFrom: d.breakFrom ?? null,
-      breakTo: d.breakTo ?? null,
+      from:      Number(d.from      ?? 8),
+      to:        Number(d.to        ?? 20),
+      breakFrom: d.breakFrom != null ? Number(d.breakFrom) : null,
+      breakTo:   d.breakTo   != null ? Number(d.breakTo)   : null,
     }
   }
   return out
@@ -111,11 +111,15 @@ function FreeTimeTab({ sessions, clients }) {
     const h = hours[idx]
     if (!h?.on) return []
     const busy = busyHours(idx)
-    const hasBreak = h.breakFrom !== null && h.breakTo !== null
+    const from = Number(h.from)
+    const to   = Number(h.to)
+    const hasBreak = h.breakFrom != null && h.breakTo != null
+    const bFrom = hasBreak ? Number(h.breakFrom) : null
+    const bTo   = hasBreak ? Number(h.breakTo)   : null
     const out = []
-    for (let t = h.from; t < h.to; t++) {
+    for (let t = from; t < to; t++) {
       if (busy.has(t)) continue
-      if (hasBreak && t >= h.breakFrom && t < h.breakTo) continue   // вирізаємо обід
+      if (hasBreak && t >= bFrom && t < bTo) continue   // вирізаємо перерву
       out.push(t)
     }
     return out
@@ -124,8 +128,8 @@ function FreeTimeTab({ sessions, clients }) {
   const totalFree = DAYS.map((_, i) => freeSlots(i).length).reduce((a, b) => a + b, 0)
   const totalWork = DAYS.map((_, i) => {
     const h = hours[i]; if (!h?.on) return 0
-    let w = h.to - h.from
-    if (h.breakFrom !== null && h.breakTo !== null) w -= (h.breakTo - h.breakFrom)
+    let w = Number(h.to) - Number(h.from)
+    if (h.breakFrom != null && h.breakTo != null) w -= (Number(h.breakTo) - Number(h.breakFrom))
     return Math.max(0, w)
   }).reduce((a, b) => a + b, 0)
   const workDays = DAYS.filter((_, i) => hours[i]?.on).length
