@@ -120,13 +120,9 @@ function FreeTimeTab({ sessions, clients }) {
     const busy = busyHours(idx)
     const from = Number(h.from)
     const to   = Number(h.to)
-    // перерва: власна якщо є, інакше fallback з типового
-    const typicalDay = hoursByMode.typical?.[idx]
-    const ownBreak = h.breakFrom != null && h.breakTo != null
-    const fallback  = !ownBreak && typicalDay?.breakFrom != null && typicalDay?.breakTo != null
-    const hasBreak  = ownBreak || fallback
-    const bFrom = hasBreak ? Number(ownBreak ? h.breakFrom : typicalDay.breakFrom) : null
-    const bTo   = hasBreak ? Number(ownBreak ? h.breakTo   : typicalDay.breakTo)   : null
+    const hasBreak = h.breakFrom != null && h.breakTo != null
+    const bFrom = hasBreak ? Number(h.breakFrom) : null
+    const bTo   = hasBreak ? Number(h.breakTo)   : null
     const out = []
     for (let t = from; t < to; t++) {
       if (busy.has(t)) continue
@@ -140,11 +136,9 @@ function FreeTimeTab({ sessions, clients }) {
   const totalWork = DAYS.map((_, i) => {
     const h = hours[i]; if (!h?.on) return 0
     let w = Number(h.to) - Number(h.from)
-    const typicalDay = hoursByMode.typical?.[i]
-    const ownBreak = h.breakFrom != null && h.breakTo != null
-    const fallback  = !ownBreak && typicalDay?.breakFrom != null && typicalDay?.breakTo != null
-    if (ownBreak) w -= (Number(h.breakTo) - Number(h.breakFrom))
-    else if (fallback) w -= (Number(typicalDay.breakTo) - Number(typicalDay.breakFrom))
+    if (h.breakFrom != null && h.breakTo != null) {
+      w -= (Number(h.breakTo) - Number(h.breakFrom))
+    }
     return Math.max(0, w)
   }).reduce((a, b) => a + b, 0)
   const workDays = DAYS.filter((_, i) => hours[i]?.on).length
@@ -302,31 +296,26 @@ function FreeTimeTab({ sessions, clients }) {
 
                   {/* Обідня перерва */}
                   {(() => {
-                    const typicalDay = hoursByMode.typical?.[idx]
-                    const ownBreak = h?.breakFrom != null && h?.breakTo != null
-                    const hasFallback = !ownBreak && typicalDay?.breakFrom != null && typicalDay?.breakTo != null
+                    const hFrom = Number(h.from)
+                    const hTo   = Number(h.to)
+                    const bFrom = h.breakFrom != null ? Number(h.breakFrom) : null
+                    const bTo   = h.breakTo   != null ? Number(h.breakTo)   : null
+                    const hb    = bFrom != null && bTo != null
                     return (
                       <>
                         <div style={{fontSize:10,color:'#4A90B8',textTransform:'uppercase',letterSpacing:.5,marginBottom:8,fontWeight:600,display:'flex',alignItems:'center',justifyContent:'space-between'}}>
-                          <span>Обідня перерва{hasFallback?' (з типового)':''}</span>
-                          {ownBreak && <span onClick={()=>removeBreak(idx)} style={{fontSize:10,color:'#FF6B6B',cursor:'pointer',textTransform:'none',letterSpacing:0}}>✕ Прибрати</span>}
+                          <span>Обідня перерва</span>
+                          {hb && <span onClick={()=>removeBreak(idx)} style={{fontSize:10,color:'#FF6B6B',cursor:'pointer',textTransform:'none',letterSpacing:0}}>✕ Прибрати</span>}
                         </div>
-                        {ownBreak ? (
+                        {hb ? (
                           <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:14}}>
-                            <select value={Number(h.breakFrom)} onChange={e=>setBreakFrom(idx,e.target.value)} style={selStyle}>
-                              {Array.from({length:Number(h.to)-Number(h.from)},(_,i)=>Number(h.from)+i).map(t=><option key={t} value={t} style={{background:'#101218'}}>{fmt(t)}</option>)}
+                            <select value={bFrom} onChange={e=>setBreakFrom(idx,e.target.value)} style={selStyle}>
+                              {Array.from({length: hTo - hFrom}, (_, i) => hFrom + i).map(t=><option key={t} value={t} style={{background:'#101218'}}>{fmt(t)}</option>)}
                             </select>
                             <span style={{color:'#4A90B8',fontSize:13}}>—</span>
-                            <select value={Number(h.breakTo)} onChange={e=>setBreakTo(idx,e.target.value)} style={selStyle}>
-                              {Array.from({length:Number(h.to)-Number(h.breakFrom)},(_,i)=>Number(h.breakFrom)+1+i).map(t=><option key={t} value={t} style={{background:'#101218'}}>{fmt(t)}</option>)}
+                            <select value={bTo} onChange={e=>setBreakTo(idx,e.target.value)} style={selStyle}>
+                              {Array.from({length: hTo - bFrom}, (_, i) => bFrom + 1 + i).map(t=><option key={t} value={t} style={{background:'#101218'}}>{fmt(t)}</option>)}
                             </select>
-                          </div>
-                        ) : hasFallback ? (
-                          <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:14}}>
-                            <span style={{fontSize:12,color:'#4A5568'}}>{fmt(Number(typicalDay.breakFrom))}–{fmt(Number(typicalDay.breakTo))}</span>
-                            <button onClick={()=>addBreak(idx)} style={{padding:'4px 10px',borderRadius:8,border:'1px solid rgba(94,224,206,.25)',background:'rgba(94,224,206,.06)',color:'#5EE0CE',fontSize:11,cursor:'pointer',fontFamily:'DM Sans'}}>
-                              Змінити
-                            </button>
                           </div>
                         ) : (
                           <button onClick={()=>addBreak(idx)}
