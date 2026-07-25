@@ -199,15 +199,31 @@ function FreeTimeTab({ sessions, clients }) {
       </div>
 
       {/* 3 режими */}
-      <div style={{display:'flex',gap:4,background:'rgba(255,255,255,.04)',borderRadius:12,padding:4,marginBottom:16}}>
-        {[['typical','Типовий'],['week','Цей тиждень'],['next','Наступний']].map(([id,label])=>(
-          <div key={id} onClick={()=>{setMode(id);setExpanded(null);setEditedMsg({})}}
-            style={{flex:1,textAlign:'center',padding:'9px 4px',borderRadius:8,fontSize:12,fontWeight:mode===id?700:400,
-              background:mode===id?'#101218':'transparent',color:mode===id?'#E8EAF0':'#4A5A6A',cursor:'pointer',transition:'all .2s'}}>
-            {label}
+      {(() => {
+        const mon = mondayOf(0)
+        const sun = new Date(mon); sun.setDate(mon.getDate()+6)
+        const monNext = mondayOf(1)
+        const sunNext = new Date(monNext); sunNext.setDate(monNext.getDate()+6)
+        const fmt2 = (d) => `${d.getDate().toString().padStart(2,'0')}.${(d.getMonth()+1).toString().padStart(2,'0')}`
+        const subtitles = {
+          typical: 'Пн–Нд',
+          week:    `${fmt2(mon)}–${fmt2(sun)}`,
+          next:    `${fmt2(monNext)}–${fmt2(sunNext)}`,
+        }
+        return (
+          <div style={{display:'flex',gap:8,marginBottom:16}}>
+            {[['typical','Типовий'],['week','Цей тиждень'],['next','Наступний']].map(([id,label])=>(
+              <div key={id} onClick={()=>{setMode(id);setExpanded(null);setEditedMsg({})}}
+                style={{flex:1,textAlign:'center',padding:'8px 4px',borderRadius:10,cursor:'pointer',transition:'all .2s',
+                  background:mode===id?'#101218':'rgba(255,255,255,.03)',
+                  border:`1px solid ${mode===id?'rgba(94,224,206,.25)':'rgba(255,255,255,.06)'}` }}>
+                <div style={{fontSize:11,fontWeight:mode===id?700:400,color:mode===id?'#E8EAF0':'#4A5A6A'}}>{label}</div>
+                <div style={{fontSize:9,color:mode===id?'#5EE0CE':'#3A4A5A',marginTop:2}}>{subtitles[id]}</div>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
+        )
+      })()}
 
       {/* Дні */}
       <div style={{display:'flex',flexDirection:'column',gap:10}}>
