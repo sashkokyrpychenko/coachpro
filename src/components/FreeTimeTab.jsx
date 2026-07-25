@@ -120,15 +120,17 @@ function FreeTimeTab({ sessions, clients }) {
     const busy = busyHours(idx)
     const from = Number(h.from)
     const to   = Number(h.to)
-    // перерва завжди з типового режиму (налаштовується один раз і діє скрізь)
+    // перерва: власна якщо є, інакше fallback з типового
     const typicalDay = hoursByMode.typical?.[idx]
-    const hasBreak = typicalDay?.breakFrom != null && typicalDay?.breakTo != null
-    const bFrom = hasBreak ? Number(typicalDay.breakFrom) : null
-    const bTo   = hasBreak ? Number(typicalDay.breakTo)   : null
+    const ownBreak = h.breakFrom != null && h.breakTo != null
+    const fallback  = !ownBreak && typicalDay?.breakFrom != null && typicalDay?.breakTo != null
+    const hasBreak  = ownBreak || fallback
+    const bFrom = hasBreak ? Number(ownBreak ? h.breakFrom : typicalDay.breakFrom) : null
+    const bTo   = hasBreak ? Number(ownBreak ? h.breakTo   : typicalDay.breakTo)   : null
     const out = []
     for (let t = from; t < to; t++) {
       if (busy.has(t)) continue
-      if (hasBreak && t >= bFrom && t < bTo) continue   // вирізаємо перерву
+      if (hasBreak && bFrom != null && bTo != null && t >= bFrom && t < bTo) continue
       out.push(t)
     }
     return out
@@ -139,9 +141,10 @@ function FreeTimeTab({ sessions, clients }) {
     const h = hours[i]; if (!h?.on) return 0
     let w = Number(h.to) - Number(h.from)
     const typicalDay = hoursByMode.typical?.[i]
-    if (typicalDay?.breakFrom != null && typicalDay?.breakTo != null) {
-      w -= (Number(typicalDay.breakTo) - Number(typicalDay.breakFrom))
-    }
+    const ownBreak = h.breakFrom != null && h.breakTo != null
+    const fallback  = !ownBreak && typicalDay?.breakFrom != null && typicalDay?.breakTo != null
+    if (ownBreak) w -= (Number(h.breakTo) - Number(h.breakFrom))
+    else if (fallback) w -= (Number(typicalDay.breakTo) - Number(typicalDay.breakFrom))
     return Math.max(0, w)
   }).reduce((a, b) => a + b, 0)
   const workDays = DAYS.filter((_, i) => hours[i]?.on).length
@@ -297,34 +300,33 @@ function FreeTimeTab({ sessions, clients }) {
                     </select>
                   </div>
 
-                  {/* Обідня перерва — налаштовується в типовому, діє скрізь */}
+                  {/* Обідня перерва */}
                   {(() => {
                     const typicalDay = hoursByMode.typical?.[idx]
-                    const tHasBreak = typicalDay?.breakFrom != null && typicalDay?.breakTo != null
-                    if (mode !== 'typical') {
-                      // в інших режимах показуємо перерву з типового (лише читання)
-                      return tHasBreak ? (
-                        <div style={{fontSize:10,color:'#4A5A6A',marginBottom:14}}>
-                          Перерва (з типового): {fmt(Number(typicalDay.breakFrom))}–{fmt(Number(typicalDay.breakTo))}
-                        </div>
-                      ) : null
-                    }
-                    // типовий режим — повне редагування
+                    const ownBreak = h?.breakFrom != null && h?.breakTo != null
+                    const hasFallback = !ownBreak && typicalDay?.breakFrom != null && typicalDay?.breakTo != null
                     return (
                       <>
                         <div style={{fontSize:10,color:'#4A90B8',textTransform:'uppercase',letterSpacing:.5,marginBottom:8,fontWeight:600,display:'flex',alignItems:'center',justifyContent:'space-between'}}>
-                          <span>Обідня перерва</span>
-                          {hasBreak && <span onClick={()=>removeBreak(idx)} style={{fontSize:10,color:'#FF6B6B',cursor:'pointer',textTransform:'none',letterSpacing:0}}>✕ Прибрати</span>}
+                          <span>Обідня перерва{hasFallback?' (з типового)':''}</span>
+                          {ownBreak && <span onClick={()=>removeBreak(idx)} style={{fontSize:10,color:'#FF6B6B',cursor:'pointer',textTransform:'none',letterSpacing:0}}>✕ Прибрати</span>}
                         </div>
-                        {hasBreak ? (
+                        {ownBreak ? (
                           <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:14}}>
-                            <select value={h.breakFrom} onChange={e=>setBreakFrom(idx,e.target.value)} style={selStyle}>
-                              {Array.from({length:h.to-h.from},(_,i)=>h.from+i).map(t=><option key={t} value={t} style={{background:'#101218'}}>{fmt(t)}</option>)}
+                            <select value={Number(h.breakFrom)} onChange={e=>setBreakFrom(idx,e.target.value)} style={selStyle}>
+                              {Array.from({length:Number(h.to)-Number(h.from)},(_,i)=>Number(h.from)+i).map(t=><option key={t} value={t} style={{background:'#101218'}}>{fmt(t)}</option>)}
                             </select>
                             <span style={{color:'#4A90B8',fontSize:13}}>—</span>
-                            <select value={h.breakTo} onChange={e=>setBreakTo(idx,e.target.value)} style={selStyle}>
-                              {Array.from({length:h.to-h.breakFrom},(_,i)=>h.breakFrom+1+i).map(t=><option key={t} value={t} style={{background:'#101218'}}>{fmt(t)}</option>)}
+                            <select value={Number(h.breakTo)} onChange={e=>setBreakTo(idx,e.target.value)} style={selStyle}>
+                              {Array.from({length:Number(h.to)-Number(h.breakFrom)},(_,i)=>Number(h.breakFrom)+1+i).map(t=><option key={t} value={t} style={{background:'#101218'}}>{fmt(t)}</option>)}
                             </select>
+                          </div>
+                        ) : hasFallback ? (
+                          <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:14}}>
+                            <span style={{fontSize:12,color:'#4A5568'}}>{fmt(Number(typicalDay.breakFrom))}–{fmt(Number(typicalDay.breakTo))}</span>
+                            <button onClick={()=>addBreak(idx)} style={{padding:'4px 10px',borderRadius:8,border:'1px solid rgba(94,224,206,.25)',background:'rgba(94,224,206,.06)',color:'#5EE0CE',fontSize:11,cursor:'pointer',fontFamily:'DM Sans'}}>
+                              Змінити
+                            </button>
                           </div>
                         ) : (
                           <button onClick={()=>addBreak(idx)}
