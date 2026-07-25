@@ -120,9 +120,11 @@ function FreeTimeTab({ sessions, clients }) {
     const busy = busyHours(idx)
     const from = Number(h.from)
     const to   = Number(h.to)
-    const hasBreak = h.breakFrom != null && h.breakTo != null
-    const bFrom = hasBreak ? Number(h.breakFrom) : null
-    const bTo   = hasBreak ? Number(h.breakTo)   : null
+    // перерва завжди з типового режиму (налаштовується один раз і діє скрізь)
+    const typicalDay = hoursByMode.typical?.[idx]
+    const hasBreak = typicalDay?.breakFrom != null && typicalDay?.breakTo != null
+    const bFrom = hasBreak ? Number(typicalDay.breakFrom) : null
+    const bTo   = hasBreak ? Number(typicalDay.breakTo)   : null
     const out = []
     for (let t = from; t < to; t++) {
       if (busy.has(t)) continue
@@ -136,7 +138,10 @@ function FreeTimeTab({ sessions, clients }) {
   const totalWork = DAYS.map((_, i) => {
     const h = hours[i]; if (!h?.on) return 0
     let w = Number(h.to) - Number(h.from)
-    if (h.breakFrom != null && h.breakTo != null) w -= (Number(h.breakTo) - Number(h.breakFrom))
+    const typicalDay = hoursByMode.typical?.[i]
+    if (typicalDay?.breakFrom != null && typicalDay?.breakTo != null) {
+      w -= (Number(typicalDay.breakTo) - Number(typicalDay.breakFrom))
+    }
     return Math.max(0, w)
   }).reduce((a, b) => a + b, 0)
   const workDays = DAYS.filter((_, i) => hours[i]?.on).length
@@ -292,27 +297,44 @@ function FreeTimeTab({ sessions, clients }) {
                     </select>
                   </div>
 
-                  {/* Обідня перерва */}
-                  <div style={{fontSize:10,color:'#4A90B8',textTransform:'uppercase',letterSpacing:.5,marginBottom:8,fontWeight:600,display:'flex',alignItems:'center',justifyContent:'space-between'}}>
-                    <span>Обідня перерва</span>
-                    {hasBreak && <span onClick={()=>removeBreak(idx)} style={{fontSize:10,color:'#FF6B6B',cursor:'pointer',textTransform:'none',letterSpacing:0}}>✕ Прибрати</span>}
-                  </div>
-                  {hasBreak ? (
-                    <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:14}}>
-                      <select value={h.breakFrom} onChange={e=>setBreakFrom(idx,e.target.value)} style={selStyle}>
-                        {Array.from({length:h.to-h.from},(_,i)=>h.from+i).map(t=><option key={t} value={t} style={{background:'#101218'}}>{fmt(t)}</option>)}
-                      </select>
-                      <span style={{color:'#4A90B8',fontSize:13}}>—</span>
-                      <select value={h.breakTo} onChange={e=>setBreakTo(idx,e.target.value)} style={selStyle}>
-                        {Array.from({length:h.to-h.breakFrom},(_,i)=>h.breakFrom+1+i).map(t=><option key={t} value={t} style={{background:'#101218'}}>{fmt(t)}</option>)}
-                      </select>
-                    </div>
-                  ) : (
-                    <button onClick={()=>addBreak(idx)}
-                      style={{marginBottom:14,padding:'8px 14px',borderRadius:10,border:'1px dashed rgba(94,224,206,.35)',background:'rgba(94,224,206,.05)',color:'#5EE0CE',fontSize:12,fontWeight:600,cursor:'pointer',fontFamily:'DM Sans',display:'flex',alignItems:'center',gap:6}}>
-                      <span style={{fontSize:14,lineHeight:1}}>+</span> Додати перерву
-                    </button>
-                  )}
+                  {/* Обідня перерва — налаштовується в типовому, діє скрізь */}
+                  {(() => {
+                    const typicalDay = hoursByMode.typical?.[idx]
+                    const tHasBreak = typicalDay?.breakFrom != null && typicalDay?.breakTo != null
+                    if (mode !== 'typical') {
+                      // в інших режимах показуємо перерву з типового (лише читання)
+                      return tHasBreak ? (
+                        <div style={{fontSize:10,color:'#4A5A6A',marginBottom:14}}>
+                          Перерва (з типового): {fmt(Number(typicalDay.breakFrom))}–{fmt(Number(typicalDay.breakTo))}
+                        </div>
+                      ) : null
+                    }
+                    // типовий режим — повне редагування
+                    return (
+                      <>
+                        <div style={{fontSize:10,color:'#4A90B8',textTransform:'uppercase',letterSpacing:.5,marginBottom:8,fontWeight:600,display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+                          <span>Обідня перерва</span>
+                          {hasBreak && <span onClick={()=>removeBreak(idx)} style={{fontSize:10,color:'#FF6B6B',cursor:'pointer',textTransform:'none',letterSpacing:0}}>✕ Прибрати</span>}
+                        </div>
+                        {hasBreak ? (
+                          <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:14}}>
+                            <select value={h.breakFrom} onChange={e=>setBreakFrom(idx,e.target.value)} style={selStyle}>
+                              {Array.from({length:h.to-h.from},(_,i)=>h.from+i).map(t=><option key={t} value={t} style={{background:'#101218'}}>{fmt(t)}</option>)}
+                            </select>
+                            <span style={{color:'#4A90B8',fontSize:13}}>—</span>
+                            <select value={h.breakTo} onChange={e=>setBreakTo(idx,e.target.value)} style={selStyle}>
+                              {Array.from({length:h.to-h.breakFrom},(_,i)=>h.breakFrom+1+i).map(t=><option key={t} value={t} style={{background:'#101218'}}>{fmt(t)}</option>)}
+                            </select>
+                          </div>
+                        ) : (
+                          <button onClick={()=>addBreak(idx)}
+                            style={{marginBottom:14,padding:'8px 14px',borderRadius:10,border:'1px dashed rgba(94,224,206,.35)',background:'rgba(94,224,206,.05)',color:'#5EE0CE',fontSize:12,fontWeight:600,cursor:'pointer',fontFamily:'DM Sans',display:'flex',alignItems:'center',gap:6}}>
+                            <span style={{fontSize:14,lineHeight:1}}>+</span> Додати перерву
+                          </button>
+                        )}
+                      </>
+                    )
+                  })()}
 
                   {/* повідомлення */}
                   {buildMessage(idx) && (
