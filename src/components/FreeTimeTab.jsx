@@ -97,10 +97,17 @@ function FreeTimeTab({ sessions, clients }) {
       return new Set(sessions.filter(s => s.date === ds).map(s => parseInt(s.time.split(':')[0], 10)))
     }
     // typical — з графіків клієнтів
+    // schedule_days зберігається як масив рядків ["0","2","4"], schedule_times як {"0":"10:00",...}
+    const idxStr = String(idx)
     const set = new Set()
     clients.forEach(c => {
-      if (c.schedule_days?.includes(idx)) {
-        const time = (c.schedule_times || {})[idx]
+      const days = c.schedule_days || []
+      // підтримуємо і числа, і рядки в schedule_days
+      const hasDay = days.some(d => String(d) === idxStr)
+      if (hasDay) {
+        const times = c.schedule_times || {}
+        // підтримуємо і числовий, і рядковий ключ
+        const time = times[idxStr] ?? times[idx]
         if (time) set.add(parseInt(time.split(':')[0], 10))
       }
     })
