@@ -105,7 +105,7 @@ function ProfileTab({ sessions, clients, finance, setFinance, pricePlans, setPri
   const monthIncomeFactual = finance
     .filter(f=>f.type==='in' && f.date>=monthStartStr && f.date<=today)
     .reduce((a,f)=>a+Number(f.amount),0)
-  const futureSessions = sessions.filter(s=>s.date>today && s.date<=monthEndStr)
+  const futureSessions = sessions.filter(s=>s.date>=today && s.date<=monthEndStr)
   const forecastAmount = clients.reduce((total, client) => {
     if (!client.active_plan_id) return total
     const plan = pricePlans.find(p=>p.id===client.active_plan_id)
@@ -121,7 +121,7 @@ function ProfileTab({ sessions, clients, finance, setFinance, pricePlans, setPri
   }, 0)
   const monthForecastTotal = monthIncomeFactual + forecastAmount
   const daysInMonth = new Date(now.getFullYear(), now.getMonth()+1, 0).getDate()
-  const daysPassed = now.getDate()
+  const daysPassed = now.getDate()  // поточний день місяця (сьогодні в процесі)
   const forecastProgress = Math.min(Math.round((monthIncomeFactual / (monthForecastTotal||1)) * 100), 100)
 
   // ── Тижневий прогноз (аналогічно місячному) ──
@@ -131,7 +131,7 @@ function ProfileTab({ sessions, clients, finance, setFinance, pricePlans, setPri
   const weekIncomeFactual = finance
     .filter(f=>f.type==='in' && f.date>=weekStartStr && f.date<=today)
     .reduce((a,f)=>a+Number(f.amount),0)
-  const futureSessionsWeek = sessions.filter(s=>s.date>today && s.date<=weekEndStr)
+  const futureSessionsWeek = sessions.filter(s=>s.date>=today && s.date<=weekEndStr)
   const forecastAmountWeek = clients.reduce((total, client) => {
     if (!client.active_plan_id) return total
     const plan = pricePlans.find(p=>p.id===client.active_plan_id)
