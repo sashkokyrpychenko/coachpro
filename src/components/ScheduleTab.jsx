@@ -82,28 +82,9 @@ export default function ScheduleTab({ clients, sessions, setSessions, setClients
     }
     setShowModal(false); setFType(''); setSplitMode(false); setFClient2(''); setFDuration(60)
     const user_id = await getUserId()
-    console.log('🔑 user_id:', user_id)
-    console.log('📦 inserts:', JSON.stringify(inserts))
-    if (!user_id) {
-      alert('❌ user_id відсутній! Спробуй вийти і зайти знову.')
-      return
-    }
-    const payload = inserts.map(s=>({...s,user_id}))
-    console.log('📤 payload:', JSON.stringify(payload))
-    const {data,error,status,statusText} = await supabase.from('sessions').insert(payload).select()
-    console.log('📥 status:', status, statusText)
-    console.log('📥 data:', JSON.stringify(data))
-    console.log('📥 error:', JSON.stringify(error))
-    if (error) {
-      alert('❌ Insert error: ' + JSON.stringify(error))
-      return
-    }
-    if (data && data.length > 0) {
-      setSessions(prev=>[...prev,...data])
-      console.log('✅ сесії додані:', data.length)
-    } else {
-      alert('⚠️ Insert пройшов без помилки але data порожня. Status: ' + status)
-    }
+    if (!user_id) return
+    const {data,error} = await supabase.from('sessions').insert(inserts.map(s=>({...s,user_id}))).select()
+    if (!error && data && data.length > 0) setSessions(prev=>[...prev,...data])
   }
 
   const saveEdit = async (updated) => {
