@@ -98,16 +98,15 @@ export default function App() {
       const [c,s,f,r,pp,pr] = await Promise.all([
         supabase.from('clients').select('*').order('created_at'),
         supabase.from('sessions').select('*')
-          .gte('date', '2026-01-01')
+          .gte('date', (() => { const d = new Date(); d.setMonth(d.getMonth()-6); return d.toISOString().slice(0,10) })())
           .lte('date', (() => { const d = new Date(); d.setFullYear(d.getFullYear()+1); return d.toISOString().slice(0,10) })())
-          .order('created_at'),
+          .order('date', {ascending: false})
+          .limit(5000),
         supabase.from('finance').select('*').order('created_at'),
         supabase.from('records').select('*').order('created_at'),
         supabase.from('price_plans').select('*').order('name'),
         supabase.from('programs').select('*').order('created_at'),
       ])
-      console.log('📊 load() sessions:', s.data?.length, 'error:', s.error)
-      console.log('📊 sessions on 28.09:', s.data?.filter(x=>x.date==='2026-09-28')?.length)
       if (c.data) setClients(c.data.sort((a,b) => a.name.localeCompare(b.name, 'uk')))
       if (s.data) setSessions(s.data)
       if (f.data) setFinance(f.data)
