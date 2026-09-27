@@ -80,10 +80,15 @@ export default function ScheduleTab({ clients, sessions, setSessions, setClients
     if (splitMode && fClient2 && fClient2!==fClient) {
       inserts.push({client_id:fClient2, time:fTime, type:fType||'Тренування', date:selDs, done:false, duration:fDuration})
     }
-    const user_id = await getUserId()
-    const {data,error} = await supabase.from('sessions').insert(inserts.map(s=>({...s,user_id}))).select()
-    if (!error&&data) setSessions([...sessions,...data])
     setShowModal(false); setFType(''); setSplitMode(false); setFClient2(''); setFDuration(60)
+    const user_id = await getUserId()
+    if (!user_id) { console.error('saveSession: no user_id, not saving'); return }
+    const {data,error} = await supabase.from('sessions').insert(inserts.map(s=>({...s,user_id}))).select()
+    if (error) {
+      console.error('saveSession insert error:', error)
+      return
+    }
+    if (data) setSessions(prev=>[...prev,...data])
   }
 
   const saveEdit = async (updated) => {
