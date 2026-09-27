@@ -106,6 +106,8 @@ export default function App() {
         supabase.from('price_plans').select('*').order('name'),
         supabase.from('programs').select('*').order('created_at'),
       ])
+      console.log('📊 load() sessions:', s.data?.length, 'error:', s.error)
+      console.log('📊 sessions on 28.09:', s.data?.filter(x=>x.date==='2026-09-28')?.length)
       if (c.data) setClients(c.data.sort((a,b) => a.name.localeCompare(b.name, 'uk')))
       if (s.data) setSessions(s.data)
       if (f.data) setFinance(f.data)
